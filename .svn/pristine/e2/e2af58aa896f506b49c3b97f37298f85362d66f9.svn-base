@@ -1,0 +1,43 @@
+﻿// 提交前事件
+$.MvcSheet.SubmitAction.OnActionPreDo = function () {
+
+    
+}
+////初始化
+//$.MvcSheet.PreInit = function () {
+
+
+//}
+//数据加载后
+$.MvcSheet.Loaded = function () {
+    // 合同号码
+    var ContractNo = getUrlParam("ContractNo");
+    if (ContractNo != null && ContractNo != "") {
+        // 根据合同号码获取对应合同相关数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getByContractNo",   //处理页的相对地址
+            data: {
+                ContractNo: ContractNo,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                $.MvcSheetUI.SetControlValue("ContractNoOld", ret.ContractNo);
+                $.MvcSheetUI.SetControlValue("ContractName", ret.ContractName);
+                $.MvcSheetUI.SetControlValue("ContractType", ret.ContractType);
+                $.MvcSheetUI.SetControlValue("Country", ret.Country);
+                $.MvcSheetUI.SetControlValue("ContractProperty", ret.ContractProperty);
+                $.MvcSheetUI.SetControlValue("PostAB", ret.PostA + "," + ret.PostB);
+            }
+        });
+    }
+    $("input[data-datafield='ContractNoOld']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractName']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractType']").attr("disabled", "disabled");
+    $("input[data-datafield='Country']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractProperty']").attr("disabled", "disabled");
+    $("input[data-datafield='PostAB']").attr("disabled", "disabled");
+    
+}
+
+

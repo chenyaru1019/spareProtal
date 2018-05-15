@@ -1,0 +1,178 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="HYContractSet.aspx.cs" Inherits="OThinker.H3.Portal.Sheets.DefaultEngine.HYContractSet" EnableEventValidation="false" MasterPageFile="~/MvcSheet.master" %>
+
+<%@ OutputCache Duration="999999" VaryByParam="T" VaryByCustom="browser" %>
+<asp:Content ID="head" ContentPlaceHolderID="headContent" runat="Server">
+    <script type="text/javascript">
+
+</script>
+</asp:Content>
+<asp:Content ID="menu" ContentPlaceHolderID="cphMenu" runat="Server">
+</asp:Content>
+<asp:Content ID="master" ContentPlaceHolderID="masterContent" runat="Server">
+    <div style="text-align: center;" class="DragContainer">
+        <label id="lblTitle" class="panel-title">航油合同预设</label>
+    </div>
+    <div class="panel-body sheetContainer">
+        
+        <div class="nav-icon fa  fa-chevron-right bannerTitle">
+            <label id="divSheetInfo" data-en_us="Sheet information">表单信息</label>
+        </div>
+        <div class="divContent" id="divSheet">
+            <div class="row">
+                <div id="title1" class="col-md-2">
+                    <span id="Label11" data-type="SheetLabel" data-datafield="PostB" style="">B角</span>
+                </div>
+                <div id="control1" class="col-md-4">
+                    <div id="Control11" data-datafield="PostB" data-type="SheetUser" style="">
+                    </div>
+                </div>
+                <div id="title2" class="col-md-2">
+                    <span id="Label12" data-type="SheetLabel" data-datafield="FinalUser" style="">最终用户</span>
+                </div>
+                <div id="control2" class="col-md-4">
+                    <select data-datafield="FinalUser" data-type="SheetDropDownList" id="ctl599641" class="" style="" data-masterdatacategory="客户类别" data-displayemptyitem="true" data-emptyitemtext="请选择">
+					</select>
+                </div>
+            </div>
+            <div class="row">
+                <div id="title3" class="col-md-2">
+                    <span id="Label13" data-type="SheetLabel" data-datafield="BidType" style="">是否招标</span>
+                </div>
+                <div id="control3" class="col-md-4">
+                    <div data-datafield="BidType" data-type="SheetRadioButtonList" id="ctl995939" class="" style="" data-masterdatacategory="是否招标"
+                        data-onchange="var BidType = $.MvcSheetUI.GetControlValue('BidType');
+                           if (BidType == '0') {
+                                $.MvcSheetUI.SetControlValue('BidNo','');
+                                $('.BidNo').hide();
+                            } else {
+                                $('.BidNo').show();
+                            }
+                        ">
+                    </div>
+                </div>
+                <div id="title4" class="col-md-2 BidNo">
+                    <span id="Label22" data-type="SheetLabel" data-datafield="BidNo" class="" style="">招标编号</span>
+                </div>
+                <div id="control4" class="col-md-4 BidNo">
+                    <input id="Control22" type="text" data-datafield="BidNo" data-type="SheetTextBox" class="" style="" data-popupwindow="PopupWindow" data-schemacode="GetBidProject" data-querycode="GetBidProject" data-outputmappings="BidNo:ProjectCode">
+                </div>
+            </div>
+            <div class="row">
+                <div id="div470447" class="col-md-2">
+                    <span id="Label14" data-type="SheetLabel" data-datafield="ContractName" class="" style="">合同名称</span>
+                </div>
+                <div id="div430445" class="col-md-4">
+                    <input id="Control14" type="text" data-datafield="ContractName" data-type="SheetTextBox" class="" style="">
+                </div>
+                <div id="div880064" class="col-md-2">
+                </div>
+                <div id="div256498" class="col-md-4">
+                </div>
+            </div>
+            <div class="row">
+                <div id="title5" class="col-md-2">
+                    <span id="Label15" data-type="SheetLabel" data-datafield="ContractShortName" style="">合同简称</span>
+                </div>
+                <div id="control5" class="col-md-4">
+                    <input id="Control15" type="text" data-datafield="ContractShortName" data-type="SheetTextBox" style="">
+                </div>
+                <div id="title6" class="col-md-2">
+                </div>
+                <div id="control6" class="col-md-4">
+                </div>
+            </div>
+            <div class="row">
+                <div id="title7" class="col-md-2">
+                    <span id="Label16" data-type="SheetLabel" data-datafield="ContractType" style="" class="">合同类型</span>
+                </div>
+                <div id="control7" class="col-md-4">
+                    <select data-datafield="ContractType" data-type="SheetDropDownList" id="ctl780098" class="" style="" data-masterdatacategory="合同类型" data-displayemptyitem="true" data-emptyitemtext="请选择"
+                        data-onchange=" 
+                            if ($(this).children('option:selected').val() == 'GN') {
+                                $('.CountrySelect').hide();
+                            } else {
+                                $('.CountrySelect').show();
+                            }
+                        ">
+                    </select>
+                </div>
+                <div id="title8" class="col-md-2">
+                    <span id="Label19" data-type="SheetLabel" data-datafield="Country" style="" class="CountrySelect">国别</span>
+                </div>
+                <div id="control8" class="col-md-4">
+                    <select data-datafield="Country" data-type="SheetDropDownList" id="ctl493603" class="CountrySelect" style="" data-masterdatacategory="国别" data-displayemptyitem="true" data-emptyitemtext="请选择">
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div id="title9" class="col-md-2">
+                    <span id="Label17" data-type="SheetLabel" data-datafield="ContractProperty" style="" class="">合同性质</span>
+                </div>
+                <div id="control9" class="col-md-4">
+                    <select data-datafield="ContractProperty" data-type="SheetDropDownList" id="ctl103863" class="" style="" data-masterdatacategory="合同性质" data-displayemptyitem="true" data-emptyitemtext="请选择">
+                    </select>
+                </div>
+                <div id="space10" class="col-md-2">
+                    <span id="Label18" data-type="SheetLabel" data-datafield="TradeMethod" style="" class="">贸易方式</span>
+                </div>
+                <div id="spaceControl10" class="col-md-4">
+                    <select data-datafield="TradeMethod" data-type="SheetDropDownList" id="ctl537506" class="" style="" data-masterdatacategory="贸易方式" data-displayemptyitem="true" data-emptyitemtext="请选择">
+                    </select>
+                </div>
+            </div>
+            <div class="row tableContent">
+                <div id="title11" class="col-md-2">
+                    <span id="Label20" data-type="SheetLabel" data-datafield="ContractRemark" style="">合同说明</span>
+                </div>
+                <div id="control11" class="col-md-10">
+                    <textarea id="Control20" data-datafield="ContractRemark" data-type="SheetRichTextBox" style="">					</textarea>
+                </div>
+            </div>
+            <div class="row">
+                <div id="title13" class="col-md-2">
+                    <span id="Label21" data-type="SheetLabel" data-datafield="Salers" style="">合同卖方</span>
+                </div>
+                <div id="control13" class="col-md-4">
+                    <input id="Control21" type="text" data-datafield="Salers" data-type="SheetTextBox" style="">
+                </div>
+                <div id="title14" class="col-md-2">
+                </div>
+                <div id="control14" class="col-md-4">
+                </div>
+            </div>
+            <div class="row tableContent">
+                <div id="title15" class="col-md-2">
+                    <span id="Label23" data-type="SheetLabel" data-datafield="SalerTblOfHY" style="">合同卖方详情</span>
+                </div>
+                <div id="control15" class="col-md-10">
+                    <table id="Control23" data-datafield="SalerTblOfHY" data-type="SheetGridView" class="SheetGridView">
+                        <tbody>
+
+                            <tr class="header">
+                                <td id="Control23_SerialNo" class="rowSerialNo">序号								</td>
+                                <td class="rowOption">删除								</td>
+                            </tr>
+                            <tr class="template">
+                                <td id="Control23_Option" class="rowOption"></td>
+                                <td class="rowOption">
+                                    <a class="delete">
+                                        <div class="fa fa-minus">
+                                        </div>
+                                    </a>
+                                    <a class="insert">
+                                        <div class="fa fa-arrow-down">
+                                        </div>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr class="footer">
+                                <td class="rowOption"></td>
+                                <td class="rowOption"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</asp:Content>

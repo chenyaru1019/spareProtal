@@ -1,0 +1,173 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="UpdateContractNoMy.aspx.cs" Inherits="OThinker.H3.Portal.Sheets.DefaultEngine.UpdateContractNoMy" EnableEventValidation="false" MasterPageFile="~/MvcSheet.master" %>
+
+<%@ OutputCache Duration="999999" VaryByParam="T" VaryByCustom="browser" %>
+<asp:Content ID="head" ContentPlaceHolderID="headContent" runat="Server">
+    <script type="text/javascript">
+
+    </script>
+</asp:Content>
+<asp:Content ID="menu" ContentPlaceHolderID="cphMenu" runat="Server">
+</asp:Content>
+<asp:Content ID="master" ContentPlaceHolderID="masterContent" runat="Server">
+    <script src="UpdateContractNoMy.js"></script>
+    <div style="text-align: center;" class="DragContainer">
+        <label id="lblTitle" class="panel-title">申请修改合同号子流程</label>
+    </div>
+    <div class="panel-body sheetContainer">
+        <div class="ContractContent" style="margin-top: 15px">
+            <div class="nav-icon fa  fa-chevron-right bannerTitle">
+                <label id="divSheetInfo" data-en_us="Sheet information">表单信息</label>
+                <span class="pull-right text-muted" id="toggleBtn">
+                    <i class="fa fa-fw fa-angle-double-down text" style="display:none"></i>
+                    <i class="fa fa-fw  fa-angle-double-up text-active" style="display: block;"></i>
+                </span>
+            </div>
+            <div class="divContent" id="divSheet">
+                <div class="row">
+                    <div id="title1" class="col-md-2">
+                        <span id="Label11" data-type="SheetLabel" data-datafield="ContractName" style="">合同名称</span>
+                    </div>
+                    <div id="control1" class="col-md-4">
+                        <input id="Control11" type="text" data-datafield="ContractName" data-type="SheetTextBox" style="">
+                    </div>
+                    <div id="title2" class="col-md-2">
+                        <span id="Label12" data-type="SheetLabel" data-datafield="PostAB" style="">项目负责人AB</span>
+                    </div>
+                    <div id="control2" class="col-md-4">
+                        <input id="Control12" type="text" data-datafield="PostAB" data-type="SheetTextBox" style="">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title3" class="col-md-2">
+                        <span id="Label13" data-type="SheetLabel" data-datafield="ContractType" style="">合同类型</span>
+                    </div>
+                    <div id="control3" class="col-md-4">
+                        <input id="Control13" type="text" data-datafield="ContractType" data-type="SheetTextBox" style="">
+                    </div>
+                    <div id="title4" class="col-md-2">
+                        <span id="Label14" data-type="SheetLabel" data-datafield="Country" style="">国别</span>
+                    </div>
+                    <div id="control4" class="col-md-4">
+                        <input id="Control14" type="text" data-datafield="Country" data-type="SheetTextBox" style="">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title5" class="col-md-2">
+                        <span id="Label15" data-type="SheetLabel" data-datafield="ContractProperty" style="">合同性质</span>
+                    </div>
+                    <div id="control5" class="col-md-4">
+                        <input id="Control15" type="text" data-datafield="ContractProperty" data-type="SheetTextBox" style="">
+                    </div>
+                    <div id="title6" class="col-md-2">
+                    </div>
+                    <div id="control6" class="col-md-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title7" class="col-md-2">
+                        <span id="Label16" data-type="SheetLabel" data-datafield="ContractNoOld" class="" style="">自动生成合同号</span>
+                    </div>
+                    <div id="control7" class="col-md-4">
+                        <input id="Control16" type="text" data-datafield="ContractNoOld" data-type="SheetTextBox" class="" style="">
+                    </div>
+                    <div id="space8" class="col-md-2">
+                        <span id="Label17" data-type="SheetLabel" data-datafield="ContractNoNew" class="" style="">修改后合同号</span>
+                    </div>
+                    <div id="spaceControl8" class="col-md-4">
+                        <input id="Control17" type="text" data-datafield="ContractNoNew" data-type="SheetTextBox" class="" style="">
+                    </div>
+                </div>
+                <div class="row tableContent">
+                    <div id="title9" class="col-md-2">
+                        <span id="Label18" data-type="SheetLabel" data-datafield="Remark" style="">备注</span>
+                    </div>
+                    <div id="control9" class="col-md-10">
+                        <textarea id="Control18" data-datafield="Remark" data-type="SheetRichTextBox" style="">					</textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="div706523" class="col-md-2">
+                        <label data-datafield="ManagerComment" data-type="SheetLabel" id="ctl105350" class="" style="">部门审批意见</label>
+                    </div>
+                    <div id="div120176" class="col-md-10">
+                        <div data-datafield="ManagerComment" data-type="SheetComment" id="ctl344265" class="" style=""></div>
+                    </div>
+                </div>
+                <div class="row hidden">
+                    <div id="div552950" class="col-md-2">
+                    </div>
+                    <div id="div392071" class="col-md-2">
+                        <input type="text" data-datafield="WorkflowVersion_Back" data-type="SheetTextBox" id="ctl456922" class="hidden" style="">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ContractContent ContractContentGetBack">
+            <div class="nav-icon fa  fa-chevron-right bannerTitle bannerTitleGetBack">
+                <label id="divSheetInfo" data-en_us="Sheet information">申请修改合同号回退记录&nbsp;<span class="ContractNoShow"></span></label>
+                <span class="pull-right text-muted" id="toggleBtn">
+                    <i class="fa fa-fw fa-angle-double-down text" style="display:none"></i>
+                    <i class="fa fa-fw  fa-angle-double-up text-active" style="display: block;"></i>
+                </span>
+            </div>
+            <div class="divContent divContent_Tab" id="divSheet">
+                <div class="row">
+                    <div id="div371959" class="col-md-2">
+                        <label data-datafield="GetBackUpdateContractNoTbl" data-type="SheetLabel" id="ctl280690" class="" style="">申请修改合同号回退记录</label>
+                    </div>
+                    <div id="div666980" class="col-md-10">
+                        <table id="ctl532792" data-datafield="GetBackUpdateContractNoTbl" data-type="SheetGridView" class="SheetGridView" style="" data-displayadd="false" data-displaydelete="false" data-defaultrowcount="0" data-displaysequenceno="false" data-displaysummary="false">
+                            <tbody>
+                                <tr class="header">
+                                    <td id="ctl532792_SerialNo" class="rowSerialNo">序号</td>
+                                    <td id="ctl532792_header0" data-datafield="GetBackUpdateContractNoTbl.Approver" style="">
+                                        <label id="ctl532792_Label0" data-datafield="GetBackUpdateContractNoTbl.Approver" data-type="SheetLabel" style="">申请人</label></td>
+                                    <td id="ctl532792_header1" data-datafield="GetBackUpdateContractNoTbl.ApproveDate" style="">
+                                        <label id="ctl532792_Label1" data-datafield="GetBackUpdateContractNoTbl.ApproveDate" data-type="SheetLabel" style="">申请时间</label></td>
+                                    <td id="ctl532792_header2" data-datafield="GetBackUpdateContractNoTbl.Remark" style="">
+                                        <label id="ctl532792_Label2" data-datafield="GetBackUpdateContractNoTbl.Remark" data-type="SheetLabel" style="">回退事由</label></td>
+                                    <td id="ctl532792_header3" data-datafield="GetBackUpdateContractNoTbl.OldInstanceActivityName" style="">
+                                        <label id="ctl532792_Label3" data-datafield="GetBackUpdateContractNoTbl.OldInstanceActivityName" data-type="SheetLabel" style="">当前阶段</label></td>
+                                    <td id="ctl532792_header4" data-datafield="GetBackUpdateContractNoTbl.InstanceActivityName" style="">
+                                        <label id="ctl532792_Label4" data-datafield="GetBackUpdateContractNoTbl.InstanceActivityName" data-type="SheetLabel" style="">回退到</label></td>
+                                    <td id="ctl532792_header5" data-datafield="GetBackUpdateContractNoTbl.Status" style="">
+                                        <label id="ctl532792_Label5" data-datafield="GetBackUpdateContractNoTbl.Status" data-type="SheetLabel" style="">状态</label></td>
+                                    <td id="ctl532792_header6" data-datafield="GetBackUpdateContractNoTbl.Operate" style="">
+                                        <label id="ctl532792_Label6" data-datafield="GetBackUpdateContractNoTbl.Operate" data-type="SheetLabel" style="">操作</label></td>
+                                    <td id="ctl532792_header7" data-datafield="GetBackUpdateContractNoTbl.WorkItemId" style="" class="hidden">
+                                        <label id="ctl532792_Label7" data-datafield="GetBackUpdateContractNoTbl.WorkItemId" data-type="SheetLabel" style="">流程节点Id</label></td>
+                                    <td class="rowOption hidden">删除</td>
+                                </tr>
+                                <tr class="template">
+                                    <td></td>
+                                    <td id="ctl532792_control0" data-datafield="GetBackUpdateContractNoTbl.Approver" style="">
+                                        <input type="text" data-datafield="GetBackUpdateContractNoTbl.Approver" data-type="SheetTextBox" id="ctl532792_control0" style=""></td>
+                                    <td id="ctl532792_control1" data-datafield="GetBackUpdateContractNoTbl.ApproveDate" style="">
+                                        <input type="text" data-datafield="GetBackUpdateContractNoTbl.ApproveDate" data-type="SheetTextBox" id="ctl532792_control1" style=""></td>
+                                    <td id="ctl532792_control2" data-datafield="GetBackUpdateContractNoTbl.Remark" style="">
+                                        <input type="text" data-datafield="GetBackUpdateContractNoTbl.Remark" data-type="SheetTextBox" id="ctl532792_control2" style=""></td>
+                                    <td id="ctl532792_control3" data-datafield="GetBackUpdateContractNoTbl.OldInstanceActivityName" style="">
+                                        <input type="text" data-datafield="GetBackUpdateContractNoTbl.OldInstanceActivityName" data-type="SheetTextBox" id="ctl532792_control3" style=""></td>
+                                    <td id="ctl532792_control4" data-datafield="GetBackUpdateContractNoTbl.InstanceActivityName" style="">
+                                        <input type="text" data-datafield="GetBackUpdateContractNoTbl.InstanceActivityName" data-type="SheetTextBox" id="ctl532792_control4" style=""></td>
+                                    <td id="ctl532792_control5" data-datafield="GetBackUpdateContractNoTbl.Status" style="">
+                                        <input type="text" data-datafield="GetBackUpdateContractNoTbl.Status" data-type="SheetTextBox" id="ctl532792_control5" style=""></td>
+                                    <td id="ctl532792_control6" data-datafield="GetBackUpdateContractNoTbl.Operate" style="">
+                                        <a class="btn btn-primary viewBack" onclick="viewBack(this)">查看</a></td>
+                                    <td id="ctl532792_control7" data-datafield="GetBackUpdateContractNoTbl.WorkItemId" style="" class="hidden">
+                                        <input type="text" data-datafield="GetBackUpdateContractNoTbl.WorkItemId" data-type="SheetTextBox" id="ctl532792_control7" style=""></td>
+                                    <td class="rowOption hidden"><a class="delete">
+                                        <div class="fa fa-minus"></div>
+                                    </a><a class="insert">
+                                        <div class="fa fa-arrow-down"></div>
+                                    </a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</asp:Content>

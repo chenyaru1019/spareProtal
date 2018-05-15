@@ -1,0 +1,244 @@
+﻿<%@ WebHandler Language="C#" Class="Mycontract" %>
+
+using System;
+using System.Web;
+using System.Web.Script.Serialization;
+using OThinker.H3;
+using System.Data;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+using System.Runtime.Serialization;
+using OThinker.H3.Portal.service;
+
+public class Mycontract : IHttpHandler {
+    JavaScriptSerializer jsSerializer = new JavaScriptSerializer();
+    public void ProcessRequest (HttpContext context) {
+
+        string command = context.Request["Command"];
+        switch (command)
+        {
+            case "getcontractList":getcontractList(context);break;
+
+
+        }
+    }
+    //获合同列表
+    public void getcontractList(HttpContext context) {
+        string contract_sele = context.Request["contract_sele"];//合同选择
+        string contract_states = context.Request["contract_states"];//合同状态
+        string my_role = context.Request["my_role"];//我的角色
+        string user = context.Request["user"];
+        string contract_name = context.Request["contract_name"];//合同名称
+        //合同查询
+        string contract_number = context.Request["contract_number"];//合同编号
+        string qy_time = context.Request["qy_time"];//合同签约时间
+        string qy_time2 = context.Request["qy_time2"];
+        string Project_head = context.Request["Project_head"];//项目负责人
+        string my_way = context.Request["my_way"];//贸易方式
+        string contract_creatime = context.Request["contract_creatime"];//合同创建时间
+        string contract_creatime2 = context.Request["contract_creatime2"];//合同创建时间2
+        string end_user = context.Request["end_user"];//最终用户
+        string contract_xz = context.Request["contract_xz"];//合同性质
+        string contract_bgtime = context.Request["contract_bgtime"];//合同变更时间
+        string contract_bgtime2 = context.Request["contract_bgtime2"];//合同变更时间2
+        string contract_mf = context.Request["contract_mf"];//合同卖方
+        string contract_type = context.Request["contract_type"];//合同类型
+        String sqls = "SELECT ContractNo,ContractName,t.CreatedTime,ContractType,ContractProperty,PostA,PostB,FinalUser,Salers,em.EnumValue,TradeMethod," +
+            "ContractTotalPrice,SignDate,ModifiedTime," +
+            //"(SELECT wi.DisplayName FROM OT_InstanceContext ic INNER JOIN OT_WorkItem wi ON ic.ObjectID = wi.InstanceId AND ic.BizObjectId = t.ObjectID " +
+            //"AND ic.state = '2'  UNION SELECT  wi.DisplayName FROM OT_InstanceContext ic" +
+            //" INNER JOIN OT_WorkItemFinished wi ON ic.ObjectID = wi.InstanceId AND ic.BizObjectId = t.ObjectID AND ic.state = '4' ) as con_state," +
+            "ics.ObjectID IcObjectID, ics.State Status" +
+            //", wit.ObjectID" +
+            " FROM  I_ContractMain t " +
+            " LEFT JOIN OT_EnumerableMetadata em ON t.ContractProperty=em.Code  " +
+            " LEFT JOIN OT_InstanceContext ics ON ics.BizObjectid=t.ObjectID " +
+            //" LEFT JOIN OT_WorkItem wit ON wit.InstanceId=ics.ObjectID " +
+            "where 1=1 ";
+
+        if (contract_number != "" && contract_number !=null)
+        {
+            sqls += " and ContractNo like '%" + contract_number + "%'";
+        }
+        //合同签约时间
+        if (qy_time != "" && qy_time != null)
+        {
+            sqls += " and SignDate >= '" + qy_time + "'";
+        }
+        if (qy_time2 != "" && qy_time2 != null)
+        {
+            sqls += " and SignDate <= '" + qy_time2 + "'";
+        }
+        if (Project_head != "" &&  Project_head !=null)
+        {
+            sqls += " and  (PostA = '" + Project_head + "' OR  PostB = '" + Project_head + "')";
+        }
+        if (my_way != "" &&  my_way !=null)
+        {
+            sqls += " and TradeMethod = '" + my_way + "'";
+        }
+        //合同创建时间
+        if (contract_creatime != "" && contract_creatime != null)
+        {
+            sqls += " and CreatedTime >= '" + contract_creatime + "'";
+        }
+        if (contract_creatime2 != "" && contract_creatime2 != null)
+        {
+            sqls += " and CreatedTime <= '" + contract_creatime2 + "'";
+        }
+        if (end_user != "" && end_user !=null)
+        {
+            sqls += " and FinalUser = '" + end_user + "'";
+        }
+        if (contract_xz != "" && contract_xz !=null)
+        {
+            sqls += " and ContractProperty = '" + contract_xz + "'";
+
+        }
+        //合同变更时间
+        if (contract_bgtime != "" && contract_bgtime != null)
+        {
+            sqls += " and ModifiedTime = '" + contract_bgtime + "'";
+
+        }
+        if (contract_bgtime2 != "" && contract_bgtime2 != null)
+        {
+            sqls += " and ModifiedTime = '" + contract_bgtime2 + "'";
+
+        }
+        if (contract_mf != "" && contract_mf !=null)
+        {
+            sqls += " and Salers = '" + contract_mf + "'";
+
+        }
+        if (contract_type != "" && contract_type !=null)
+        {
+            sqls += " and ContractType = '" + contract_type + "'";
+
+        }
+        //合同名称
+        if (contract_name != "" && contract_name != null)
+        {
+            sqls+= " and  ContractName  like '%" + contract_name + "%'";
+        }
+
+
+        //if (agreement != "") {
+        //    switch (agreement) {
+        //        case "w1":sqls += "我的协议";break;
+        //        case "w2":sqls += "代职协议";break;
+        //        case "w3":sqls += "全部";break;
+        //    }
+        //}
+        if (my_role != "" && my_role !=null)
+        {
+            if (my_role == "我是A角") {
+                sqls += " and PostA='"+user+"'";
+            }else if (my_role == "我是B角") {
+                sqls += " and PostB='"+user+"'";
+            } else
+            {
+                sqls += " and (PostA='"+user+"' or PostB='"+user+"') ";
+            }
+        }
+        sqls += " order by CreatedTime desc ";
+        //获取协议执行的版本号
+        //int versionAgreen_performNo = OThinker.H3.Controllers.AppUtility.Engine.WorkflowManager.GetWorkflowDefaultVersion("Agreen_perform");
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sqls);
+        List<Dictionary<string,string>> ls = new List<Dictionary<string,string>>();
+        var TheNo = 1;
+        if (dt.Rows.Count > 0) {
+            foreach (DataRow dr in dt.Rows)
+            {
+                Dictionary<string,string> dic = new Dictionary<string,string>();
+                //创建、审签、执行、完成合同
+                //if (contract_states != "" && contract_states != null)
+                //{
+                //if ( contract_states.Contains(dr["con_state"].ToString()))
+                //{
+                dic.Add("TheNo",TheNo.ToString());
+                dic.Add("ContractNO", dr["ContractNO"].ToString());
+                dic.Add("ContractName", dr["ContractName"].ToString());
+                dic.Add("CreatedTime", dr["CreatedTime"].ToString());
+                dic.Add("ContractType", dr["ContractType"].ToString());
+                dic.Add("ContractProperty", dr["EnumValue"].ToString());
+                //dic.Add("Projecthead", dr["ContractName"].ToString());
+                dic.Add("Projecthead", OThinker.H3.Controllers.AppUtility.Engine.Organization.GetName(dr["PostA"].ToString()) + '/' + OThinker.H3.Controllers.AppUtility.Engine.Organization.GetName(dr["PostB"].ToString()));
+                dic.Add("FinalUser", dr["FinalUser"].ToString());
+                dic.Add("Salers", dr["Salers"].ToString());
+                dic.Add("ContractTotalPrice", dr["ContractTotalPrice"].ToString());
+                dic.Add("SignDate", dr["SignDate"].ToString());
+                dic.Add("ModifiedTime", dr["ModifiedTime"].ToString());
+                Dictionary<string, string> workItemDic = Common.getWorkItemId(dr["IcObjectId"].ToString(), dr["Status"].ToString());
+                var DisplayName = dr["Status"].ToString().Equals("4")?"合同完成":workItemDic["DisplayName"];
+                var workItemId = workItemDic["workItemId"];    
+                dic.Add("contract_state", DisplayName);
+                if(contract_states != null && contract_states != "" && !contract_states.Contains(DisplayName))
+                {
+                    continue;
+                }
+                dic.Add("ObjectID", workItemId);
+                dic.Add("PostA", dr["PostA"].ToString());
+                dic.Add("PostB", dr["PostB"].ToString());
+                ls.Add(dic);
+                TheNo++;
+                //}
+                //}
+                //else {
+                //    dic.Add("TheNo",TheNo.ToString());
+                //    dic.Add("ContractNO", dr["ContractNO"].ToString());
+                //    dic.Add("ContractName", dr["ContractName"].ToString());
+                //    dic.Add("CreatedTime", dr["CreatedTime"].ToString());
+                //    dic.Add("ContractType", dr["ContractType"].ToString());
+                //    dic.Add("ContractProperty", dr["EnumValue"].ToString());
+                //    //dic.Add("Projecthead", dr["ContractName"].ToString());
+                //    dic.Add("Projecthead", OThinker.H3.Controllers.AppUtility.Engine.Organization.GetName(dr["PostA"].ToString()) + '/' + OThinker.H3.Controllers.AppUtility.Engine.Organization.GetName(dr["PostB"].ToString()));
+                //    dic.Add("FinalUser", dr["FinalUser"].ToString());
+                //    dic.Add("Salers", dr["Salers"].ToString());
+                //    dic.Add("ContractTotalPrice", dr["ContractTotalPrice"].ToString());
+                //    dic.Add("SignDate", dr["SignDate"].ToString());
+                //    dic.Add("ModifiedTime", dr["ModifiedTime"].ToString());
+                //    Dictionary<string, string> workItemDic = Common.getWorkItemId(dr["IcObjectId"].ToString(), dr["Status"].ToString());
+                //    var DisplayName = workItemDic["DisplayName"];
+                //    dic.Add("contract_state", DisplayName);
+                //    dic.Add("ObjectID", dr["ObjectID"].ToString());
+                //    ls.Add(dic);
+                //    TheNo++;
+                //}
+            }
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+
+    public bool IsReusable
+    {
+        get
+        {
+            return false;
+        }
+    }
+    private IEngine _Engine = null;
+    /// <summary>
+    /// 流程引擎的接口，该接口会比this.Engine的方式更快，因为其中使用了缓存
+    /// </summary>
+    public IEngine Engine
+    {
+        get
+        {
+            if (OThinker.H3.Controllers.AppConfig.ConnectionMode == ConnectionStringParser.ConnectionMode.Mono)
+            {
+                return OThinker.H3.Controllers.AppUtility.Engine;
+            }
+            return _Engine;
+        }
+        set
+        {
+            _Engine = value;
+        }
+    }
+
+}

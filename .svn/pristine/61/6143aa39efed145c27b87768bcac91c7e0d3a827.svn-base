@@ -1,0 +1,164 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="GDChangeMy.aspx.cs" Inherits="OThinker.H3.Portal.Sheets.DefaultEngine.GDChangeMy" EnableEventValidation="false" MasterPageFile="~/MvcSheet.master" %>
+
+<%@ OutputCache Duration="999999" VaryByParam="T" VaryByCustom="browser" %>
+<asp:Content ID="head" ContentPlaceHolderID="headContent" runat="Server">
+    <script type="text/javascript">
+
+</script>
+</asp:Content>
+<asp:Content ID="menu" ContentPlaceHolderID="cphMenu" runat="Server">
+</asp:Content>
+<asp:Content ID="master" ContentPlaceHolderID="masterContent" runat="Server">
+    <script src="GDChangeMy.js"></script>
+    <div style="text-align: center;" class="DragContainer">
+        <label id="lblTitle" class="panel-title">合同变更归档申请</label>
+    </div>
+    <div class="panel-body sheetContainer">
+        <div class="ContractContent">
+            <div class="nav-icon fa  fa-chevron-right bannerTitle">
+                <label id="divSheetInfo" data-en_us="Sheet information" class="">申请</label>
+            </div>
+            <div class="divContent" id="divSheet">
+                <div class="row">
+                    <div id="title1" class="col-md-2">
+                        <span id="Label11" data-type="SheetLabel" data-datafield="ContractNo" style="">合同号</span>
+                    </div>
+                    <div id="control1" class="col-md-4">
+                        <input id="Control11" type="text" data-datafield="ContractNo" data-type="SheetTextBox" style="">
+                    </div>
+                    <div id="title2" class="col-md-2">
+                        <span id="Label12" data-type="SheetLabel" data-datafield="ContractName" style="">合同名称</span>
+                    </div>
+                    <div id="control2" class="col-md-4">
+                        <input id="Control12" type="text" data-datafield="ContractName" data-type="SheetTextBox" style="">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title3" class="col-md-2">
+                        <span id="Label13" data-type="SheetLabel" data-datafield="PostAB" style="">项目负责人AB</span>
+                    </div>
+                    <div id="control3" class="col-md-4">
+                        <input id="Control13" type="text" data-datafield="PostAB" data-type="SheetTextBox" style="">
+                    </div>
+                    <div id="title4" class="col-md-2">
+                        <span id="Label14" data-type="SheetLabel" data-datafield="ContractType" style="">合同类型</span>
+                    </div>
+                    <div id="control4" class="col-md-4">
+                        <input id="Control14" type="text" data-datafield="ContractType" data-type="SheetTextBox" style="">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title5" class="col-md-2">
+                        <span id="Label15" data-type="SheetLabel" data-datafield="ContractProperty" style="">合同性质</span>
+                    </div>
+                    <div id="control5" class="col-md-4">
+                        <input id="Control15" type="text" data-datafield="ContractProperty" data-type="SheetTextBox" style="">
+                    </div>
+                    <div id="title6" class="col-md-2">
+                        <span id="Label16" data-type="SheetLabel" data-datafield="ContractTotalPrice" style="">合同金额</span>
+                    </div>
+                    <div id="control6" class="col-md-4">
+                        <input id="Control16" type="text" data-datafield="ContractTotalPrice" data-type="SheetTextBox" style="">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title7" class="col-md-2">
+                        <span id="Label17" data-type="SheetLabel" data-datafield="Country" style="">国别</span>
+                    </div>
+                    <div id="control7" class="col-md-4">
+                        <input id="Control17" type="text" data-datafield="Country" data-type="SheetTextBox" style="">
+                    </div>
+                    <div id="title8" class="col-md-2">
+                        <span id="Label18" data-type="SheetLabel" data-datafield="TradeMethod" style="">贸易方式</span>
+                    </div>
+                    <div id="control8" class="col-md-4">
+                        <input id="Control18" type="text" data-datafield="TradeMethod" data-type="SheetTextBox" style="">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title9" class="col-md-2">
+                        <span id="Label19" data-type="SheetLabel" data-datafield="FinalUser" style="">最终用户</span>
+                    </div>
+                    <div id="control9" class="col-md-4">
+                        <input id="Control19" type="text" data-datafield="FinalUser" data-type="SheetTextBox" style="">
+                    </div>
+                    <div id="title10" class="col-md-2">
+                        <span id="Label20" data-type="SheetLabel" data-datafield="Salers" style="">合同卖方</span>
+                    </div>
+                    <div id="control10" class="col-md-4">
+                        <input id="Control20" type="text" data-datafield="Salers" data-type="SheetTextBox" style="">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title11" class="col-md-2">
+                        <span id="Label21" data-type="SheetLabel" data-datafield="BidNo" style="">招标编号</span>
+                    </div>
+                    <div id="control11" class="col-md-4">
+                        <input id="Control21" type="text" data-datafield="BidNo" data-type="SheetTextBox" style="">
+                    </div>
+                    <div id="title12" class="col-md-2">
+                        <span id="Label22" data-type="SheetLabel" data-datafield="ValuationType" style="">计价方式</span>
+                    </div>
+                    <div id="control12" class="col-md-4">
+                        <input id="Control22" type="text" data-datafield="ValuationType" data-type="SheetTextBox" style="">
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div id="title17" class="col-md-2">
+                        <span id="Label25" data-type="SheetLabel" data-datafield="ContractChangeFileSignVer" style="">合同变更书签字版</span>
+                    </div>
+                    <div id="control17" class="col-md-10">
+                        <input type="text" data-datafield="ContractChangeFileSignVer" data-type="SheetTextBox" id="" class="hidden" style="">
+                        <div id="ContractChangeFileSignVer"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title19" class="col-md-2">
+                        <span id="Label26" data-type="SheetLabel" data-datafield="AgencyChangeFileSignVer" style="">协议变更书签字版</span>
+                    </div>
+                    <div id="control19" class="col-md-10">
+                        <input type="text" data-datafield="AgencyChangeFileSignVer" data-type="SheetTextBox" id="" class="hidden" style="">
+                        <div id="AgencyChangeFileSignVer"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="div95880" class="col-md-2">
+                        <label data-datafield="Remark" data-type="SheetLabel" id="ctl648197" class="" style="">备注</label>
+                    </div>
+                    <div id="div114590" class="col-md-10">
+                        <textarea data-datafield="Remark" style="height: 60px; width: 100%;" data-type="SheetRichTextBox" id="ctl310804" class=""></textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="div738061" class="col-md-2">
+                        <label data-datafield="ApproveComment" data-type="SheetLabel" id="ctl161376" class="" style="">审批意见</label>
+                    </div>
+                    <div id="div593182" class="col-md-10">
+                        <div data-datafield="ApproveComment" data-type="SheetComment" id="ctl622573" class="" style=""></div>
+                    </div>
+                </div>
+                <div class="row hidden">
+                    <div id="div491606" class="col-md-1">
+                        <input type="text" data-datafield="RejectFlg" data-type="SheetTextBox" id="ctl125062" class="hidden" style="">
+                    </div>
+                    <div id="div39160" class="col-md-1"></div>
+                    <div id="div839900" class="col-md-1"></div>
+                    <div id="div24023" class="col-md-1"></div>
+                    <div id="div686825" class="col-md-1"></div>
+                    <div id="div231864" class="col-md-1"></div>
+                    <div id="div999793" class="col-md-1"></div>
+                    <div id="div576510" class="col-md-1"></div>
+                    <div id="div879411" class="col-md-1"></div>
+                    <div id="div679676" class="col-md-1"></div>
+                    <div id="div350229" class="col-md-1"></div>
+                    <div id="div893342" class="col-md-1"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/jquery-ui.min.js"></script>
+    <script src="../js/ContractFile2.js"></script>
+    <script src="../js/select2.js"></script>
+</asp:Content>

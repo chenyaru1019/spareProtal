@@ -1,0 +1,60 @@
+﻿<div>
+    <input type="radio" value="w1" name="agreement" checked="checked" >我的协议
+    <input type="radio" value="w2" name="agreement">代职协议
+    <input type="radio" value="w3" name="agreement" id="">全部
+    协议状态:<input type="checkbox" value="y1" name="not_receive">未收完<input type="checkbox" value="y2" name="not_receive">已收完
+</div>
+<div>
+    我的角色:<select name="my_role" id="my_role">
+            <option value="my_a">我是A角</option>
+             <option value="my_b">我是B角</option>
+             <option value="my_all">全部</option>
+        </select>
+    协议编号:<input type="text" name="agreement_num" value="" id="agreement_num">
+    合同性质:<input type="text" name="contract_type">
+    <input type="button" value="查找" id="finds">
+</div>
+<div style='margin-top: 40px;'>
+
+    <table id="table_id_two" class="display">
+        <thead>
+            
+            <tr>
+                <th>协议名称</th>
+                <th>协议编号</th>
+                <th>委托方</th>
+                <th>收费类型</th>
+                <th>费率/金额</th>
+                <th>签约时间</th>
+                <th>项目负责人</th>
+               
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+<script type="text/javascript">
+    var cottageDom = $('#table_id_two');
+    window.cottageApp.agreement_num = $('#agreement_num').val();
+    window.cottageApp.agreement = $("input[name='agreement']:checked").val();
+    window.cottageApp.my_role = $("#my_role").val();
+    console.log(my_role);
+    window.cottageApp.dataTableInit(cottageDom);
+    $("#finds").click(
+        function () {
+            window.cottageApp.cottageObj.fnClearTable();
+            window.cottageApp.cottageObj.fnDestroy();
+            cottageDom.DataTable().destroy();
+            window.cottageApp.agreement_num = $('#agreement_num').val();
+            window.cottageApp.agreement = $("input[name='agreement']:checked").val();
+            window.cottageApp.my_role = $("#my_role option:selected").val();
+            window.cottageApp.dataTableInit(cottageDom);
+            cottageDom.DataTable().ajax.reload();
+
+        }
+    );
+    console.log(123456789);
+    console.log(window.document);
+    console.log($(document));
+    
+</script>

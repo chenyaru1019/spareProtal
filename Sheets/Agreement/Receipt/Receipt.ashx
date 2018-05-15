@@ -1,0 +1,289 @@
+﻿<%@ WebHandler Language="C#" Class="Receipt" %>
+
+using System;
+using System.Web;
+using System.Web.Script.Serialization;
+using OThinker.H3;
+using System.Data;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+using System.Runtime.Serialization;
+
+
+public class Receipt : IHttpHandler {
+    JavaScriptSerializer jsSerializer = new JavaScriptSerializer();
+    public void ProcessRequest (HttpContext context) {
+
+        string command = context.Request["Command"];
+        switch (command)
+        {
+            case "getAgreement": getAgreement(context); break;
+            case "SetSKTotalRMB":SetSKTotalRMB(context);break;//
+            case "SetSKTotalUSD":SetSKTotalUSD(context);break;
+            case "SetSKTotalPercent":SetSKTotalPercent(context);break;//        
+
+            case "sk_spj": sk_spj(context); break;
+            case "getProjecsk":getProjecsk(context);break;//获取关联项目收款查询
+            case "updateMoney":updateMoney(context);break;//修改已收钱数
+
+
+        }
+    }
+
+    // 人民币时设置
+    public void SetSKTotalRMB(HttpContext context)
+    {
+        string AgreeMent_number = context.Request["AgreeMent_number"];
+        string CurrentSKTotalRMB = context.Request["CurrentSKTotalRMB"];
+        // 
+        OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+        " update I_Agreement_mains set ReceiveAgencyFeeHidden = ReceiveAgencyFeeHidden + "+CurrentSKTotalRMB+" where AgreeMent_number = '"+AgreeMent_number+"'");
+        object JSONObj = JsonConvert.SerializeObject("");
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+
+    }
+    // USD时设置  
+    public void SetSKTotalUSD(HttpContext context)
+    {
+        string AgreeMent_number = context.Request["AgreeMent_number"];
+        string CurrentSKTotalRMB = context.Request["CurrentSKTotalRMB"];
+        string CurrentSKTotalUSD = context.Request["CurrentSKTotalUSD"];
+        // 
+        OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+        " update I_AircraftOilAgreement set ReceiveAgencyFeeHidden = ReceiveAgencyFeeHidden + "+CurrentSKTotalRMB+"" +
+        ",ReceiveAgencyFeeWBHidden = ReceiveAgencyFeeWBHidden +"+ CurrentSKTotalUSD +" where AgreeMent_number = '"+AgreeMent_number+"'");
+        object JSONObj = JsonConvert.SerializeObject("");
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+
+    }
+    // 百分比时设置
+    public void SetSKTotalPercent(HttpContext context)
+    {
+        string AgreeMent_number = context.Request["AgreeMent_number"];
+        string ObjectID = context.Request["ObjectID"];
+        String sql = " select sp.* " +
+            " from I_SKRecords_Percent sp " +
+            " INNER JOIN I_Charge_back cb on sp.parentObjectID = cb.ObjectID and cb.AgreeMent_number = '"+AgreeMent_number+"' and cb.ObjectID = '"+ObjectID+"' " +
+            " ORDER BY sp.Type,sp.projectNo ";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql);
+        //" update I_Agreement_mains set ReceiveAgencyFeeHidden = ReceiveAgencyFeeHidden + "+CurrentSKTotalRMB+" where AgreeMent_number = '"+AgreeMent_number+"'");
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                String sql2 = " select * from I_YSList_Percent " +
+                    " where ParentObjectID = (select ObjectID from I_Agreement_mains where AgreeMent_number = '"+AgreeMent_number+"')" +
+                    " and ProjectNo = '"+dr["ProjectNo"].ToString()+"'";
+                System.Data.DataTable dt2 = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql2);
+                foreach (DataRow dr2 in dt2.Rows)
+                {
+                    var ReceiveAgencyFee = (double)Convert.ToSingle(dr2["ReceiveAgencyFee"]) + (double)Convert.ToSingle(dr["CurrentSKRMB"]);
+                    var ReceiveAgencyFeeWB = Adds(dr2["ReceiveAgencyFeeWB"].ToString(),dr["CurrentSKWB"].ToString());
+                    var ReceiveTotalRMB = (double)Convert.ToSingle(dr2["ReceiveTotalRMB"]) + ((double)Convert.ToSingle(dr["CurrentSKRMB"])+(double)Convert.ToSingle(XCs(dr["CurrentSKWB"].ToString(),dr["WBRate"].ToString())));
+                    string updatesql = " update I_YSList_Percent " +
+                        " set ReceiveAgencyFee =  '" +ReceiveAgencyFee +"'"+
+                        " ,ReceiveAgencyFeeWB =  '" +ReceiveAgencyFeeWB+"'"+
+                        " ,ReceiveTotalRMB =  '" +ReceiveTotalRMB+"'"+
+                        //" ,AgencyFeeRemainRMB = " + ((double)Convert.ToSingle(dr["YSAgencyFeeRMB"]) - ((double)Convert.ToSingle(dr["ReceiveAgencyFee"]) + (double)Convert.ToSingle(dr["CurrentSKRMB"]))) +
+                        //" ,AgencyFeeRemainWB = " + ((double)Convert.ToSingle(dr["YSAgencyFeeWB"]) - ((double)Convert.ToSingle(dr["ReceiveAgencyFeeWB"]) + (double)Convert.ToSingle(dr["CurrentSKWB"]))) +
+                        " where ObjectID = '"+dr2["ObjectID"].ToString()+"'";
+                    OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(updatesql);
+                }
+
+            }
+        }
+        object JSONObj = JsonConvert.SerializeObject("");
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+
+    }
+    // 两个带逗号的字符串数据相加（200,500 + 100,100 = 300,600）
+    public string Adds(string com1,string com2) {
+        string [] com1arr = com1.Split(',');
+        string [] com2arr = com2.Split(',');
+        string ret = "";
+        for(var i = 0;i< com1arr.Length;i++)
+        {
+            double d1 = (double)Convert.ToSingle(com1arr[i]) + (double)Convert.ToSingle(com2arr[i]);
+            ret += d1.ToString() + ",";
+        }
+        return delLastCom(ret);
+    }
+    // 两个带逗号的字符串数据相乘（200,500 * 5,6 = 1000+3000 = 4000）
+    public double XCs(string com1,string com2) {
+        string [] com1arr = com1.Split(',');
+        string [] com2arr = com2.Split(',');
+        double ret = 0;
+        for(var i = 0;i< com1arr.Length;i++)
+        {
+            double d1 = (double)Convert.ToSingle(com1arr[i]) * (double)Convert.ToSingle(com2arr[i]);
+            ret += d1;
+        }
+        return ret;
+    }
+    public string delLastCom(string str)
+    {
+        if(str.Substring(str.Length - 1).Equals(","))
+        {
+            return str.Substring(0,str.Length - 1);
+        }
+        return "";
+    }
+
+    public void updateMoney(HttpContext context)
+    {
+        string QKObjectIDs = context.Request["QKObjectIDs"];
+        string[] arr = QKObjectIDs.Split(',');
+        if (arr.Length > 0)
+        {
+            foreach (string item in arr)
+            {
+                if (!item.Trim().Equals(""))
+                {
+                    var ys_money = item.Split(':')[0];
+                    var yi_money = item.Split(':')[1];
+                    var this_money = item.Split(':')[2];
+                    var Project_number = item.Split(':')[3];
+                    // 修改请款中的累计到款金额
+                    OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+                    " update I_Charge_pro set yi_money = yi_money + this_receipt+ " + this_money + " where Project_number = '" + Project_number + "'");
+                }
+
+            }
+        }
+        return;
+
+    }
+
+    // 获取关联项目收款查询
+    public void getProjecsk(HttpContext context){
+        string AgreeMent_number = context.Request["AgreeMent_number"];
+        string Project_num = context.Request["project_num"];
+        List<Dictionary<string,string>> ls = new List<Dictionary<string,string>>();
+
+        String Agreement_record = "SELECT SUM (cp.this_receipt) AS yi_money, MIN(cm.ObjectID) as ObjectID ,MIN(cm.ContractType) as ContractType," +
+            "MIN(cm.ContractNo)as ContractNo, MIN(cm.ContractName) as ContractName,MIN(am.agency_rate) as agency_rate,MIN(em.EnumValue) as EnumValue, " +
+            "MIN(cp.Project_number)as Project_number,MIN(am.ys_agency) as ys_agency,MIN(am.agency_ye) as agency_ye," +
+            "MAX(cp.dl_money) as dl_money,MAX(cp.this_receipt)as this_receipt,cp.Project_number FROM I_Agreement_mains am " +
+            "LEFT JOIN I_ContractMain cm ON am.AgreeMent_number=cm.AgencySelect LEFT JOIN OT_EnumerableMetadata em ON am.Rate_type=em.Code " +
+            "LEFT JOIN I_Charge_pro cp ON cp.Project_number=cm.ContractNo" +
+            " WHERE am.AgreeMent_number='"+AgreeMent_number+"' GROUP BY cp.Project_number";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(Agreement_record);
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+
+                int index = Project_num.IndexOf(dr["ContractNo"].ToString());
+                if (index > -1)
+                {
+                    Dictionary<string, string> dic = new Dictionary<string, string>();
+                    dic.Add("ObjectID", dr["ObjectID"].ToString());
+                    dic.Add("ContractType", dr["ContractType"].ToString());
+                    dic.Add("ContractNo", dr["ContractNo"].ToString());
+                    dic.Add("ContractName", dr["ContractName"].ToString());
+                    dic.Add("agency_rate", dr["agency_rate"].ToString());
+                    dic.Add("yi_money", dr["yi_money"].ToString());
+                    //dic.Add("ye_money",（(int)Convert.ToSingle(dt.Rows[0]["agency_rate"])-(int)Convert.ToSingle(dt.Rows[0]["ys_agency"]).ToString());
+                    dic.Add("this_receipt", dr["this_receipt"].ToString());
+                    dic.Add("EnumValue", dr["EnumValue"].ToString());
+                    ls.Add(dic);
+                }
+
+            }
+
+        }
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+
+    }
+    //查询收款页面内容
+    public void getAgreement (HttpContext context) {
+
+        string AgreeMent_number = context.Request["AgreeMent_number"];
+        string agency_type = context.Request["agency_type"];
+        Dictionary<string,string> dic = new Dictionary<string,string>();
+            String sqls = "";
+        if ("USD".Equals(agency_type)) {
+            sqls = "select AgreeMent_number,AgreeMent_name,Agreement_client,Project_head_B,Project_head_A " +
+                "from I_AircraftOilAgreement  where AgreeMent_number='" + AgreeMent_number + "'";
+        } else {
+            sqls = "select AgreeMent_number,AgreeMent_name,Agreement_client,Project_head_B,Project_head_A " +
+                    "from I_Agreement_mains  where AgreeMent_number='"+AgreeMent_number+"'";
+        }
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sqls);
+        if (dt.Rows.Count > 0) {
+            dic.Add("AgreeMent_number",dt.Rows[0]["AgreeMent_number"].ToString());
+            dic.Add("Agreement_name",dt.Rows[0]["AgreeMent_name"].ToString());
+            dic.Add("Project_head_AB",OThinker.H3.Controllers.AppUtility.Engine.Organization.GetName(dt.Rows[0]["Project_head_A"].ToString())+','+OThinker.H3.Controllers.AppUtility.Engine.Organization.GetName(dt.Rows[0]["Project_head_B"].ToString()));
+            dic.Add("SKTarget",dt.Rows[0]["Agreement_client"].ToString());
+
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(dic);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    //收款审批记录
+    public void sk_spj(HttpContext context) {
+        string AgreeMent_number = context.Request["AgreeMent_number"];
+
+        List<Dictionary<string,string>> ls = new List<Dictionary<string,string>>();
+        String record = "SELECT wf.FinisherName,ct. TEXT AS btext,wf.DisplayName,wf.FinishTime,wf.State,wf.ObjectID FROM I_Charge_back cb  " +
+            "LEFT JOIN OT_InstanceContext Ic ON Ic.BizObjectId= cb.ObjectID LEFT JOIN OT_WorkItemFinished wf ON wf.InstanceId=Ic.ObjectID " +
+            "LEFT JOIN OT_Comment ct ON ct.InstanceId = wf.InstanceId AND  wf.ActivityCode=ct.Activity " +
+            "WHERE cb.AgreeMent_number='" + AgreeMent_number + "' ORDER BY wf.FinishTime ASC";
+        System.Data.DataTable dt_record = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(record);
+        if (dt_record.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt_record.Rows)
+            {
+                Dictionary<string, string> dic_two = new Dictionary<string, string>();
+                dic_two.Add("ObjectID", dr["ObjectID"].ToString());
+                dic_two.Add("DisplayName", dr["DisplayName"].ToString());
+                dic_two.Add("UserName", dr["FinisherName"].ToString());
+                dic_two.Add("CreatedTime", dr["FinishTime"].ToString());
+                dic_two.Add("State", dr["State"].ToString());
+                dic_two.Add("btext", dr["btext"].ToString());
+                ls.Add(dic_two);
+            }
+        }
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+
+
+    public bool IsReusable
+    {
+        get
+        {
+            return false;
+        }
+    }
+    private IEngine _Engine = null;
+    /// <summary>
+    /// 流程引擎的接口，该接口会比this.Engine的方式更快，因为其中使用了缓存
+    /// </summary>
+    public IEngine Engine
+    {
+        get
+        {
+            if (OThinker.H3.Controllers.AppConfig.ConnectionMode == ConnectionStringParser.ConnectionMode.Mono)
+            {
+                return OThinker.H3.Controllers.AppUtility.Engine;
+            }
+            return _Engine;
+        }
+        set
+        {
+            _Engine = value;
+        }
+    }
+
+}

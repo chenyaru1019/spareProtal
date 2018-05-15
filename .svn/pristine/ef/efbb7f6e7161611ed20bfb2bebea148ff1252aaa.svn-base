@@ -1,0 +1,360 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="BGMy.aspx.cs" Inherits="OThinker.H3.Portal.Sheets.DefaultEngine.BGMy" EnableEventValidation="false" MasterPageFile="~/MvcSheet.master" %>
+
+<%@ OutputCache Duration="999999" VaryByParam="T" VaryByCustom="browser" %>
+<asp:Content ID="head" ContentPlaceHolderID="headContent" runat="Server">
+    <script type="text/javascript">
+
+</script>
+</asp:Content>
+<asp:Content ID="menu" ContentPlaceHolderID="cphMenu" runat="Server">
+</asp:Content>
+<asp:Content ID="master" ContentPlaceHolderID="masterContent" runat="Server">
+    <script src="BGMy.js"></script>
+    <div style="text-align: center;" class="DragContainer">
+        <label id="lblTitle" class="panel-title">合同变更子流程</label>
+    </div>
+    <div class="panel-body sheetContainer">
+        <div class="ContractContent" style="margin-top: 15px">
+            <div class="nav-icon fa  fa-chevron-right bannerTitle">
+                <label id="divSheetInfo" data-en_us="Sheet information">合同变更信息</label>
+                <span class="pull-right text-muted" id="toggleBtn">
+                    <i class="fa fa-fw fa-angle-double-down text" style="display:none"></i>
+                    <i class="fa fa-fw  fa-angle-double-up text-active" style="display: block;"></i>
+                </span>
+            </div>
+            <div class="divContent" id="divSheet">
+                <div class="row">
+                    <div id="title1" class="col-md-2">
+                        <span id="Label11" data-type="SheetLabel" data-datafield="ContractNo" style="">合同号</span>
+                    </div>
+                    <div id="control1" class="col-md-4">
+                        <input id="Control11" type="text" data-datafield="ContractNo" data-type="SheetTextBox" style="">
+                    </div>
+                    <div id="title2" class="col-md-2">
+                        <span id="Label12" data-type="SheetLabel" data-datafield="ContractName" style="">合同名称</span>
+                    </div>
+                    <div id="control2" class="col-md-4">
+                        <input id="Control12" type="text" data-datafield="ContractName" data-type="SheetTextBox" style="width:70%">
+                        <input type="button" onclick="viewContractF()" value="查看合同" class="btn btn-primary" >
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title3" class="col-md-2">
+                        <span id="Label13" data-type="SheetLabel" data-datafield="PostAB" style="">项目负责人AB</span>
+                    </div>
+                    <div id="control3" class="col-md-4">
+                        <input id="Control13" type="text" data-datafield="PostAB" data-type="SheetTextBox" style="">
+                    </div>
+                    <div id="title4" class="col-md-2">
+                    </div>
+                    <div id="control4" class="col-md-4">
+                    </div>
+                </div>
+                <div class="row GNAmountDiv">
+                    <div id="div401529" class="col-md-2"><span id="Label14" data-type="SheetLabel" data-datafield="AmountRMBOld" class="" style="">合同原金额</span></div>
+                    <div id="div725596" class="col-md-2 normal">
+                        <input id="Control14" type="text" data-datafield="AmountRMBOld" data-type="SheetTextBox" class="" style="">
+                    </div>
+                    <div id="div890733" class="col-md-1 RowHeight">
+                        <input id="Control16" type="text" data-datafield="CurrencyRMBOld" data-type="SheetTextBox" class="" style="">
+                    </div>
+                    <div id="div2302" class="col-md-1"><span id="Label18" data-type="SheetLabel" data-datafield="IsChangeAmountRMB" style="" class="">变更合同金额</span></div>
+                    <div id="div550859" class="col-md-1">
+                        <div data-datafield="IsChangeAmountRMB" data-type="SheetRadioButtonList" id="ctl562330" class="" style="" data-repeatcolumns="2" data-defaultitems="否;是"
+                            data-onchange="AmountRMBChange(this)">
+                        </div>
+                    </div>
+                    <div id="div676912" class="col-md-2 AmountRMBDiv"><span id="Label20" data-type="SheetLabel" data-datafield="AmountRMBNew" class="" style="">合同变更金额</span></div>
+                    <div id="div222009" class="col-md-2 AmountRMBDiv normal">
+                        <input id="Control20" type="text" data-datafield="AmountRMBNew" data-type="SheetTextBox" class="" style="">
+                    </div>
+                    <div id="div785243" class="col-md-1 AmountRMBDiv RowHeight">
+                        <input id="Control22" type="text" data-datafield="CurrencyRMBNew" data-type="SheetTextBox" class="" style="">
+                    </div>
+                </div>
+                <div class="row JKAmountDiv">
+                    <div id="div614758" class="col-md-2"><span id="Label17" data-type="SheetLabel" data-datafield="CurrencyWBOld" class="hidden" style="">合同外币金额</span></div>
+                    <div id="div336805" class="col-md-2 normal">
+                        <input id="Control15" type="text" data-datafield="AmountWBOld" data-type="SheetTextBox" class="" style="">
+                    </div>
+                    <div id="div726444" class="col-md-1 RowHeight">
+                        <input id="Control17" type="text" data-datafield="CurrencyWBOld" data-type="SheetTextBox" style="" class="">
+                    </div>
+                    <div id="div371179" class="col-md-1"><span id="Label19" data-type="SheetLabel" data-datafield="IsChangeAmountWB" class="" style="">变更合同金额</span></div>
+                    <div id="div687484" class="col-md-1">
+                        <div data-datafield="IsChangeAmountWB" data-type="SheetRadioButtonList" id="ctl858370" class="" style="" data-repeatcolumns="2" data-defaultitems="否;是"
+                            data-onchange="AmountWBChange(this)">
+                        </div>
+                    </div>
+                    <div id="div540377" class="col-md-2 AmountWBDiv"><span id="Label21" data-type="SheetLabel" data-datafield="AmountWBNew" class="" style="">合同变更金额</span></div>
+                    <div id="div694340" class="col-md-2 AmountWBDiv normal">
+                        <input id="Control21" type="text" data-datafield="AmountWBNew" data-type="SheetTextBox" class="" style="">
+                    </div>
+                    <div id="div648979" class="col-md-1 AmountWBDiv RowHeight">
+                        <input id="Control23" type="text" data-datafield="CurrencyWBNew" data-type="SheetTextBox" class="" style="">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div id="div724815" class="col-md-12"></div>
+                </div>
+                <div class="row DHDateDiv">
+                    <div id="div842025" class="col-md-2"><span id="Label24" data-type="SheetLabel" data-datafield="DHDateOld" class="" style="">合同原到货期</span></div>
+                    <div id="div774926" class="col-md-3 RowHeight">
+                        <textarea id="Control24" data-datafield="DHDateOld" data-type="SheetRichTextBox" class="" style="">					</textarea>
+                    </div>
+                    <div id="div971018" class="col-md-1"><span id="Label25" data-type="SheetLabel" data-datafield="IsChangeDHDate" class="" style="">变更到货期</span></div>
+                    <div id="div838629" class="col-md-1">
+                        <div data-datafield="IsChangeDHDate" data-type="SheetRadioButtonList" id="ctl661826" class="" style="" data-repeatcolumns="2" data-defaultitems="否;是"
+                            data-onchange="DHDateChange(this)">
+                        </div>
+                    </div>
+                    <div id="div226335" class="col-md-2 DHDateNewDiv"><span id="Label26" data-type="SheetLabel" data-datafield="DHDateNew" class="" style="">变更后合同到货期</span></div>
+                    <div id="div167147" class="col-md-3 DHDateNewDiv RowHeight">
+                        <textarea id="Control26" data-datafield="DHDateNew" data-type="SheetRichTextBox" class="" style="">					</textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="div67291" class="col-md-12"></div>
+                </div>
+                <div class="row">
+                    <div id="title21" class="col-md-2">
+                        <span id="Label27" data-type="SheetLabel" data-datafield="RemarkAttachment" style="">合同变更情况说明</span>
+                    </div>
+                    <div id="control21" class="col-md-10">
+                        <input type="text" data-datafield="RemarkAttachment" data-type="SheetTextBox" id="" class="hidden" style="">
+                        <div id="RemarkAttachment"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title23" class="col-md-2">
+                        <span id="Label28" data-type="SheetLabel" data-datafield="BGAttachment" style="">合同变更书</span>
+                    </div>
+                    <div id="control23" class="col-md-10">
+                        <input type="text" data-datafield="BGAttachment" data-type="SheetTextBox" id="" class="hidden" style="">
+                        <div id="BGAttachment"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ContractContent HYDiv">
+            <div class="nav-icon fa  fa-chevron-right bannerTitle ">
+                <label id="divSheetInfo" data-en_us="Sheet information">代理协议变更</label>
+                <span class="pull-right text-muted" id="toggleBtn">
+                    <i class="fa fa-fw fa-angle-double-down text" style="display:none"></i>
+                    <i class="fa fa-fw  fa-angle-double-up text-active" style="display: block;"></i>
+                </span>
+            </div>
+            <div class="divContent" id="divSheet">
+                <div class="row">
+                    <div id="div962471" class="col-md-2"><span id="Label30" data-type="SheetLabel" data-datafield="AgencyNumOld" style="" class="">原代理费费率／金额</span></div>
+                    <div id="div692880" class="col-md-2">
+                        <input id="Control30" type="text" data-datafield="AgencyNumOld" data-type="SheetTextBox" class="" style="">
+                    </div>
+                    <div id="div881384" class="col-md-1">
+                        <input id="Control31" type="text" data-datafield="AgencyTypeOld" data-type="SheetTextBox" class="" style="">
+                    </div>
+                    <div id="div87509" class="col-md-1"><span id="Label29" data-type="SheetLabel" data-datafield="IsChangeAgency" class="" style="">变更代理费率</span></div>
+                    <div id="div527420" class="col-md-1">
+                        <div data-datafield="IsChangeAgency" data-type="SheetRadioButtonList" id="ctl980787" class="" style="" data-repeatcolumns="2" data-defaultitems="否;是"
+                            data-onchange="AgencyChange(this)">
+                        </div>
+                    </div>
+                    <div id="div921630" class="col-md-2 AgencyDiv"><span id="Label32" data-type="SheetLabel" data-datafield="AgencyNumNew" class="" style="">变更后代理费费率／金额</span></div>
+                    <div id="div630754" class="col-md-2 AgencyDiv">
+                        <input id="Control32" type="text" data-datafield="AgencyNumNew" data-type="SheetTextBox" class="" style="">
+                    </div>
+                    <div id="div372337" class="col-md-1 AgencyTypeNewDiv AgencyDiv">
+                        <select data-datafield="AgencyTypeNew" data-type="SheetDropDownList" id="ctl853628" class="" style="" data-masterdatacategory="代理费费率／金额"  data-queryable="false"></select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="div632947" class="col-md-2"><span id="Label34" data-type="SheetLabel" data-datafield="PayConditionOld" class="" style="">原支付条件</span></div>
+                    <div id="div945362" class="col-md-3">
+                        <textarea id="Control34" data-datafield="PayConditionOld" data-type="SheetRichTextBox" class="" style="">					</textarea>
+                    </div>
+                    <div id="div662039" class="col-md-1"><span id="Label36" data-type="SheetLabel" data-datafield="IsChangePayCondition" class="" style="">变更支付条件</span></div>
+                    <div id="div466861" class="col-md-1">
+                        <div data-datafield="IsChangePayCondition" data-type="SheetRadioButtonList" id="ctl181598" class="" style="" data-repeatcolumns="2" data-defaultitems="否;是"
+                            data-onchange="PayConditionChange(this)">
+                        </div>
+                    </div>
+                    <div id="div96796" class="col-md-2 PayConditionDiv"><span id="Label35" data-type="SheetLabel" data-datafield="PayConditionNew" class="" style="">变更后支付条件</span></div>
+                    <div id="div413195" class="col-md-3 PayConditionDiv">
+                        <textarea id="Control35" data-datafield="PayConditionNew" data-type="SheetRichTextBox" class="" style="">					</textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title37" class="col-md-2">
+                        <span id="Label37" data-type="SheetLabel" data-datafield="AgencyBGAttachment" class="" style="">代理协议变更书</span>
+                    </div>
+                    <div id="control37" class="col-md-10">
+                        <input type="text" data-datafield="AgencyBGAttachment" data-type="SheetTextBox" id="" class="hidden" style="">
+                        <div id="AgencyBGAttachment"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="ContractContent">
+            <div class="nav-icon fa  fa-chevron-right bannerTitle">
+                <label id="divSheetInfo" data-en_us="Sheet information">备注</label>
+                <span class="pull-right text-muted" id="toggleBtn">
+                    <i class="fa fa-fw fa-angle-double-down text" style="display:none"></i>
+                    <i class="fa fa-fw  fa-angle-double-up text-active" style="display: block;"></i>
+                </span>
+            </div>
+            <div class="divContent" id="divSheet">
+                <div class="row tableContent">
+                    <div id="div507309" class="col-md-2">
+                        <label data-datafield="ApproveRemark" data-type="SheetLabel" id="ctl818667" class="" style="">申请备注</label>
+                    </div>
+                    <div id="div203297" class="col-md-10">
+                        <div data-datafield="ApproveRemark" data-type="SheetComment" id="ctl196171" class="" style=""></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ContractContent ApproveDiv">
+            <div class="nav-icon fa  fa-chevron-right bannerTitle ">
+                <label id="divSheetInfo" data-en_us="Sheet information">审批信息</label>
+                <span class="pull-right text-muted" id="toggleBtn">
+                    <i class="fa fa-fw fa-angle-double-down text" style="display:none"></i>
+                    <i class="fa fa-fw  fa-angle-double-up text-active" style="display: block;"></i>
+                </span>
+            </div>
+            <div class="divContent " id="divSheet">
+                <div class="row BGManager">
+                    <div id="div679467" class="col-md-2">
+                        <label data-datafield="ManagerComment" data-type="SheetLabel" id="ctl437044" class="" style="">项目经理审批意见</label>
+                    </div>
+                    <div id="div265600" class="col-md-10">
+                        <div data-datafield="ManagerComment" data-type="SheetComment" id="ctl725951" class="" style=""></div>
+                    </div>
+                </div>
+                <div class="row BGLeader">
+                    <div id="div302544" class="col-md-2">
+                        <label data-datafield="CompanyLeaderComment" data-type="SheetLabel" id="ctl737469" class="" style="">公司领导审批意见</label>
+                    </div>
+                    <div id="div837342" class="col-md-10">
+                        <div data-datafield="CompanyLeaderComment" data-type="SheetComment" id="ctl442745" class="" style=""></div>
+                    </div>
+                </div>
+                <div class="row BGConfirm">
+                    <div id="div927168" class="col-md-2">
+                        <label data-datafield="SignDate" data-type="SheetLabel" id="ctl513129" class="" style="">变更签约时间</label>
+                    </div>
+                    <div id="div232326" class="col-md-4">
+                        <input type="text" data-datafield="SignDate" data-type="SheetTime" id="ctl723265" class="" style="">
+                    </div>
+                    <div id="div622648" class="col-md-2"></div>
+                    <div id="div66531" class="col-md-4"></div>
+                </div>
+                <div class="row BGConfirm">
+                    <div id="div507309" class="col-md-2">
+                        <label data-datafield="OperateRemark" data-type="SheetLabel" id="ctl818667" class="" style="">执行备注</label>
+                    </div>
+                    <div id="div203297" class="col-md-10">
+                        <div data-datafield="OperateRemark" data-type="SheetComment" id="ctl196171" class="" style=""></div>
+                    </div>
+                </div>
+                <div class="row hidden">
+                    <div id="div242137" class="col-md-1">
+                        <input type="text" data-datafield="ContractType" data-type="SheetTextBox" id="ctl182232" class="hidden" style="">
+                    </div>
+                    <div id="div417737" class="col-md-1">
+                        <input type="text" data-datafield="ContractProperty" data-type="SheetTextBox" id="ctl690053" class="hidden" style="">
+                    </div>
+                    <div id="div576384" class="col-md-1">
+                        <input id="Control20" type="text" data-datafield="IsHYFlg" data-type="SheetTextBox" class="hidden" style="">
+                    </div>
+                    <div id="div991860" class="col-md-1">
+                        <input type="text" data-datafield="WorkflowVersion_Back" data-type="SheetTextBox" id="ctl456922" class="hidden" style="">
+                    </div>
+                    <div id="div576713" class="col-md-1"></div>
+                    <div id="div545698" class="col-md-1"></div>
+                    <div id="div742718" class="col-md-1"></div>
+                    <div id="div17867" class="col-md-1"></div>
+                    <div id="div627344" class="col-md-1"></div>
+                    <div id="div811442" class="col-md-1"></div>
+                    <div id="div244457" class="col-md-1"></div>
+                    <div id="div711193" class="col-md-1"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ContractContent ContractContentGetBack">
+            <div class="nav-icon fa  fa-chevron-right bannerTitle bannerTitleGetBack">
+                <label id="divSheetInfo" data-en_us="Sheet information">合同变更回退记录&nbsp;<span class="ContractNoShow"></span></label>
+                <span class="pull-right text-muted" id="toggleBtn">
+                    <i class="fa fa-fw fa-angle-double-down text" style="display:none"></i>
+                    <i class="fa fa-fw  fa-angle-double-up text-active" style="display: block;"></i>
+                </span>
+            </div>
+            <div class="divContent divContent_Tab" id="divSheet">
+                <div class="row">
+                    <div id="div371959" class="col-md-2">
+                        <label data-datafield="GetBackBGTbl" data-type="SheetLabel" id="ctl280690" class="" style="">合同变更回退记录</label>
+                    </div>
+                    <div id="div666980" class="col-md-10">
+                        <table id="ctl532792" data-datafield="GetBackBGTbl" data-type="SheetGridView" class="SheetGridView" style="" data-displayadd="false" data-displaydelete="false" data-defaultrowcount="0" data-displaysequenceno="false" data-displaysummary="false">
+                            <tbody>
+                                <tr class="header">
+                                    <td id="ctl532792_SerialNo" class="rowSerialNo">序号</td>
+                                    <td id="ctl532792_header0" data-datafield="GetBackBGTbl.Approver" style="">
+                                        <label id="ctl532792_Label0" data-datafield="GetBackBGTbl.Approver" data-type="SheetLabel" style="">申请人</label></td>
+                                    <td id="ctl532792_header1" data-datafield="GetBackBGTbl.ApproveDate" style="">
+                                        <label id="ctl532792_Label1" data-datafield="GetBackBGTbl.ApproveDate" data-type="SheetLabel" style="">申请时间</label></td>
+                                    <td id="ctl532792_header2" data-datafield="GetBackBGTbl.Remark" style="">
+                                        <label id="ctl532792_Label2" data-datafield="GetBackBGTbl.Remark" data-type="SheetLabel" style="">回退事由</label></td>
+                                    <td id="ctl532792_header3" data-datafield="GetBackBGTbl.OldInstanceActivityName" style="">
+                                        <label id="ctl532792_Label3" data-datafield="GetBackBGTbl.OldInstanceActivityName" data-type="SheetLabel" style="">当前阶段</label></td>
+                                    <td id="ctl532792_header4" data-datafield="GetBackBGTbl.InstanceActivityName" style="">
+                                        <label id="ctl532792_Label4" data-datafield="GetBackBGTbl.InstanceActivityName" data-type="SheetLabel" style="">回退到</label></td>
+                                    <td id="ctl532792_header5" data-datafield="GetBackBGTbl.Status" style="">
+                                        <label id="ctl532792_Label5" data-datafield="GetBackBGTbl.Status" data-type="SheetLabel" style="">状态</label></td>
+                                    <td id="ctl532792_header6" data-datafield="GetBackBGTbl.Operate" style="">
+                                        <label id="ctl532792_Label6" data-datafield="GetBackBGTbl.Operate" data-type="SheetLabel" style="">操作</label></td>
+                                    <td id="ctl532792_header7" data-datafield="GetBackBGTbl.WorkItemId" style="" class="hidden">
+                                        <label id="ctl532792_Label7" data-datafield="GetBackBGTbl.WorkItemId" data-type="SheetLabel" style="">流程节点Id</label></td>
+                                    <td class="rowOption hidden">删除</td>
+                                </tr>
+                                <tr class="template">
+                                    <td></td>
+                                    <td id="ctl532792_control0" data-datafield="GetBackBGTbl.Approver" style="">
+                                        <input type="text" data-datafield="GetBackBGTbl.Approver" data-type="SheetTextBox" id="ctl532792_control0" style=""></td>
+                                    <td id="ctl532792_control1" data-datafield="GetBackBGTbl.ApproveDate" style="">
+                                        <input type="text" data-datafield="GetBackBGTbl.ApproveDate" data-type="SheetTextBox" id="ctl532792_control1" style=""></td>
+                                    <td id="ctl532792_control2" data-datafield="GetBackBGTbl.Remark" style="">
+                                        <input type="text" data-datafield="GetBackBGTbl.Remark" data-type="SheetTextBox" id="ctl532792_control2" style=""></td>
+                                    <td id="ctl532792_control3" data-datafield="GetBackBGTbl.OldInstanceActivityName" style="">
+                                        <input type="text" data-datafield="GetBackBGTbl.OldInstanceActivityName" data-type="SheetTextBox" id="ctl532792_control3" style=""></td>
+                                    <td id="ctl532792_control4" data-datafield="GetBackBGTbl.InstanceActivityName" style="">
+                                        <input type="text" data-datafield="GetBackBGTbl.InstanceActivityName" data-type="SheetTextBox" id="ctl532792_control4" style=""></td>
+                                    <td id="ctl532792_control5" data-datafield="GetBackBGTbl.Status" style="">
+                                        <input type="text" data-datafield="GetBackBGTbl.Status" data-type="SheetTextBox" id="ctl532792_control5" style=""></td>
+                                    <td id="ctl532792_control6" data-datafield="GetBackBGTbl.Operate" style="">
+                                        <a class="btn btn-primary viewBack" onclick="viewBack(this)">查看</a></td>
+                                    <td id="ctl532792_control7" data-datafield="GetBackBGTbl.WorkItemId" style="" class="hidden">
+                                        <input type="text" data-datafield="GetBackBGTbl.WorkItemId" data-type="SheetTextBox" id="ctl532792_control7" style=""></td>
+                                    <td class="rowOption hidden"><a class="delete">
+                                        <div class="fa fa-minus"></div>
+                                    </a><a class="insert">
+                                        <div class="fa fa-arrow-down"></div>
+                                    </a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/jquery-ui.min.js"></script>
+    <script src="../js/file2.js"></script>
+    <script src="../js/select2.js"></script>
+</asp:Content>

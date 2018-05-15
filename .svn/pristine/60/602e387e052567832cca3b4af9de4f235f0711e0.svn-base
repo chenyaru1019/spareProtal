@@ -1,0 +1,429 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="DHHYMy.aspx.cs" Inherits="OThinker.H3.Portal.Sheets.DefaultEngine.DHHYMy" EnableEventValidation="false" MasterPageFile="~/MvcSheet.master" %>
+
+<%@ OutputCache Duration="999999" VaryByParam="T" VaryByCustom="browser" %>
+<asp:Content ID="head" ContentPlaceHolderID="headContent" runat="Server">
+    <script type="text/javascript">
+
+</script>
+</asp:Content>
+<asp:Content ID="menu" ContentPlaceHolderID="cphMenu" runat="Server">
+</asp:Content>
+<asp:Content ID="master" ContentPlaceHolderID="masterContent" runat="Server">
+    <script src="DHHYMy.js"></script>
+    <div style="text-align: center;" class="DragContainer">
+        <label id="lblTitle" class="panel-title">到货（航油）子流程</label>
+    </div>
+    <div class="panel-body sheetContainer">
+        <div class="ContractContent DHComplete" style="margin-top: 15px">
+            <div class="nav-icon fa  fa-chevron-right bannerTitle DHComplete">
+                <label id="divSheetInfo" data-en_us="Sheet information" class="">报关完成</label>
+            </div>
+
+            <div class="divContent " id="divSheet">
+                <div class="row hidden">
+                    <div id="title1" class="col-md-2">
+                        <span id="Label11" data-type="SheetLabel" data-datafield="ContractNo" style="">合同号</span>
+                    </div>
+                    <div id="control1" class="col-md-4">
+                        <input id="Control11" type="text" data-datafield="ContractNo" data-type="SheetTextBox" style="">
+                    </div>
+                    <div id="title2" class="col-md-2">
+                        <span id="Label12" data-type="SheetLabel" data-datafield="ContractName" style="">合同名称</span>
+                    </div>
+                    <div id="control2" class="col-md-4">
+                        <input id="Control12" type="text" data-datafield="ContractName" data-type="SheetTextBox" style="">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title67" class="col-md-2">
+                        <span id="Label70" data-type="SheetLabel" data-datafield="BGNo" style="">报关单号</span>
+                    </div>
+                    <div id="control67" class="col-md-4">
+                        <input id="Control70" type="text" data-datafield="BGNo" data-type="SheetTextBox" style="">
+                    </div>
+                    <div id="space68" class="col-md-2">
+                    </div>
+                    <div id="spaceControl68" class="col-md-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="div752927" class="col-md-2">
+                        <label data-datafield="InOutDate" data-type="SheetLabel" id="ctl840247" class="" style="">进/出口日期</label>
+                    </div>
+                    <div id="div812706" class="col-md-4">
+                        <input type="text" data-datafield="InOutDate" data-type="SheetTime" id="ctl742265" class="" style="" data-defaultvalue="">
+                    </div>
+                    <div id="div994519" class="col-md-2">
+                        <label data-datafield="SBDate" data-type="SheetLabel" id="ctl120260" class="" style="">申报日期</label>
+                    </div>
+                    <div id="div16058" class="col-md-4">
+                        <input type="text" data-datafield="SBDate" data-type="SheetTime" id="ctl545041" class="" style="" data-defaultvalue="">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="div721464" class="col-md-2">
+                        <label data-datafield="TradeType" data-type="SheetLabel" id="ctl156076" class="" style="">贸易方式</label>
+                    </div>
+                    <div id="div891328" class="col-md-4">
+                        <select data-datafield="TradeType" data-type="SheetDropDownList" id="ctl617251" class="" style="" data-masterdatacategory="贸易方式" data-queryable="false"></select>
+                    </div>
+                    <div id="div69554" class="col-md-2"></div>
+                    <div id="div594317" class="col-md-4"></div>
+                </div>
+                <div class="row">
+                    <div id="title69" class="col-md-2">
+                        <span id="Label71" data-type="SheetLabel" data-datafield="BGAttachment" style="">报关单</span>
+                    </div>
+                    <div id="control69" class="col-md-10">
+                        <input type="text" data-datafield="BGAttachment" data-type="SheetTextBox" id="" class="hidden" style="">
+                        <div id="BGAttachment"></div>
+                    </div>
+                </div>
+                <div class="row tableContent">
+                    <div id="title71" class="col-md-2">
+                        <span id="Label72" data-type="SheetLabel" data-datafield="BGProcess" style="">报关过程</span>
+                    </div>
+                    <div id="control71" class="col-md-10">
+                        <textarea id="Control72" data-datafield="BGProcess" data-type="SheetRichTextBox" style="">					</textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title73" class="col-md-2">
+                        <span id="Label73" data-type="SheetLabel" data-datafield="BGAmount" style="">报关单金额</span>
+                    </div>
+                    <div id="control73" class="col-md-4">
+                        <input id="Control73" type="text" data-datafield="BGAmount" data-type="SheetTextBox" style="">
+                    </div>
+                    <div id="title74" class="col-md-2">
+                        <span id="Label74" data-type="SheetLabel" data-datafield="TaxAmount" style="">征税金额</span>
+                    </div>
+                    <div id="control74" class="col-md-4">
+                        <input id="Control74" type="text" data-datafield="TaxAmount" data-type="SheetTextBox" style="">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title75" class="col-md-2">
+                        <span id="Label75" data-type="SheetLabel" data-datafield="NoTaxAmount" style="">免税金额</span>
+                    </div>
+                    <div id="control75" class="col-md-4">
+                        <input id="Control75" type="text" data-datafield="NoTaxAmount" data-type="SheetTextBox" style="">
+                    </div>
+                    <%--<div id="title76" class="col-md-2">
+                        <span id="Label76" data-type="SheetLabel" data-datafield="BGSignDate" style="">报关单签发日期</span>
+                    </div>
+                    <div id="control76" class="col-md-4">
+                        <input id="Control76" type="text" data-datafield="BGSignDate" data-type="SheetTime" style="" data-defaultvalue="" data-onchange="BGSignDateChange()">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title77" class="col-md-2">
+                        <span id="Label77" data-type="SheetLabel" data-datafield="Date90" style="">90天日期</span>
+                    </div>
+                    <div id="control77" class="col-md-4">
+                        <input id="Control77" type="text" data-datafield="Date90" data-type="SheetTime" style="">
+                    </div>--%>
+                    <div id="title78" class="col-md-2">
+                        <span id="Label78" data-type="SheetLabel" data-datafield="HYAmount" style="">航油合同总金额</span>
+                    </div>
+                    <div id="control78" class="col-md-4">
+                        <input id="Control78" type="text" data-datafield="HYAmount" data-type="SheetTextBox" style="">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title79" class="col-md-2">
+                        <span id="Label79" data-type="SheetLabel" data-datafield="TDDate" style="">提单日</span>
+                    </div>
+                    <div id="control79" class="col-md-4">
+                        <input id="Control79" type="text" data-datafield="TDDate" data-type="SheetTime" style="" data-defaultvalue="" >
+                    </div>
+                    <div id="title80" class="col-md-2">
+                        <span id="Label80" data-type="SheetLabel" data-datafield="HYDun" style="">航油吨数</span>
+                    </div>
+                    <div id="control80" class="col-md-4">
+                        <input id="Control80" type="text" data-datafield="HYDun" data-type="SheetTextBox" style="">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title81" class="col-md-2">
+                        <span id="Label81" data-type="SheetLabel" data-datafield="HYPrice" style="">航油实际单价</span>
+                    </div>
+                    <div id="control81" class="col-md-4">
+                        <input id="Control81" type="text" data-datafield="HYPrice" data-type="SheetTextBox" style="">
+                    </div>
+                    <div id="title82" class="col-md-2">
+                        <span id="Label82" data-type="SheetLabel" data-datafield="HYBucketNum" style="">航油桶数</span>
+                    </div>
+                    <div id="control82" class="col-md-4">
+                        <input id="Control82" type="text" data-datafield="HYBucketNum" data-type="SheetTextBox" style="">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title83" class="col-md-2">
+                        <span id="Label83" data-type="SheetLabel" data-datafield="ArrivalDate" style="">到港日</span>
+                    </div>
+                    <div id="control83" class="col-md-4">
+                        <input id="Control83" type="text" data-datafield="ArrivalDate" data-type="SheetTime" style="" data-defaultvalue="">
+                    </div>
+                    <div id="title17" class="col-md-2">
+                        <span id="Label25" data-type="SheetLabel" data-datafield="ShipPort" style="">装运港</span>
+                    </div>
+                    <div id="control17" class="col-md-4">
+                        <input id="Control25" type="text" data-datafield="ShipPort" data-type="SheetTextBox" style="">
+                    </div>
+                </div>
+                <div class="row tableContent">
+                    <div id="title85" class="col-md-2">
+                        <span id="Label84" data-type="SheetLabel" data-datafield="Remark_Complete" style="">备注</span>
+                    </div>
+                    <div id="control85" class="col-md-10">
+                        <textarea id="Control84" data-datafield="Remark_Complete" data-type="SheetRichTextBox" style="">					</textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title87" class="col-md-2">
+                        <span id="Label85" data-type="SheetLabel" data-datafield="HasHGBZJ" style="">是否有海关保证金</span>
+                    </div>
+                    <div id="control87" class="col-md-4">
+                        <div data-datafield="HasHGBZJ" data-type="SheetCheckboxList" id="ctl932594" class="" style="" data-masterdatacategory="是"></div>
+                    </div>
+                    <div id="space88" class="col-md-2">
+                    </div>
+                    <div id="spaceControl88" class="col-md-4">
+                    </div>
+                </div>
+                <div class="row tableContent">
+                    <div id="title89" class="col-md-2">
+                        <span id="Label86" data-type="SheetLabel" data-datafield="HGBZJTbl_HY" style="">海关保证金</span>
+                    </div>
+                    <div id="control89" class="col-md-10">
+                        <table id="ctl718856" data-datafield="HGBZJTbl_HY" data-type="SheetGridView" class="SheetGridView" style="" data-displaysequenceno="false" data-displaysummary="false" data-displayadd="false" data-displaydelete="false" data-defaultrowcount="0">
+                            <tbody>
+                                <tr class="header">
+                                    <td id="ctl718856_SerialNo" class="rowSerialNo">序号</td>
+                                    <td id="ctl718856_header0" data-datafield="HGBZJTbl_HY.IsCheck" style="">
+                                        <label id="ctl718856_Label0" data-datafield="HGBZJTbl_HY.IsCheck" data-type="SheetLabel" style="">选择</label></td>
+                                    <td id="ctl718856_header1" data-datafield="HGBZJTbl_HY.ZJKX" style="">
+                                        <label id="ctl718856_Label1" data-datafield="HGBZJTbl_HY.ZJKX" data-type="SheetLabel" style="" class="">资金款项</label></td>
+                                    <td id="ctl718856_header2" data-datafield="HGBZJTbl_HY.PayAmount" style="">
+                                        <label id="ctl718856_Label2" data-datafield="HGBZJTbl_HY.PayAmount" data-type="SheetLabel" style="" class="">付款</label></td>
+                                    <td id="ctl718856_header3" data-datafield="HGBZJTbl_HY.ConvertAmount" style="">
+                                        <label id="ctl718856_Label3" data-datafield="HGBZJTbl_HY.ConvertAmount" data-type="SheetLabel" style="" class="">折算</label></td>
+                                    <td id="ctl718856_header4" data-datafield="HGBZJTbl_HY.PayContent" style="" class="">
+                                        <label id="ctl718856_Label4" data-datafield="HGBZJTbl_HY.PayContent" data-type="SheetLabel" style="" class="">付款内容</label></td>
+                                    <td id="ctl718856_header5" data-datafield="HGBZJTbl_HY.PayType" style="">
+                                        <label id="ctl718856_Label5" data-datafield="HGBZJTbl_HY.PayType" data-type="SheetLabel" style="" class="">支付方式</label></td>
+                                    <td id="ctl718856_header6" data-datafield="HGBZJTbl_HY.Receiver" style="">
+                                        <label id="ctl718856_Label6" data-datafield="HGBZJTbl_HY.Receiver" data-type="SheetLabel" style="" class="">收款人</label></td>
+                                    <td class="rowOption hidden">删除</td>
+                                </tr>
+                                <tr class="template">
+                                    <td></td>
+                                    <td id="ctl718856_control0" data-datafield="HGBZJTbl_HY.IsCheck" style="">
+                                        <div data-datafield="HGBZJTbl_HY.IsCheck" data-type="SheetCheckboxList" id="ctl731810" class="" style="height: 50%;" data-defaultitems=" " data-repeatcolumns="1"></div>
+                                    </td>
+                                    <td id="ctl718856_control1" data-datafield="HGBZJTbl_HY.ZJKX" style="">
+                                        <input type="text" data-datafield="HGBZJTbl_HY.ZJKX" data-type="SheetTextBox" id="ctl718856_control1" style=""></td>
+                                    <td id="ctl718856_control2" data-datafield="HGBZJTbl_HY.PayAmount" style="">
+                                        <input type="text" data-datafield="HGBZJTbl_HY.PayAmount" data-type="SheetTextBox" id="ctl718856_control2" style=""></td>
+                                    <td id="ctl718856_control3" data-datafield="HGBZJTbl_HY.ConvertAmount" style="">
+                                        <input type="text" data-datafield="HGBZJTbl_HY.ConvertAmount" data-type="SheetTextBox" id="ctl718856_control3" style=""></td>
+                                    <td id="ctl718856_control4" data-datafield="HGBZJTbl_HY.PayContent" style="">
+                                        <input type="text" data-datafield="HGBZJTbl_HY.PayContent" data-type="SheetTextBox" id="ctl718856_control4" style=""></td>
+                                    <td id="ctl718856_control5" data-datafield="HGBZJTbl_HY.PayType" style="">
+                                        <input type="text" data-datafield="HGBZJTbl_HY.PayType" data-type="SheetTextBox" id="ctl718856_control5" style=""></td>
+                                    <td id="ctl718856_control6" data-datafield="HGBZJTbl_HY.Receiver" style="">
+                                        <input type="text" data-datafield="HGBZJTbl_HY.Receiver" data-type="SheetTextBox" id="ctl718856_control6" style=""></td>
+                                    <td class="rowOption hidden"><a class="delete">
+                                        <div class="fa fa-minus"></div>
+                                    </a><a class="insert">
+                                        <div class="fa fa-arrow-down"></div>
+                                    </a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="ContractContent DHXB">
+            <div class="nav-icon fa  fa-chevron-right bannerTitle DHXB">
+                <label id="divSheetInfo" data-en_us="Sheet information" class="">销报</label>
+            </div>
+            <div class="divContent DHXB" id="divSheet">
+                <div class="row tableContent">
+                    <div id="title91" class="col-md-2">
+                        <span id="Label87" data-type="SheetLabel" data-datafield="XBTbl_HY" style="">销保</span>
+                    </div>
+                    <div id="control91" class="col-md-10">
+                        <table id="ctl400672" data-datafield="XBTbl_HY" data-type="SheetGridView" class="SheetGridView" style="" data-displayadd="false" data-displaydelete="false" data-defaultrowcount="0" data-displaysequenceno="false" data-displaysummary="false">
+                            <tbody>
+                                <tr class="header">
+                                    <td id="ctl400672_SerialNo" class="rowSerialNo">序号</td>
+                                    <td id="ctl400672_header0" data-datafield="XBTbl_HY.ZJKX" style="">
+                                        <label id="ctl400672_Label0" data-datafield="XBTbl_HY.ZJKX" data-type="SheetLabel" style="">资金款项</label></td>
+                                    <td id="ctl400672_header1" data-datafield="XBTbl_HY.PayAmount" style="">
+                                        <label id="ctl400672_Label1" data-datafield="XBTbl_HY.PayAmount" data-type="SheetLabel" style="">付款</label></td>
+                                    <td id="ctl400672_header2" data-datafield="XBTbl_HY.ConvertAmount" style="">
+                                        <label id="ctl400672_Label2" data-datafield="XBTbl_HY.ConvertAmount" data-type="SheetLabel" style="">折算</label></td>
+                                    <td id="ctl400672_header3" data-datafield="XBTbl_HY.PayContent" style="">
+                                        <label id="ctl400672_Label3" data-datafield="XBTbl_HY.PayContent" data-type="SheetLabel" style="">付款内容</label></td>
+                                    <td id="ctl400672_header4" data-datafield="XBTbl_HY.PayType" style="">
+                                        <label id="ctl400672_Label4" data-datafield="XBTbl_HY.PayType" data-type="SheetLabel" style="">支付方式</label></td>
+                                    <td id="ctl400672_header5" data-datafield="XBTbl_HY.Receiver" style="">
+                                        <label id="ctl400672_Label5" data-datafield="XBTbl_HY.Receiver" data-type="SheetLabel" style="">收款人</label></td>
+                                    <td id="ctl400672_header6" data-datafield="XBTbl_HY.XBStatus" style="">
+                                        <label id="ctl400672_Label6" data-datafield="XBTbl_HY.XBStatus" data-type="SheetLabel" style="">销保状态</label></td>
+                                    <td id="ctl400672_header7" data-datafield="XBTbl_HY.TBAmount" style="">
+                                        <label id="ctl400672_Label7" data-datafield="XBTbl_HY.TBAmount" data-type="SheetLabel" style="">退保金额</label></td>
+                                    <td id="ctl400672_header8" data-datafield="XBTbl_HY.TBDate" style="">
+                                        <label id="ctl400672_Label8" data-datafield="XBTbl.TBDate" data-type="SheetLabel" style="">退保日期</label></td>
+                                    <td class="rowOption hidden">删除</td>
+                                </tr>
+                                <tr class="template">
+                                    <td></td>
+                                    <td id="ctl400672_control0" data-datafield="XBTbl_HY.ZJKX" style="">
+                                        <input type="text" data-datafield="XBTbl_HY.ZJKX" data-type="SheetTextBox" id="ctl400672_control0" style=""></td>
+                                    <td id="ctl400672_control1" data-datafield="XBTbl_HY.PayAmount" style="">
+                                        <input type="text" data-datafield="XBTbl_HY.PayAmount" data-type="SheetTextBox" id="ctl400672_control1" style=""></td>
+                                    <td id="ctl400672_control2" data-datafield="XBTbl_HY.ConvertAmount" style="">
+                                        <input type="text" data-datafield="XBTbl_HY.ConvertAmount" data-type="SheetTextBox" id="ctl400672_control2" style=""></td>
+                                    <td id="ctl400672_control3" data-datafield="XBTbl_HY.PayContent" style="">
+                                        <input type="text" data-datafield="XBTbl_HY.PayContent" data-type="SheetTextBox" id="ctl400672_control3" style=""></td>
+                                    <td id="ctl400672_control4" data-datafield="XBTbl_HY.PayType" style="">
+                                        <input type="text" data-datafield="XBTbl_HY.PayType" data-type="SheetTextBox" id="ctl400672_control4" style=""></td>
+                                    <td id="ctl400672_control5" data-datafield="XBTbl_HY.Receiver" style="">
+                                        <input type="text" data-datafield="XBTbl_HY.Receiver" data-type="SheetTextBox" id="ctl400672_control5" style=""></td>
+                                    <td id="ctl400672_control6" data-datafield="XBTbl_HY.XBStatus" style="" class="">
+                                        <div data-datafield="XBTbl_HY.XBStatus" data-type="SheetRadioButtonList" id="ctl695545" class="" style="" data-masterdatacategory="销保状态" data-repeatcolumns="1"
+                                            data-onchange="XBStatusChange(this)">
+                                        </div>
+                                    </td>
+                                    <td id="ctl400672_control7" data-datafield="XBTbl_HY.TBAmount" style="" class="">
+                                        <input type="text" data-datafield="XBTbl_HY.TBAmount" data-type="SheetTextBox" id="ctl400672_control7" style=""></td>
+                                    <td id="ctl400672_control8" data-datafield="XBTbl_HY.TBDate" style="">
+                                        <input type="text" data-datafield="XBTbl_HY.TBDate" data-type="SheetTime" id="ctl400672_control8" style="" data-defaultvalue=""></td>
+                                    <td class="rowOption hidden"><a class="delete">
+                                        <div class="fa fa-minus"></div>
+                                    </a><a class="insert">
+                                        <div class="fa fa-arrow-down"></div>
+                                    </a></td>
+                                </tr>
+                                <tr class="footer">
+                                    <td></td>
+                                    <td id="ctl400672_Stat0" data-datafield="XBTbl_HY.ZJKX" style=""></td>
+                                    <td id="ctl400672_Stat1" data-datafield="XBTbl_HY.PayAmount" style=""></td>
+                                    <td id="ctl400672_Stat2" data-datafield="XBTbl_HY.ConvertAmount" style=""></td>
+                                    <td id="ctl400672_Stat3" data-datafield="XBTbl_HY.PayContent" style=""></td>
+                                    <td id="ctl400672_Stat4" data-datafield="XBTbl_HY.PayType" style=""></td>
+                                    <td id="ctl400672_Stat5" data-datafield="XBTbl_HY.Receiver" style=""></td>
+                                    <td id="ctl400672_Stat6" data-datafield="XBTbl_HY.XBStatus" style=""></td>
+                                    <td id="ctl400672_Stat7" data-datafield="XBTbl_HY.TBAmount" style="">
+                                        <label id="ctl400672_StatControl7" data-datafield="XBTbl_HY.TBAmount" data-type="SheetCountLabel" style=""></label>
+                                    </td>
+                                    <td id="ctl400672_Stat8" data-datafield="XBTbl_HY.TBDate" style=""></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title93" class="col-md-2">
+                        <span id="Label88" data-type="SheetLabel" data-datafield="NewBGFile" style="">新报关文件</span>
+                    </div>
+                    <div id="control93" class="col-md-10">
+                        <input type="text" data-datafield="NewBGFile" data-type="SheetTextBox" id="" class="hidden" style="">
+                        <div id="NewBGFile"></div>
+                    </div>
+                </div>
+
+                <div class="row hidden">
+                    <div id="div369928" class="col-md-1">
+                        <input type="text" data-datafield="RejectFlg" data-type="SheetTextBox" id="ctl829044" class="hidden" style="">
+                    </div>
+                    <div id="div760524" class="col-md-1">
+                        <input type="text" data-datafield="WorkflowVersion_Back" data-type="SheetTextBox" id="ctl456922" class="hidden" style="">
+                    </div>
+                    <div id="div384861" class="col-md-1"></div>
+                    <div id="div713448" class="col-md-1"></div>
+                    <div id="div824287" class="col-md-1"></div>
+                    <div id="div185906" class="col-md-1"></div>
+                    <div id="div315014" class="col-md-1"></div>
+                    <div id="div34698" class="col-md-1"></div>
+                    <div id="div131629" class="col-md-1"></div>
+                    <div id="div717995" class="col-md-1"></div>
+                    <div id="div90868" class="col-md-1"></div>
+                    <div id="div725859" class="col-md-1"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ContractContent ContractContentGetBack">
+            <div class="nav-icon fa  fa-chevron-right bannerTitle bannerTitleGetBack">
+                <label id="divSheetInfo" data-en_us="Sheet information">到货航油回退记录&nbsp;<span class="ContractNoShow"></span></label>
+            </div>
+            <div class="divContent divContent_Tab" id="divSheet">
+                <div class="row">
+                    <div id="div371959" class="col-md-2">
+                        <label data-datafield="GetBackDHHYTbl" data-type="SheetLabel" id="ctl280690" class="" style="">到货航油回退记录</label>
+                    </div>
+                    <div id="div666980" class="col-md-10">
+                        <table id="ctl532792" data-datafield="GetBackDHHYTbl" data-type="SheetGridView" class="SheetGridView" style="" data-displayadd="false" data-displaydelete="false" data-defaultrowcount="0" data-displaysequenceno="false" data-displaysummary="false">
+                            <tbody>
+                                <tr class="header">
+                                    <td id="ctl532792_SerialNo" class="rowSerialNo">序号</td>
+                                    <td id="ctl532792_header0" data-datafield="GetBackDHHYTbl.Approver" style="">
+                                        <label id="ctl532792_Label0" data-datafield="GetBackDHHYTbl.Approver" data-type="SheetLabel" style="">申请人</label></td>
+                                    <td id="ctl532792_header1" data-datafield="GetBackDHHYTbl.ApproveDate" style="">
+                                        <label id="ctl532792_Label1" data-datafield="GetBackDHHYTbl.ApproveDate" data-type="SheetLabel" style="">申请时间</label></td>
+                                    <td id="ctl532792_header2" data-datafield="GetBackDHHYTbl.Remark" style="">
+                                        <label id="ctl532792_Label2" data-datafield="GetBackDHHYTbl.Remark" data-type="SheetLabel" style="">回退事由</label></td>
+                                    <td id="ctl532792_header3" data-datafield="GetBackDHHYTbl.OldInstanceActivityName" style="">
+                                        <label id="ctl532792_Label3" data-datafield="GetBackDHHYTbl.OldInstanceActivityName" data-type="SheetLabel" style="">当前阶段</label></td>
+                                    <td id="ctl532792_header4" data-datafield="GetBackDHHYTbl.InstanceActivityName" style="">
+                                        <label id="ctl532792_Label4" data-datafield="GetBackDHHYTbl.InstanceActivityName" data-type="SheetLabel" style="">回退到</label></td>
+                                    <td id="ctl532792_header5" data-datafield="GetBackDHHYTbl.Status" style="">
+                                        <label id="ctl532792_Label5" data-datafield="GetBackDHHYTbl.Status" data-type="SheetLabel" style="">状态</label></td>
+                                    <td id="ctl532792_header6" data-datafield="GetBackDHHYTbl.Operate" style="">
+                                        <label id="ctl532792_Label6" data-datafield="GetBackDHHYTbl.Operate" data-type="SheetLabel" style="">操作</label></td>
+                                    <td id="ctl532792_header7" data-datafield="GetBackDHHYTbl.WorkItemId" style="" class="hidden">
+                                        <label id="ctl532792_Label7" data-datafield="GetBackDHHYTbl.WorkItemId" data-type="SheetLabel" style="">流程节点Id</label></td>
+                                    <td class="rowOption hidden">删除</td>
+                                </tr>
+                                <tr class="template">
+                                    <td></td>
+                                    <td id="ctl532792_control0" data-datafield="GetBackDHHYTbl.Approver" style="">
+                                        <input type="text" data-datafield="GetBackDHHYTbl.Approver" data-type="SheetTextBox" id="ctl532792_control0" style=""></td>
+                                    <td id="ctl532792_control1" data-datafield="GetBackDHHYTbl.ApproveDate" style="">
+                                        <input type="text" data-datafield="GetBackDHHYTbl.ApproveDate" data-type="SheetTextBox" id="ctl532792_control1" style=""></td>
+                                    <td id="ctl532792_control2" data-datafield="GetBackDHHYTbl.Remark" style="">
+                                        <input type="text" data-datafield="GetBackDHHYTbl.Remark" data-type="SheetTextBox" id="ctl532792_control2" style=""></td>
+                                    <td id="ctl532792_control3" data-datafield="GetBackDHHYTbl.OldInstanceActivityName" style="">
+                                        <input type="text" data-datafield="GetBackDHHYTbl.OldInstanceActivityName" data-type="SheetTextBox" id="ctl532792_control3" style=""></td>
+                                    <td id="ctl532792_control4" data-datafield="GetBackDHHYTbl.InstanceActivityName" style="">
+                                        <input type="text" data-datafield="GetBackDHHYTbl.InstanceActivityName" data-type="SheetTextBox" id="ctl532792_control4" style=""></td>
+                                    <td id="ctl532792_control5" data-datafield="GetBackDHHYTbl.Status" style="">
+                                        <input type="text" data-datafield="GetBackDHHYTbl.Status" data-type="SheetTextBox" id="ctl532792_control5" style=""></td>
+                                    <td id="ctl532792_control6" data-datafield="GetBackDHHYTbl.Operate" style="">
+                                        <a class="btn btn-primary viewBack" onclick="viewBack(this)">查看</a></td>
+                                    <td id="ctl532792_control7" data-datafield="GetBackDHHYTbl.WorkItemId" style="" class="hidden">
+                                        <input type="text" data-datafield="GetBackDHHYTbl.WorkItemId" data-type="SheetTextBox" id="ctl532792_control7" style=""></td>
+                                    <td class="rowOption hidden"><a class="delete">
+                                        <div class="fa fa-minus"></div>
+                                    </a><a class="insert">
+                                        <div class="fa fa-arrow-down"></div>
+                                    </a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/jquery-ui.min.js"></script>
+    <script src="../js/file2.js"></script>
+    <script src="../js/select2.js"></script>
+</asp:Content>

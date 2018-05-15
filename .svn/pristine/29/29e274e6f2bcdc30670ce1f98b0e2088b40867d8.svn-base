@@ -1,0 +1,859 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="AgreeMent_main.aspx.cs" Inherits="OThinker.H3.Portal.Sheets.Agreement.AgreeMent_main" EnableEventValidation="false" MasterPageFile="~/MvcSheet.master" %>
+
+<%@ OutputCache Duration="999999" VaryByParam="T" VaryByCustom="browser" %>
+<asp:Content ID="head" ContentPlaceHolderID="headContent" runat="Server">
+</asp:Content>
+<asp:Content ID="menu" ContentPlaceHolderID="cphMenu" runat="Server">
+</asp:Content>
+<asp:Content ID="master" ContentPlaceHolderID="masterContent" runat="Server">
+
+    <script type="text/javascript">			
+
+</script>
+    <link rel="stylesheet" href="../../css/common.css">
+    <script src="../../js/bootstrap-select.min.js"></script>
+    <script src="../../js/bootstrap-table.min.js"></script>
+    <script src="../../js/bootstrap-table-zh-CN.min.js"></script>
+
+    <link rel="stylesheet" href="../../js/bootstrap-select.min.css">
+    <link rel="stylesheet" href="../../js/bootstrap-table.min.css">
+    <div style="text-align: center;" class="DragContainer">
+        <label id="lblTitle" class="panel-title">协议主流程</label>
+    </div>
+    <div class="panel-body sheetContainer">
+        
+       <div class="ContractContent ">
+            <div class="nav-icon fa  fa-chevron-right bannerTitle bannerTitleCreate">
+                <label id="divSheetInfo" data-en_us="Sheet information">创建协议</label>
+            </div>
+        <div class="divContent" id="divSheet">
+            <div id="cjxy" >
+            <div class="row">
+                <div id="title1" class="col-md-2">
+                    <span id="Label11" data-type="SheetLabel" data-datafield="Project_head_A" style="">项目负责人A</span>
+                </div>
+                <div id="control1" class="col-md-4">
+
+                    <div data-datafield="Project_head_A" data-type="SheetUser" id="ctl947054" class="" style=""></div>
+                </div>
+                <div id="title2" class="col-md-2">
+                    <span id="Label12" data-type="SheetLabel" data-datafield="Project_head_B" style="">项目负责人B</span>
+                </div>
+                <div id="control2" class="col-md-4">
+
+                    <div data-datafield="Project_head_B" data-type="SheetUser" id="ctl16666" class="" style=""></div>
+                </div>
+            </div>
+            <div class="row">
+                <div id="title3" class="col-md-2">
+                    <span id="Label13" data-type="SheetLabel" data-datafield="AgreeMent_name" style="">协议名称</span>
+                </div>
+                <div id="control3" class="col-md-4">
+                    <input id="Control13" type="text" data-datafield="AgreeMent_name" data-type="SheetTextBox" style="">
+                </div>
+                <div id="title3" class="col-md-2">
+					<span id="Label13" data-type="SheetLabel" data-datafield="Agreement_client" style="">协议委托方</span>
+				</div>
+				<div id="control3" class="col-md-4">
+					
+                    <input type="text" data-datafield="Agreement_client" data-type="SheetTextBox" id="ctl964781" class="" style="" data-popupwindow="PopupWindow" data-schemacode="CustomerProjects" data-querycode="LoadCustomerProjects" data-outputmappings="Agreement_client:CompanyName,Contacts:ContactNames,Con_phone:Telephones,Mobile_phone:MobilePhones,Fax:Faxes,Email:Emails,Contact_address:Address">
+                </div>
+				
+            </div>
+            <div class="row">
+                <div id="title5" class="col-md-2">
+                    <span id="Label15" data-type="SheetLabel" data-datafield="Contacts" style="">联系人</span>
+                </div>
+                <div id="control5" class="col-md-4">
+                    <input id="Control15" type="text" data-datafield="Contacts" data-type="SheetTextBox" style="">
+                </div>
+                <div id="title6" class="col-md-2">
+                    <span id="Label16" data-type="SheetLabel" data-datafield="Con_phone" style="">联系电话</span>
+                </div>
+                <div id="control6" class="col-md-4">
+                    <input id="Control16" type="text" data-datafield="Con_phone" data-type="SheetTextBox" style="">
+                </div>
+            </div>
+            <div class="row">
+                <div id="title8" class="col-md-2">
+                    <span id="Label18" data-type="SheetLabel" data-datafield="Mobile_phone" style="">电话</span>
+                </div>
+                <div id="control8" class="col-md-4">
+
+                    <input type="text" data-datafield="Mobile_phone" data-type="SheetTextBox" id="ctl388296" class="" style="">
+                </div>
+                <div id="title8" class="col-md-2">
+                    <span id="Label18" data-type="SheetLabel" data-datafield="Fax" style="">传真</span>
+                </div>
+                <div id="control8" class="col-md-4">
+                    <input id="Control18" type="text" data-datafield="Fax" data-type="SheetTextBox" style="" class="">
+                </div>
+            </div>
+            <div class="row">
+                <div id="title9" class="col-md-2">
+                    <span id="Label19" data-type="SheetLabel" data-datafield="Email" style="">邮箱</span>
+                </div>
+                <div id="control9" class="col-md-4">
+                    <input id="Control19" type="text" data-datafield="Email" data-type="SheetTextBox" style="">
+                </div>
+                <div id="title10" class="col-md-2">
+                    <span id="Label20" data-type="SheetLabel" data-datafield="Contact_address" style="" class="">联系地址</span>
+                </div>
+                <div id="control10" class="col-md-4">
+                    <input id="Control20" type="text" data-datafield="Contact_address" data-type="SheetTextBox" style="">
+                </div>
+            </div>
+            <div class="row">
+                <div id="title11" class="col-md-2">
+
+                    <label data-datafield="agency_rate" data-type="SheetLabel" id="ctl971325" class="" style="">代理费</label>
+                </div>
+                <div id="control11" class="col-md-4">
+                    <table id="ctl340103" data-datafield="agency_rates" data-type="SheetGridView" class="SheetGridView" style="" data-displayinsertrow="true" data-defaultrowcount="0">
+                        <tbody>
+                            <tr class="header">
+                                <td id="ctl340103_SerialNo" class="rowSerialNo">序号</td>
+                                <td id="ctl340103_header0" data-datafield="agency_rates.agency_money" style="">
+                                    <label id="ctl340103_Label0" data-datafield="agency_rates.agency_money" data-type="SheetLabel" style="">代理费</label></td>
+                                <td id="ctl340103_header1" data-datafield="agency_rates.agency_type" style="width: 30%;" class="">
+                                    <label id="ctl340103_Label1" data-datafield="agency_rates.agency_type" data-type="SheetLabel" style="width: 97%;" class="">代理费类型</label></td>
+                                <td id="ctl340103_header2" data-datafield="agency_rates.up_limit" style="" class="">
+                                    <label id="ctl340103_Label2" data-datafield="agency_rates.up_limit" data-type="SheetLabel" style="">上限</label></td>
+                                <td id="ctl340103_header3" data-datafield="agency_rates.lower_limit" style="">
+                                    <label id="ctl340103_Label3" data-datafield="agency_rates.lower_limit" data-type="SheetLabel" style="">下限</label></td>
+                                <td class="rowOption">删除</td>
+                            </tr>
+                            <tr class="template">
+                                <td class=""></td>
+                                <td id="ctl340103_control0" data-datafield="agency_rates.agency_money" style="">
+                                    <input type="text" data-datafield="agency_rates.agency_money" data-type="SheetTextBox" id="ctl340103_control0" style="" class=""></td>
+                                <td id="ctl340103_control1" data-datafield="agency_rates.agency_type" style="" class="">
+                                    <select data-datafield="agency_rates.agency_type" onclick="gb(this)" data-type="SheetDropDownList" id="ctl178362" class="" style="width: 70%;" data-masterdatacategory="代理费费率／金额" data-displayemptyitem="true"></select></td>
+                                <td id="ctl340103_control2" data-datafield="agency_rates.up_limit" style="">
+                                    <input type="text" data-datafield="agency_rates.up_limit" data-type="SheetTextBox" id="ctl340103_control2" style=""></td>
+                                <td id="ctl340103_control3" data-datafield="agency_rates.lower_limit" style="">
+                                    <input type="text" data-datafield="agency_rates.lower_limit" data-type="SheetTextBox" id="ctl340103_control3" style=""></td>
+                                <td class="rowOption"><a class="delete">
+                                    <div class="fa fa-minus"></div>
+                                </a><a class="insert">
+                                    <div class="fa fa-arrow-down"></div>
+                                </a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                   <%-- <input type="text" data-datafield="agency_rate" data-type="SheetTextBox" id="agency_rate" class="" style="width:40%">
+                    <input type="text" data-datafield="up_limit" data-type="SheetTextBox" id="up_limit" class="" style="">
+                    <input type="text" data-datafield="lower_limit" data-type="SheetTextBox" id="lower_limit" class="" style="">
+                    <select data-datafield="Rate_type" data-type="SheetDropDownList"  onchange="gb(this)" id="ctl319790" class="" style="width: 50%" data-displayemptyitem="true" data-masterdatacategory="代理费费率／金额"></select>--%>
+                </div>
+                <%--<div id="title20" class="col-md-2">
+                    <span id="Label27" data-type="SheetLabel" data-datafield="Rate_type" style="">费率类型</span>
+                </div>--%>
+                <%--<div id="control20" class="col-md-2">
+
+                    <select data-datafield="Rate_type" data-type="SheetDropDownList" id="ctl319790" class="" style="" data-displayemptyitem="true" data-masterdatacategory="代理费费率／金额"></select>
+                </div>--%>
+                <div id="title6" class="col-md-2">
+					<span id="Label16" data-type="SheetLabel" data-datafield="specialist_money" style="">专家费支出预支</span>
+				</div>
+				<div id="control6" class="col-md-4">
+					<input id="Control16" type="text" data-datafield="specialist_money" data-type="SheetTextBox" style="">
+				</div>
+                
+                <%--<div id="control12" class="col-md-2">
+                    <input type="button" value="自动生成" onclick="Create_number()" class="">
+                    <a onclick="update_muber(this)">修改申请</a>
+                </div>--%>
+            </div>
+            <div class="row">
+                <div id="title12" class="col-md-2">
+                    <span id="Label22" data-type="SheetLabel" data-datafield="AgreeMent_number" style="">协议号</span>
+                </div>
+                <div id="control12" class="col-md-10">
+                    <input id="Control22" type="text" data-datafield="AgreeMent_number" data-type="SheetTextBox" style="width: 69%;" class="">
+                    <input type="button" value="自动生成" onclick="Create_number()" class="" id="zdsc">
+                    <a onclick="update_muber()" id="xgsq">修改申请</a>
+                </div>
+             </div>
+            <div class="row">
+                <div id="title13" class="col-md-2">
+                    <span id="Label23" data-type="SheetLabel" data-datafield="Agency_Pro_approval" style="">代理协议报批稿</span>
+                </div>
+                <div id="control13" class="col-md-10">
+                    <div id="Control23" data-datafield="Agency_Pro_approval" data-type="SheetAttachment" style=""></div>
+                </div>
+            </div>
+            <div class="row tableContent">
+                <div id="title15" class="col-md-2">
+                    <span id="Label24" data-type="SheetLabel" data-datafield="Pay_conditions" style="" class="">支付条件</span>
+                </div>
+                <div id="control15" class="col-md-10">
+
+                    <textarea data-datafield="Pay_conditions" style="height: 60px; width: 100%;" data-type="SheetRichTextBox" id="ctl197314" class="">					</textarea>
+                </div>
+            </div>
+           
+            <div class="row tableContent">
+				<div id="title15" class="col-md-2">
+					<span id="Label24" data-type="SheetLabel" data-datafield="Examine_records" style="" class="">协议号审批记录</span>
+                    
+				</div>
+				<div id="control15" class="col-md-10">
+					<table id="Control24" data-datafield="Examine_records" data-type="SheetGridView" class="SheetGridView" data-displayadd="false" data-displaydelete="false" data-displaysequenceno="false">
+						<tbody>
+							
+							<tr class="header">
+								<td id="Control24_SerialNo" class="rowSerialNo">
+序号								</td>
+								<td id="Control24_Header3" data-datafield="Examine_records.Apply_people">
+									<label id="Control24_Label3" data-datafield="Examine_records.Apply_people" data-type="SheetLabel" style="">申请人</label>
+								</td>
+								<td id="Control24_Header4" data-datafield="Examine_records.Apply_time">
+									<label id="Control24_Label4" data-datafield="Examine_records.Apply_time" data-type="SheetLabel" style="">申请时间</label>
+								</td>
+								<td id="Control24_Header5" data-datafield="Examine_records.States">
+									<label id="Control24_Label5" data-datafield="Examine_records.States" data-type="SheetLabel" style="">状态</label>
+								</td>
+								<td class="rowOption"  style="display:none;">
+删除								</td>
+							</tr>
+							<tr class="template">
+								<td id="Control24_Option" class="rowOption">
+								</td>
+								<td data-datafield="Examine_records.Apply_people">
+									<input id="Control24_ctl3" type="text" data-datafield="Examine_records.Apply_people" data-type="SheetTextBox" style="" class="">
+								</td>
+								<td data-datafield="Examine_records.Apply_time">
+									<input id="Control24_ctl4" type="text" data-datafield="Examine_records.Apply_time" data-type="SheetTime" style="">
+								</td>
+								<td data-datafield="Examine_records.States">
+									<input id="Control24_ctl5" type="text" data-datafield="Examine_records.States" data-type="SheetTextBox" style="">
+								</td>
+								<td class="rowOption"  style="display:none;">
+									<a class="delete">
+										<div class="fa fa-minus">
+										</div>
+									</a>
+									<a class="insert">
+										<div class="fa fa-arrow-down">
+										</div>
+									</a>
+								</td>
+							</tr>
+							<tr class="footer">
+								<td class="rowOption">
+								</td>
+								<td data-datafield="Examine_records.Apply_people">
+								</td>
+								<td data-datafield="Examine_records.Apply_time">
+								</td>
+								<td data-datafield="Examine_records.States">
+								</td>
+								<td class="rowOption" style="display:none;">
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+             </div>
+            </div>
+            </div>
+            <div class="row hidden">
+				<div id="title21" class="col-md-2 hidden">
+					<span id="Label28" data-type="SheetLabel" data-datafield="agreement_sign" style="">走协议审签子流程标识</span>
+				</div>
+				<div id="control21" class="col-md-2 hidden">
+					<input id="Control28" type="text" data-datafield="agreement_sign" data-type="SheetTextBox" style="" class="">
+				</div>
+				<div id="title22" class="col-md-1 hidden">
+					<span id="Label29" data-type="SheetLabel" data-datafield="Numberid" style="">序号</span>
+				</div>
+				<div id="control22" class="col-md-1 hidden">
+					<input id="Control29" type="text" data-datafield="Numberid" data-type="SheetTextBox" style="">
+				</div>
+                <div id="title22" class="col-md-1 hidden">
+					<span id="Label29" data-type="SheetLabel" data-datafield="Agreement_changeNumber" style="">协议变更子流程版本号</span>
+				</div>
+				<div id="control22" class="col-md-1 hidden">
+					<input id="Control900" type="text" data-datafield="Agreement_changeNumber" data-type="SheetTextBox" style="">
+				</div>
+                <div id="title22" class="col-md-1 hidden">
+					<span id="Label29" data-type="SheetLabel" data-datafield="Process_version" style="">协议号修改的版本号   </span>
+				</div>
+				<div id="control22" class="col-md-1 hidden">
+					<input id="Control900" type="text" data-datafield="Process_version" data-type="SheetTextBox" style="">
+				</div>
+                <div id="title22" class="col-md-1 hidden">
+					<span id="Label29" data-type="SheetLabel" data-datafield="AgreementGD_file" style="">协议归档版本号</span>
+				</div>
+				<div id="control22" class="col-md-1 hidden">
+					<input id="Control900" type="text" data-datafield="AgreementGD_file" data-type="SheetTextBox" style="">
+				</div>
+               
+                  
+               
+			</div>
+            <div class="row hidden">
+                  <div id="div412566" class="col-md-2">
+                        <label data-datafield="st_money" data-type="SheetLabel" id="ctl719839" class="" style="">收退款流程版本号</label></div>
+                    <div id="div132801" class="col-md-10">
+                        <input type="text" data-datafield="st_money" data-type="SheetTextBox" id="ctl787347" class="" style=""></div>
+                
+                <div id="div956556" class="col-md-1">
+                        <input type="text" data-datafield="WorkflowVersion_Back" data-type="SheetTextBox" id="ctl456922" class="hidden" style="">
+                    </div>
+           
+            </div>
+            <%--协议审签记录--%>
+            <div class="ContractContent " id="sqjl">
+                
+                <div class="nav-icon fa  fa-chevron-right bannerTitle bannerTitleCreate">
+                <label id="divSheetInfo" data-en_us="Sheet information">协议审签</label>
+            </div>
+        <div class="divContent" id="divSheet">
+            <div class="row tableContent"  >
+               
+				<div id="title23" class="col-md-2">
+					<span id="Label29" data-type="SheetLabel" data-datafield="Agreement_signs" style="">代理协议审批记录</span>
+				</div>
+				<div id="control23" class="col-md-10">
+                    <input type="button" onclick="agreement_apply()" value="协议审签" id="xs" class="btn btn-primary paddingBtn">
+					
+                    <table id="ctl779681" data-datafield="Agreement_signs" data-type="SheetGridView" class="SheetGridView" style="" data-displayadd="false" data-displaydelete="false">
+                        <tbody>
+                            <tr class="header">
+                                <td id="ctl779681_SerialNo" class="rowSerialNo">序号</td>
+                                <td id="ctl779681_header0" data-datafield="Agreement_signs.dispose_name" style="">
+                                    <label id="ctl779681_Label0" data-datafield="Agreement_signs.dispose_name" data-type="SheetLabel" style="">处理名称</label></td>
+                                <td id="ctl779681_header1" data-datafield="Agreement_signs.dispose_peo" style="">
+                                    <label id="ctl779681_Label1" data-datafield="Agreement_signs.dispose_peo" data-type="SheetLabel" style="">处理人</label></td>
+                                <td id="ctl779681_header2" data-datafield="Agreement_signs.dispose_result" style="">
+                                    <label id="ctl779681_Label2" data-datafield="Agreement_signs.dispose_result" data-type="SheetLabel" style="">处理结果</label></td>
+                                <td id="ctl779681_header3" data-datafield="Agreement_signs.dispose_time" style="">
+                                    <label id="ctl779681_Label3" data-datafield="Agreement_signs.dispose_time" data-type="SheetLabel" style="">处理时间</label></td>
+                                <td id="ctl779681_header4" data-datafield="Agreement_signs.remark" style="">
+                                    <label id="ctl779681_Label4" data-datafield="Agreement_signs.remark" data-type="SheetLabel" style="">备注</label></td>
+                                <td class="rowOption" style="display:none;">操作</td>
+                            </tr>
+                            <tr class="template">
+                                <td></td>
+                                <td id="ctl779681_control0" data-datafield="Agreement_signs.dispose_name" style="">
+                                    <input type="text" data-datafield="Agreement_signs.dispose_name" data-type="SheetTextBox" id="ctl779681_control0" style=""></td>
+                                <td id="ctl779681_control1" data-datafield="Agreement_signs.dispose_peo" style="">
+                                    <input type="text" data-datafield="Agreement_signs.dispose_peo" data-type="SheetTextBox" id="ctl779681_control1" style=""></td>
+                                <td id="ctl779681_control2" data-datafield="Agreement_signs.dispose_result" style="">
+                                    <input type="text" data-datafield="Agreement_signs.dispose_result" data-type="SheetTextBox" id="ctl779681_control2" style=""></td>
+                                <td id="ctl779681_control3" data-datafield="Agreement_signs.dispose_time" style="">
+                                    <input type="text" data-datafield="Agreement_signs.dispose_time" data-type="SheetTextBox" id="ctl779681_control3" style=""></td>
+                                <td id="ctl779681_control4" data-datafield="Agreement_signs.remark" style="">
+                                    <input type="text" data-datafield="Agreement_signs.remark" data-type="SheetTextBox" id="ctl779681_control4" style=""></td>
+                                <td class="rowOption" style="display:none;"><a class="delete">
+                                    <div class="fa fa-minus"></div>
+                                </a><a class="insert">
+                                    <div class="fa fa-arrow-down"></div>
+                                </a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+				</div>
+			</div>
+             </div>
+            </div>
+            <%--//协议执行--%>
+            <div class="ContractContent " id="xyzx">
+                <div class="nav-icon fa  fa-chevron-right bannerTitle bannerTitleCreate">
+                <label id="divSheetInfo" data-en_us="Sheet information">协议执行</label>
+            </div>
+        <div class="divContent" id="divSheet">
+            <div class="Content_Tab" >
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">执行情况</a></li>
+                    <li role="presentation"><a href="#xybgtab" aria-controls="xybgtab" role="tab" data-toggle="tab">协议变更</a></li>
+                    <li role="presentation"><a href="#xwtab" aria-controls="xwtab" role="tab" data-toggle="tab">协议文件</a></li>
+                    <li role="presentation"><a href="#glhtab" aria-controls="glhtab" role="tab" data-toggle="tab">关联协议/合同</a></li>
+                    
+                    
+
+                </ul>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="home">
+                         <div class="row tableContent">
+				<div id="title27" class="col-md-2">
+					<span id="Label31" data-type="SheetLabel" data-datafield="Project_child" style="">项目子表</span>
+				</div>
+				<div id="control27" class="col-md-10">
+                    <input type="button" value="收退款申请" onclick="st_money()" class="btn btn-primary paddingBtn">
+                    <div class="row">
+                        <div id="div445665" class="col-md-2">
+                            <label data-datafield="Project_Number" data-type="SheetLabel" id="ctl282853" class="" style="">项目编号</label></div>
+                        <div id="div100843" class="col-md-3">
+                            <input type="text" data-datafield="Project_Number" data-type="SheetTextBox" id="ctl87144" class="" style=""></div>
+                        <div id="div792903" class="col-md-2">
+                            <label data-datafield="Project_name" data-type="SheetLabel" id="ctl202358" class="" style="">项目名称</label></div>
+                        <div id="div543532" class="col-md-4">
+                            <input type="text" data-datafield="Project_name" data-type="SheetTextBox" id="ctl711977" class="" style=""></div>
+                        <div id="div792903" class="col-md-1">
+                            <input type="button" value="查询" onclick="sel_pro()" class="btn btn-primary paddingBtn"></div>
+                    </div>
+                    
+					<div class="myTable">
+                                <table data-toggle="table" class="table table-striped table-bordered table-hover" id="table_project"></table>
+                     </div>
+				</div>
+			</div>                  
+        			<div class="row tableContent">
+				<div id="title29" class="col-md-2">
+					<span id="Label32" data-type="SheetLabel" data-datafield="Receipt_receipts" style="">收款记录</span>
+				</div>
+				<div id="control29" class="col-md-10">
+					<table id="Control32" data-datafield="Receipt_receipts" data-type="SheetGridView" class="SheetGridView" data-displayadd="false" data-displaydelete="false" data-displaysequenceno="false">
+						<tbody>
+							
+							<tr class="header">
+								<td id="Control32_SerialNo" class="rowSerialNo">
+序号								</td>
+								<%--<td id="Control32_Header3" data-datafield="Receipt_receipts.Receipt_Number">
+									<label id="Control32_Label3" data-datafield="Receipt_receipts.Receipt_Number" data-type="SheetLabel" style="">序号</label>
+								</td>--%>
+								<td id="Control32_Header4" data-datafield="Receipt_receipts.Application_Date">
+									<label id="Control32_Label4" data-datafield="Receipt_receipts.Application_Date" data-type="SheetLabel" style="">申请时间</label>
+								</td>
+								<td id="Control32_Header5" data-datafield="Receipt_receipts.Receivable_money">
+									<label id="Control32_Label5" data-datafield="Receipt_receipts.Receivable_money" data-type="SheetLabel" style="">应收金额</label>
+								</td>
+								<td id="Control32_Header6" data-datafield="Receipt_receipts.Account_time">
+									<label id="Control32_Label6" data-datafield="Receipt_receipts.Account_time" data-type="SheetLabel" style="">到账日期</label>
+								</td>
+								<td id="Control32_Header7" data-datafield="Receipt_receipts.Receipt_State">
+									<label id="Control32_Label7" data-datafield="Receipt_receipts.Receipt_State" data-type="SheetLabel" style="">状态</label>
+								</td>
+								<%--<td id="Control32_Header8" data-datafield="Receipt_receipts.receipt_operation">
+									<label id="Control32_Label8" data-datafield="Receipt_receipts.receipt_operation" data-type="SheetLabel" style="">操作</label>
+								</td>--%>
+								<td class="rowOption">
+删除								</td>
+							</tr>
+							<tr class="template">
+								<td id="Control32_Option" class="rowOption">
+								</td>
+								<%--<td data-datafield="Receipt_receipts.Receipt_Number">
+									<input id="Control32_ctl3" type="text" data-datafield="Receipt_receipts.Receipt_Number" data-type="SheetTextBox" style="">
+								</td>--%>
+								<td data-datafield="Receipt_receipts.Application_Date">
+									<input id="Control32_ctl4" type="text" data-datafield="Receipt_receipts.Application_Date" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="Receipt_receipts.Receivable_money">
+									<input id="Control32_ctl5" type="text" data-datafield="Receipt_receipts.Receivable_money" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="Receipt_receipts.Account_time">
+									<input id="Control32_ctl6" type="text" data-datafield="Receipt_receipts.Account_time" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="Receipt_receipts.Receipt_State">
+									<input id="Control32_ctl7" type="text" data-datafield="Receipt_receipts.Receipt_State" data-type="SheetTextBox" style="">
+								</td>
+								<%--<td data-datafield="Receipt_receipts.receipt_operation">
+									<input id="Control32_ctl8" type="text" data-datafield="Receipt_receipts.receipt_operation" data-type="SheetTextBox" style="">
+								</td>--%>
+								<td class="rowOption" style="display:none;">
+									<a class="delete">
+										<div class="fa fa-minus">
+										</div>
+									</a>
+									<a class="insert">
+										<div class="fa fa-arrow-down">
+										</div>
+									</a>
+								</td>
+							</tr>
+							<tr class="footer">
+								<td class="rowOption">
+								</td>
+								<%--<td data-datafield="Receipt_receipts.Receipt_Number">
+								</td>--%>
+								<td data-datafield="Receipt_receipts.Application_Date">
+								</td>
+								<td data-datafield="Receipt_receipts.Receivable_money">
+								</td>
+								<td data-datafield="Receipt_receipts.Account_time">
+								</td>
+								<td data-datafield="Receipt_receipts.Receipt_State">
+								</td>
+								<%--<td data-datafield="Receipt_receipts.receipt_operation">
+								</td>--%>
+								<td class="rowOption" style="display:none;">
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="xybgtab">
+                     
+                <div class="row tableContent">
+				<div id="title31" class="col-md-2">
+					<span id="Label33" data-type="SheetLabel" data-datafield="Agreement_bg" style="">协议变更</span>
+				</div>
+				<div id="control31" class="col-md-10">
+                    <input type="button" value="协议变更申请" onclick="Agreement_change()" class="btn btn-primary paddingBtn">
+					<table id="Control33" data-datafield="Agreement_bg" data-type="SheetGridView" class="SheetGridView" data-displayadd="false" data-displaydelete="false" data-displaysequenceno="false">
+						<tbody>
+							
+							<tr class="header">
+								<td id="Control33_SerialNo" class="rowSerialNo">
+序号								</td>
+								<td id="Control33_Header3" data-datafield="Agreement_bg.old_agency_money">
+									<label id="Control33_Label3" data-datafield="Agreement_bg.old_agency_money" data-type="SheetLabel" style="">原代理费费率/金额</label>
+								</td>
+								<td id="Control33_Header4" data-datafield="Agreement_bg.new_agency_money">
+									<label id="Control33_Label4" data-datafield="Agreement_bg.new_agency_money" data-type="SheetLabel" style="">变更后代理费费率/金额</label>
+								</td>
+								<td id="Control33_Header5" data-datafield="Agreement_bg.old_pay_condition">
+									<label id="Control33_Label5" data-datafield="Agreement_bg.old_pay_condition" data-type="SheetLabel" style="">原支付条件</label>
+								</td>
+								<td id="Control33_Header6" data-datafield="Agreement_bg.new_agency_conditon">
+									<label id="Control33_Label6" data-datafield="Agreement_bg.new_agency_conditon" data-type="SheetLabel" style="">变更后支付条件</label>
+								</td>
+								<td id="Control33_Header7" data-datafield="Agreement_bg.ag_state">
+									<label id="Control33_Label7" data-datafield="Agreement_bg.ag_state" data-type="SheetLabel" style="">状态</label>
+								</td>
+								<td id="Control33_Header8" data-datafield="Agreement_bg.Agreement_operation">
+									<label id="Control33_Label8" data-datafield="Agreement_bg.Agreement_operation" data-type="SheetLabel" style="">操作</label>
+								</td>
+								<td class="rowOption">
+删除								</td>
+							</tr>
+							<tr class="template">
+								<td id="Control33_Option" class="rowOption">
+								</td>
+								<td data-datafield="Agreement_bg.old_agency_money">
+									<input id="Control33_ctl3" type="text" data-datafield="Agreement_bg.old_agency_money" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="Agreement_bg.new_agency_money">
+									<input id="Control33_ctl4" type="text" data-datafield="Agreement_bg.new_agency_money" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="Agreement_bg.old_pay_condition">
+									<input id="Control33_ctl5" type="text" data-datafield="Agreement_bg.old_pay_condition" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="Agreement_bg.new_agency_conditon">
+									<input id="Control33_ctl6" type="text" data-datafield="Agreement_bg.new_agency_conditon" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="Agreement_bg.ag_state">
+									<input id="Control33_ctl7" type="text" data-datafield="Agreement_bg.ag_state" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="Agreement_bg.Agreement_operation">
+									<input id="Control33_ctl8" type="text" data-datafield="Agreement_bg.Agreement_operation" data-type="SheetTextBox" style="">
+								</td>
+							
+							</tr>
+							<tr class="footer">
+								<td class="rowOption">
+								</td>
+								<td data-datafield="Agreement_bg.old_agency_money">
+								</td>
+								<td data-datafield="Agreement_bg.new_agency_money">
+								</td>
+								<td data-datafield="Agreement_bg.old_pay_condition">
+								</td>
+								<td data-datafield="Agreement_bg.new_agency_conditon">
+								</td>
+								<td data-datafield="Agreement_bg.ag_state">
+								</td>
+								<td data-datafield="Agreement_bg.Agreement_operation">
+								</td>
+								<td class="rowOption">
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+           
+                 </div>
+                <div role="tabpanel" class="tab-pane" id="xwtab">
+                   <div class="row tableContent">
+				<div id="title35" class="col-md-2">
+					<span id="Label35" data-type="SheetLabel" data-datafield="agreement_filesnew" style="">协议文件</span>
+				</div>
+				<div id="control35" class="col-md-10">
+                    <input id="GDContractFileId" type="button" onclick="agreementGD()" value="归档" class="btn btn-primary paddingBtn" />
+					<table id="Control35" data-datafield="agreement_filesnew" data-type="SheetGridView" class="SheetGridView" data-displayadd="false" data-displaydelete="false" data-displaysequenceno="false">
+						<tbody>
+							
+							<tr class="header">
+								<td id="Control35_SerialNo" class="rowSerialNo">
+序号								</td>
+								<td id="Control35_Header3" data-datafield="agreement_filesnew.Application_people">
+									<label id="Control35_Label3" data-datafield="agreement_filesnew.Application_people" data-type="SheetLabel" style="">申请人</label>
+								</td>
+								<td id="Control35_Header4" data-datafield="agreement_filesnew.Application_time">
+									<label id="Control35_Label4" data-datafield="agreement_filesnew.Application_time" data-type="SheetLabel" style="">申请时间</label>
+								</td>
+								<td id="Control35_Header5" data-datafield="agreement_filesnew.file_state">
+									<label id="Control35_Label5" data-datafield="agreement_filesnew.file_state" data-type="SheetLabel" style="">状态</label>
+								</td>
+								<td id="Control35_Header6" data-datafield="agreement_filesnew.files_operation">
+									<label id="Control35_Label6" data-datafield="agreement_filesnew.files_operation" data-type="SheetLabel" style="">操作</label>
+								</td>
+                                <td id="ctl410593_header4" data-datafield="agreement_filesnew.workItemId" class="hidden" style="hidden">
+                                        <label id="ctl410593_Label4" data-datafield="agreement_filesnew.workItemId" data-type="SheetLabel" style="" class="hidden">workItemId</label></td>
+								
+							</tr>
+							<tr class="template">
+								<td id="Control35_Option" class="rowOption">
+								</td>
+								<td data-datafield="agreement_filesnew.Application_people">
+									<input id="Control35_ctl3" type="text" data-datafield="agreement_filesnew.Application_people" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="agreement_filesnew.Application_time">
+									<input id="Control35_ctl4" type="text" data-datafield="agreement_filesnew.Application_time" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="agreement_filesnew.file_state">
+									<input id="Control35_ctl5" type="text" data-datafield="agreement_filesnew.file_state" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="agreement_filesnew.files_operation">
+									<input id="Control35_ctl6" type="button" onclick="check_see(this)" value="查看"  class="btn btn-primary paddingBtn" >
+								</td>
+                                <td id="ctl410593_control4" data-datafield="agreement_filesnew.workItemId" style="" class="hidden">
+                                        <input type="text" data-datafield="agreement_filesnew.workItemId" data-type="SheetTextBox" id="ctl410593_control4" style="" class="hidden"></td>
+								
+							</tr>
+							<tr class="footer">
+								<td class="rowOption">
+								</td>
+								<td data-datafield="agreement_filesnew.Application_people">
+								</td>
+								<td data-datafield="agreement_filesnew.Application_time">
+								</td>
+								<td data-datafield="agreement_filesnew.file_state">
+								</td>
+								<td data-datafield="agreement_filesnew.files_operation">
+								</td>
+								<td class="rowOption">
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+                  <div class="row tableContent">
+				<div id="title37" class="col-md-2">
+					<span id="Label36" data-type="SheetLabel" data-datafield="new_files" style="">文件</span>
+				</div>
+				<div id="control37" class="col-md-10">
+					<table id="Control36" data-datafield="new_files" data-type="SheetGridView" class="SheetGridView" data-displayadd="false" data-displaydelete="false">
+						<tbody>
+							
+							<tr class="header">
+								<td id="Control36_SerialNo" class="rowSerialNo">
+序号								</td>
+								<td id="Control36_Header3" data-datafield="new_files.files_link" class="">
+									<label id="Control36_Label3" data-datafield="new_files.files_link" data-type="SheetLabel" style="">协议文件</label>
+								</td>
+								<td class="rowOption">
+删除								</td>
+							</tr>
+							<tr class="template">
+								<td id="Control36_Option" class="rowOption">
+								</td>
+								<td data-datafield="new_files.files_link">
+									<div id="Control36_ctl3" data-datafield="new_files.files_link" data-type="SheetAttachment" style="" class="SheetAttachment"></div>
+								</td>
+								<td class="rowOption">
+									<a class="delete">
+										<div class="fa fa-minus">
+										</div>
+									</a>
+									<a class="insert">
+										<div class="fa fa-arrow-down">
+										</div>
+									</a>
+								</td>
+							</tr>
+							<tr class="footer">
+								<td class="rowOption">
+								</td>
+								<td data-datafield="new_files.files_link">
+								</td>
+								<td class="rowOption">
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+              <div class="row tableContent">
+				<div id="title39" class="col-md-2">
+					<span id="Label37" data-type="SheetLabel" data-datafield="files_twos" style="">其他文件</span>
+				</div>
+				<div id="control39" class="col-md-10">
+					<table id="Control37" data-datafield="files_twos" data-type="SheetGridView" class="SheetGridView" data-displayadd="false" data-displaydelete="false">
+						<tbody>
+							
+							<tr class="header">
+								<td id="Control37_SerialNo" class="rowSerialNo">
+序号								</td>
+								<td id="Control37_Header3" data-datafield="files_twos.files_url">
+									<label id="Control37_Label3" data-datafield="files_twos.files_url" data-type="SheetLabel" style="">其他文件</label>
+								</td>
+								<td class="rowOption">
+删除								</td>
+							</tr>
+							<tr class="template">
+								<td id="Control37_Option" class="rowOption">
+								</td>
+								<td data-datafield="files_twos.files_url">
+									<div id="Control37_ctl3" data-datafield="files_twos.files_url" data-type="SheetAttachment" style=""></div>
+								</td>
+								<td class="rowOption">
+									<a class="delete">
+										<div class="fa fa-minus">
+										</div>
+									</a>
+									<a class="insert">
+										<div class="fa fa-arrow-down">
+										</div>
+									</a>
+								</td>
+							</tr>
+							<tr class="footer">
+								<td class="rowOption">
+								</td>
+								<td data-datafield="files_twos.files_url">
+								</td>
+								<td class="rowOption">
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+                </div>
+<%--                <div class="row">
+                    <div id="div868522" class="col-md-2">
+                        <label data-datafield="agreement_filesnew" data-type="SheetLabel" id="ctl112423" class="" style="">协议文件</label></div>
+                    <div id="div917021" class="col-md-10">
+                        <table id="ctl410593" data-datafield="agreement_filesnew" data-type="SheetGridView" class="SheetGridView" style="">
+                            <tbody>
+                                <tr class="header">
+                                    <td id="ctl410593_SerialNo" class="rowSerialNo">序号</td>
+                                    <td id="ctl410593_header0" data-datafield="agreement_filesnew.Application_people" style="">
+                                        <label id="ctl410593_Label0" data-datafield="agreement_filesnew.Application_people" data-type="SheetLabel" style="">申请人</label></td>
+                                    <td id="ctl410593_header1" data-datafield="agreement_filesnew.Application_time" style="">
+                                        <label id="ctl410593_Label1" data-datafield="agreement_filesnew.Application_time" data-type="SheetLabel" style="">申请时间</label></td>
+                                    <td id="ctl410593_header2" data-datafield="agreement_filesnew.file_state" style="">
+                                        <label id="ctl410593_Label2" data-datafield="agreement_filesnew.file_state" data-type="SheetLabel" style="">状态</label></td>
+                                    <td id="ctl410593_header3" data-datafield="agreement_filesnew.files_operation" style="">
+                                        <label id="ctl410593_Label3" data-datafield="agreement_filesnew.files_operation" data-type="SheetLabel" style="">操作</label></td>
+                                    <td id="ctl410593_header4" data-datafield="agreement_filesnew.workItemId" class="" style="">
+                                        <label id="ctl410593_Label4" data-datafield="agreement_filesnew.workItemId" data-type="SheetLabel" style="" class="hidden">workItemId</label></td>
+                                    <td class="rowOption">删除</td>
+                                </tr>
+                                <tr class="template">
+                                    <td></td>
+                                    <td id="ctl410593_control0" data-datafield="agreement_filesnew.Application_people" style="">
+                                        <input type="text" data-datafield="agreement_filesnew.Application_people" data-type="SheetTextBox" id="ctl410593_control0" style=""></td>
+                                    <td id="ctl410593_control1" data-datafield="agreement_filesnew.Application_time" style="">
+                                        <input type="text" data-datafield="agreement_filesnew.Application_time" data-type="SheetTextBox" id="ctl410593_control1" style=""></td>
+                                    <td id="ctl410593_control2" data-datafield="agreement_filesnew.file_state" style="">
+                                        <input type="text" data-datafield="agreement_filesnew.file_state" data-type="SheetTextBox" id="ctl410593_control2" style=""></td>
+                                    <td id="ctl410593_control3" data-datafield="agreement_filesnew.files_operation" style="">
+                                        <input type="text" data-datafield="agreement_filesnew.files_operation" data-type="SheetTextBox" id="ctl410593_control3" style=""></td>
+                                    <td id="ctl410593_control4" data-datafield="agreement_filesnew.workItemId" style="">
+                                        <input type="text" data-datafield="agreement_filesnew.workItemId" data-type="SheetTextBox" id="ctl410593_control4" style="" class="hidden"></td>
+                                    <td class="rowOption"><a class="delete">
+                                        <div class="fa fa-minus"></div>
+                                    </a><a class="insert">
+                                        <div class="fa fa-arrow-down"></div>
+                                    </a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>--%>
+             
+                <div role="tabpanel" class="tab-pane" id="glhtab">
+                     
+                <div class="row tableContent">
+				<div id="title33" class="col-md-2">
+					<span id="Label34" data-type="SheetLabel" data-datafield="Project_contracts" style="">关联项目/合同</span>
+				</div>
+				<div id="control33" class="col-md-10">
+					<table id="Control34" data-datafield="Project_contracts" data-type="SheetGridView" class="SheetGridView" data-displayadd="false" data-displaydelete="false" data-displaysequenceno="false">
+						<tbody>
+							
+							<tr class="header">
+								<td id="Control34_SerialNo" class="rowSerialNo">
+序号								</td>
+								<td id="Control34_Header3" data-datafield="Project_contracts.project_names">
+									<label id="Control34_Label3" data-datafield="Project_contracts.project_names" data-type="SheetLabel" style="">项目简称</label>
+								</td>
+								<td id="Control34_Header4" data-datafield="Project_contracts.tender_number">
+									<label id="Control34_Label4" data-datafield="Project_contracts.tender_number" data-type="SheetLabel" style="">招标编号</label>
+								</td>
+								<td id="Control34_Header5" data-datafield="Project_contracts.contact_no">
+									<label id="Control34_Label5" data-datafield="Project_contracts.contact_no" data-type="SheetLabel" style="">合同号</label>
+								</td>
+								<td id="Control34_Header6" data-datafield="Project_contracts.contact_name">
+									<label id="Control34_Label6" data-datafield="Project_contracts.contact_name" data-type="SheetLabel" style="">合同名称</label>
+								</td>
+								<td id="Control34_Header7" data-datafield="Project_contracts.contract_type">
+									<label id="Control34_Label7" data-datafield="Project_contracts.contract_type" data-type="SheetLabel" style="">合同类型</label>
+								</td>
+								<td class="rowOption">
+删除								</td>
+							</tr>
+							<tr class="template">
+								<td id="Control34_Option" class="rowOption">
+								</td>
+								<td data-datafield="Project_contracts.project_names">
+									<input id="Control34_ctl3" type="text" data-datafield="Project_contracts.project_names" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="Project_contracts.tender_number">
+									<input id="Control34_ctl4" type="text" data-datafield="Project_contracts.tender_number" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="Project_contracts.contact_no">
+									<input id="Control34_ctl5" type="text" data-datafield="Project_contracts.contact_no" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="Project_contracts.contact_name">
+									<input id="Control34_ctl6" type="text" data-datafield="Project_contracts.contact_name" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="Project_contracts.contract_type">
+									<input id="Control34_ctl7" type="text" data-datafield="Project_contracts.contract_type" data-type="SheetTextBox" style="">
+								</td>
+								
+							</tr>
+							<tr class="footer">
+								<td class="rowOption">
+								</td>
+								<td data-datafield="Project_contracts.project_names">
+								</td>
+								<td data-datafield="Project_contracts.tender_number">
+								</td>
+								<td data-datafield="Project_contracts.contact_no">
+								</td>
+								<td data-datafield="Project_contracts.contact_name">
+								</td>
+								<td data-datafield="Project_contracts.contract_type">
+								</td>
+								<td class="rowOption">
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+            
+                 </div>
+                
+             </div>
+            </div>
+            </div>
+
+            </div>
+           
+        
+    </div>
+        <script src="AgreeMent.js"></script>
+</asp:Content>

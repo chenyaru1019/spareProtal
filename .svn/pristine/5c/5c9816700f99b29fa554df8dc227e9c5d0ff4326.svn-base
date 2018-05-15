@@ -1,0 +1,693 @@
+﻿<%@ WebHandler Language="C#" Class="ContractHandler" %>
+
+using System;
+using System.Web;
+using System.Web.Script.Serialization;
+using OThinker.H3;
+using System.Data;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+using System.Runtime.Serialization;
+using OThinker.H3.Portal.Entity;
+using OThinker.H3.Portal.service;
+
+public class ContractHandler : IHttpHandler {
+    JavaScriptSerializer jsSerializer = new JavaScriptSerializer();
+    public void ProcessRequest (HttpContext context) {
+
+        string command = context.Request["Command"];
+        switch (command)
+        {
+            case "generateContractNo": generateContractNo(context); break;
+            case "getByContractNo": getByContractNo(context); break;
+            case "getPaymentByID": getPaymentByID(context); break;
+            case "getHYData": getHYData(context); break;
+            case "getSalesHYData": getSalesHYData(context); break;
+            case "getBidsHYData": getBidsHYData(context); break;
+            case "getBizStatusOfContract": getBizStatusOfContract(context); break;
+            case "getWorkItemIDByICPID": getWorkItemIDByICPID(context); break;
+            case "getMaxQKSeqByContractNo": getMaxQKSeqByContractNo(context); break;
+            case "setChangePayment": setChangePayment(context); break;
+            case "getPaymentUpdateByPID": getPaymentUpdateByPID(context); break;
+            case "cancelImportLicence": cancelImportLicence(context); break;
+            case "getDHSeq": getDHSeq(context); break;
+            case "getDHSeqCnt": getDHSeqCnt(context); break;
+            case "getGoodNum": getGoodNum(context); break;
+            case "getHGBZJ": getHGBZJ(context); break;
+            case "getDHByBizObjectID": getDHByBizObjectID(context); break;
+                //case "doBGContract": doBGContract(context); break;
+
+
+        }
+    }
+
+    public void generateContractNo (HttpContext context) {
+
+        string ContractType = context.Request["ContractType"];
+        string ContractProperty = context.Request["ContractProperty"];
+        string SubProjectCode = context.Request["SubProjectCode"];
+        string Country = context.Request["Country"];
+        string ContractNo = "";
+        string year = DateTime.Now.Year.ToString().Substring(2,2);
+        // 国内合同
+        if(ContractType.Equals("GN"))
+        {
+            //SPIAIE - 17028-PK-TILC II 01 015
+            //SPIAIE：固定公司名称
+            //17 : 当前年份
+            //028 ：国内合同当年累积流水号
+            //PK-TILC II ：最终用户对应的工程编码
+            //01 :  国内合同
+            //015 : 对应工程下国内合同流水号（国内／进口分开）
+            int curyearnum = (int)Convert.ToSingle(getMaxContNumOfCurYear(year)) + 1;
+            int gnpronum = (int)Convert.ToSingle(getMaxContNumOfGNPro(SubProjectCode,"01")) + 1;
+            ContractNo = "SPIAIE-" + year + string.Format("{0:000}",curyearnum) + "-" + SubProjectCode + "01" + string.Format("{0:000}",gnpronum);
+            // 进口合同
+        } else if (ContractType.Equals("JK"))
+        {
+            //17SPIAIE56-855BE-PK-5PDII 02 002
+            //17 ：当前年份
+            //SPIAIE：固定公司名称
+            //56 ：合同性质，56对应货物、技术合同；34对应航空煤油
+            //855 ：航油／非航油进口合同累积流水号（航油、非航油分开累计）
+            //BE ：国别编码
+            //PK－5PDII ：最终用户对应的工程编码
+            //02 ：进口合同
+            //002: 工程下进口合同流水号
+            //备注：航油合同没有-PK-5PDII 02 002 
+            string type = "";
+            if(ContractProperty.Equals("ContractProperty_HKMY"))
+            {
+                type = "34";
+            }else if(ContractProperty.Equals("ContractProperty_JS") || ContractProperty.Equals("ContractProperty_HW"))
+            {
+                type = "56";
+            }
+            int curyearnum = (int)Convert.ToSingle(getMaxContNumOfHY(year,type)) + 1;
+            int gnpronum = (int)Convert.ToSingle(getMaxContNumOfGNPro(SubProjectCode,"02")) + 1;
+            if (ContractProperty.Equals("ContractProperty_HKMY"))
+            {
+                ContractNo = year + "SPIAIE" + type + "-" + string.Format("{0:000}",curyearnum) + Country;
+            }else
+            {
+                ContractNo = year + "SPIAIE" + type + "-" + string.Format("{0:000}",curyearnum) + Country + "-" + SubProjectCode + "02" + string.Format("{0:000}",gnpronum);
+            }
+
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(ContractNo);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取国内合同当年累积流水号
+    public string getMaxContNumOfCurYear(string year)
+    {
+        int num = 0;
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            "SELECT ContractNo FROM I_ContractMain where ContractNo like 'SPIAIE-"+year+"%' ");
+        List<Dictionary<string, string>> mList = new List<Dictionary<string, string>>();
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                try
+                {
+                    int curnum = (int)Convert.ToSingle(dr["ContractNo"].ToString().Split('-')[1].Substring(2));
+                    if (curnum > num)
+                    {
+                        num = curnum;
+                    }
+                }
+                catch (Exception exp)
+                {
+                    continue;
+                }
+
+            }
+            return num.ToString();
+        } else
+        {
+            return num.ToString();
+        }
+    }
+
+    // 获取对应工程下国内合同流水号（国内／进口分开）
+    public string getMaxContNumOfGNPro(string SubProjectCode, string countrytype)
+    {
+        int num = 0;
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            "SELECT ContractNo FROM I_ContractMain where ContractNo like '%"+SubProjectCode+countrytype+"%' ");
+        List<Dictionary<string, string>> mList = new List<Dictionary<string, string>>();
+        int len = (SubProjectCode + countrytype).Length;
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                try
+                {
+                    int curnum = (int)Convert.ToSingle(dr["ContractNo"].ToString().Split('-')[2].Substring(len));
+                    if (curnum > num)
+                    {
+                        num = curnum;
+                    }
+
+                }
+                catch (Exception exp)
+                {
+                    continue;
+                }
+
+            }
+            return num.ToString();
+        } else
+        {
+            return num.ToString();
+        }
+    }
+
+    // 获取航油、非航油合同累积流水号
+    public string getMaxContNumOfHY(string year, string type)
+    {
+        int num = 0;
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            "SELECT ContractNo FROM I_ContractMain where ContractNo like '"+year+"SPIAIE"+type+"-%' ");
+        List<Dictionary<string, string>> mList = new List<Dictionary<string, string>>();
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                try
+                {
+                    string tp = dr["ContractNo"].ToString().Split('-')[1];
+                    int curnum = (int)Convert.ToSingle(tp.Substring(0, tp.Length - 2));
+                    if (curnum > num)
+                    {
+                        num = curnum;
+                    }
+
+                }
+                catch (Exception exp)
+                {
+                    continue;
+                }
+            }
+            return num.ToString();
+        } else
+        {
+            return num.ToString();
+        }
+    }
+
+    public void getByContractNo (HttpContext context) {
+        string ContractNo = context.Request["ContractNo"];
+        // 国内合同
+        ContractMain con = new ContractMain();
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT ContractNo,ContractName,PostA,PostB"+
+            " ,ContractType,enum1.EnumValue as ContractTypeName"+
+            " ,Country,enum2.EnumValue as CountryName"+
+            " ,ContractProperty ,enum3.EnumValue as ContractPropertyName"+
+            " ,Salers "+
+            " ,FinalUser "+
+            " ,BidNo "+
+            " ,ContractRemark "+
+            " ,enum4.EnumValue as AgencyTypeName "+
+            " ,ProjectName "+
+            " ,SubProjectName "+
+            " ,SubProjectCode "+
+            " ,TradeMethod "+
+            " ,Country "+
+            " ,ContractRemark "+
+            " ,Salers "+
+            " ,Currency " +
+            " ,enum5.EnumValue  CurrencyName" +
+            " ,ContractTotalPrice" +
+            " ,JKTotalAmount" +
+            " ,ContractDHDate" +
+            " ,AgencyComputerNum" +
+            " ,AgencyComputerType" +
+            " ,enum6.EnumValue AgencyComputerTypeName" +
+            " ,PayCondition"+
+            " FROM I_ContractMain con"+
+            " LEFT JOIN OT_EnumerableMetadata enum1 on con.ContractType = enum1.Code and enum1.Category = '合同类型' "+
+            " LEFT JOIN OT_EnumerableMetadata enum2 on con.Country = enum2.Code and enum2.Category = '国别'"+
+            " LEFT JOIN OT_EnumerableMetadata enum3 on con.ContractProperty = enum3.Code and enum3.Category like '合同性质%'"+
+            " LEFT JOIN OT_EnumerableMetadata enum4 on con.AgencyType = enum4.Code and enum4.Category = '合同审签_代理协议类型'" +
+            " LEFT JOIN OT_EnumerableMetadata enum5 on con.Currency = enum5.Code and enum5.Category = '币种'" +
+            " LEFT JOIN OT_EnumerableMetadata enum6 on con.AgencyComputerType = enum6.Code and enum6.Category = '代理费费率／金额'"+
+            " where con.ContractNo = '"+ContractNo+"'");
+        if (dt.Rows.Count > 0)
+        {
+            con.ContractNo = dt.Rows[0]["ContractNo"].ToString();
+            con.ContractName = dt.Rows[0]["ContractName"].ToString();
+            //OThinker.Organization.User ua = Common.getUserById(dt.Rows[0]["PostA"].ToString());
+            //OThinker.Organization.User ub = Common.getUserById(dt.Rows[0]["PostB"].ToString());
+            con.PostA = OThinker.H3.Controllers.AppUtility.Engine.Organization.GetName(dt.Rows[0]["PostA"].ToString());
+            con.PostB = OThinker.H3.Controllers.AppUtility.Engine.Organization.GetName(dt.Rows[0]["PostB"].ToString());
+            con.ContractType = dt.Rows[0]["ContractTypeName"].ToString();
+            con.Country = dt.Rows[0]["CountryName"].ToString();
+            con.ContractProperty = dt.Rows[0]["ContractPropertyName"].ToString();
+            con.Salers = dt.Rows[0]["Salers"].ToString();
+            con.FinalUser = dt.Rows[0]["FinalUser"].ToString();
+            con.BidNo = dt.Rows[0]["BidNo"].ToString();
+            con.ContractRemark = dt.Rows[0]["ContractRemark"].ToString();
+            con.AgencyType = dt.Rows[0]["AgencyTypeName"].ToString();
+            con.Currency = dt.Rows[0]["Currency"].ToString();
+            con.CurrencyName = dt.Rows[0]["CurrencyName"].ToString();
+            con.ContractTotalPrice = dt.Rows[0]["ContractTotalPrice"].ToString();
+            con.JKTotalAmount = dt.Rows[0]["JKTotalAmount"].ToString();
+            con.ContractDHDate = dt.Rows[0]["ContractDHDate"].ToString();
+            con.AgencyComputerNum = dt.Rows[0]["AgencyComputerNum"].ToString();
+            con.AgencyComputerType = dt.Rows[0]["AgencyComputerType"].ToString();
+            con.AgencyComputerTypeName = dt.Rows[0]["AgencyComputerTypeName"].ToString();
+            con.PayCondition = dt.Rows[0]["PayCondition"].ToString();
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(con);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    public void getPaymentByID (HttpContext context) {
+        string PaymentObjectID = context.Request["PaymentObjectID"];
+        Payment con = new Payment();
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT top 1 * from I_PaymentSub where ObjectID = '"+PaymentObjectID+"'");
+        if (dt.Rows.Count > 0)
+        {
+            con.PaymentNo = dt.Rows[0]["PaymentNo"].ToString();
+            con.PaymentDate = dt.Rows[0]["PaymentDate"].ToString();
+            con.ExpirationDate = dt.Rows[0]["ExpirationDate"].ToString();
+            con.RemindDate = dt.Rows[0]["RemindDate"].ToString();
+            con.OperateRemark = dt.Rows[0]["OperateRemark"].ToString();
+            con.PaymentAmount = dt.Rows[0]["PaymentAmount"].ToString();
+        } else
+        {
+            System.Data.DataTable dt2 = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT top 1 * from I_PaymentUpdateSub where ObjectID = '"+PaymentObjectID+"'");
+            if (dt2.Rows.Count > 0)
+            {
+                con.PaymentNo = dt2.Rows[0]["PaymentNo"].ToString();
+                con.PaymentDate = dt2.Rows[0]["PaymentUpdateDate"].ToString();
+                con.ExpirationDate = dt2.Rows[0]["ExpirationDate"].ToString();
+                con.RemindDate = dt2.Rows[0]["RemindDate"].ToString();
+                con.OperateRemark = dt2.Rows[0]["OperateRemark"].ToString();
+                con.PaymentAmount = dt2.Rows[0]["PaymentAmount"].ToString();
+            }
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(con);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    public void getDHByBizObjectID (HttpContext context) {
+        string BizObjectID = context.Request["BizObjectID"];
+        Dictionary<string,string> dic = new Dictionary<string,string>();
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT top 1 * from I_DH where ObjectID = '"+BizObjectID+"'");
+        if (dt.Rows.Count > 0)
+        {
+            dic.Add("ObjectID",dt.Rows[0]["ObjectID"].ToString());
+            dic.Add("DHSeq",dt.Rows[0]["DHSeq"].ToString());
+        }
+        object JSONObj = JsonConvert.SerializeObject(dic);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    public void getHYData (HttpContext context) {
+        Dictionary<string,string> dic = new Dictionary<string,string>();
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT * from I_HYContractSet ");
+        if (dt.Rows.Count > 0) {
+            dic.Add("ObjectID",dt.Rows[0]["ObjectID"].ToString());
+            dic.Add("PostB",dt.Rows[0]["PostB"].ToString());
+            dic.Add("FinalUser",dt.Rows[0]["FinalUser"].ToString());
+            dic.Add("BidType",dt.Rows[0]["BidType"].ToString());
+            dic.Add("BidNo",dt.Rows[0]["BidNo"].ToString());
+            dic.Add("ContractType",dt.Rows[0]["ContractType"].ToString());
+            dic.Add("ContractName",dt.Rows[0]["ContractName"].ToString());
+            dic.Add("ContractShortName",dt.Rows[0]["ContractShortName"].ToString());
+            dic.Add("ProjectName",dt.Rows[0]["ProjectName"].ToString());
+            dic.Add("SubProjectName",dt.Rows[0]["SubProjectName"].ToString());
+            dic.Add("SubProjectCode",dt.Rows[0]["SubProjectCode"].ToString());
+            dic.Add("TradeMethod",dt.Rows[0]["TradeMethod"].ToString());
+            dic.Add("Country",dt.Rows[0]["Country"].ToString());
+            dic.Add("ContractRemark",dt.Rows[0]["ContractRemark"].ToString());
+            dic.Add("Salers",dt.Rows[0]["Salers"].ToString());
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(dic);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    public void getBidsHYData (HttpContext context) {
+        // 
+        string ObjectID = context.Request["ObjectID"];
+        List<Dictionary<string,string>> ls = new List<Dictionary<string,string>>();
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT bhy.* FROM I_BidTblOfHY bhy, I_HYContractSet hy where bhy.ParentObjectID = hy.ObjectID and hy.ObjectID = '"+ObjectID+"'");
+        if (dt.Rows.Count > 0) {
+            foreach (DataRow dr in dt.Rows)
+            {
+                Dictionary<string,string> dic = new Dictionary<string,string>();
+                dic.Add("ObjectID",dr["ObjectID"].ToString());
+                dic.Add("ProjectShortName",dr["ProjectShortName"].ToString());
+                dic.Add("BidPrice",dr["BidPrice"].ToString());
+                ls.Add(dic);
+            }
+
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    public void getSalesHYData (HttpContext context) {
+        // 
+        string ObjectID = context.Request["ObjectID"];
+        List<Dictionary<string,string>> ls = new List<Dictionary<string,string>>();
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT shy.* FROM I_SalerTblOfHY shy, I_HYContractSet hy where shy.ParentObjectID = hy.ObjectID and hy.ObjectID = '"+ObjectID+"'");
+        if (dt.Rows.Count > 0) {
+            foreach (DataRow dr in dt.Rows)
+            {
+                Dictionary<string,string> dic = new Dictionary<string,string>();
+                dic.Add("ObjectID",dr["ObjectID"].ToString());
+                dic.Add("CompanyName",dr["CompanyName"].ToString());
+                dic.Add("ContactName",dr["ContactName"].ToString());
+                dic.Add("Telephone",dr["Telephone"].ToString());
+                dic.Add("Mobile",dr["Mobile"].ToString());
+                dic.Add("Fax",dr["Fax"].ToString());
+                dic.Add("Email",dr["Email"].ToString());
+                ls.Add(dic);
+            }
+
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+
+
+    // 获取业务子流程的状态，和合同号相关
+    public void getBizStatusOfContract (HttpContext context) {
+        string ContractNo = context.Request["ContractNo"];
+        string BizNo = context.Request["BizNo"];
+        string ret = "";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT ic.State FROM I_"+BizNo+" tbl, OT_InstanceContext ic where tbl.ObjectID = ic.BizObjectId and tbl.ContractNo = '"+ContractNo+"'");
+        if (dt.Rows.Count > 0) {
+            ret = dt.Rows[0]["State"].ToString();
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(ret);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+    // 根据InstanceContext父节点id获取workItem的id
+    public void getWorkItemIDByICPID (HttpContext context) {
+        string InstanceId = context.Request["InstanceId"];
+        // workItem的id
+        string ObjectId = "";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " select top 1 wi.ObjectId"+
+            " from OT_InstanceContext ic,OT_WorkItem wi"+
+            " where ic.ParentInstanceId = '"+InstanceId+"'"+
+            " and ic.ObjectID = wi.InstanceId"+
+            " order by ic.CreatedTime desc ");
+        if (dt.Rows.Count > 0)
+        {
+            ObjectId = dt.Rows[0]["ObjectId"].ToString();
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(ObjectId);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取合同号对应的请款最大批次
+    public void getMaxQKSeqByContractNo (HttpContext context) {
+        string ContractNo = context.Request["ContractNo"];
+        // workItem的id
+        string QKSeq = "";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT Max(QKSeq) QKSeq FROM I_QK "+
+            " where ContractNo = '"+ContractNo+"'");
+        if (dt.Rows.Count > 0)
+        {
+            QKSeq = dt.Rows[0]["QKSeq"].ToString();
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(QKSeq);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    public void setChangePayment (HttpContext context) {
+        string PaymentObjectID = context.Request["PaymentObjectID"];
+        string Status = context.Request["Status"];
+
+        System.Data.DataTable dt1 = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " update I_PaymentSub set changePaymentFlg = '"+Status+"' where ObjectID = '"+PaymentObjectID+"' ");
+
+        System.Data.DataTable dt2 = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " update I_PaymentUpdateSub set changePaymentFlg = '"+Status+"' where ObjectID = '"+PaymentObjectID+"' ");
+
+        object JSONObj = JsonConvert.SerializeObject("");
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    public void cancelImportLicence (HttpContext context) {
+        string ImportLicenseId = context.Request["ImportLicenseId"];
+        string flg = context.Request["flg"];
+        string cancelFlg = "";
+        if(flg.Equals("cancel"))
+        {
+            cancelFlg = "1";
+        } else if(flg.Equals("undocancel"))
+        {
+            cancelFlg = "0";
+        }
+
+        System.Data.DataTable dt1 = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " update I_ImportLicenseSub set cancelFlg = '"+cancelFlg+"' where ObjectID = '"+ImportLicenseId+"' ");
+
+        object JSONObj = JsonConvert.SerializeObject("");
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+
+    public void getPaymentUpdateByPID (HttpContext context) {
+        // 
+        string PObjectID = context.Request["PObjectID"];
+        List<Dictionary<string,string>> ls = new List<Dictionary<string,string>>();
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT p.BankName," +
+            " up.PaymentAmount," +
+            " ic.State Status," +
+            " case ic.State when '2' then '审批中' when '4' then '已开证' end DisplayName, " +
+            " up.CreatedTime," +
+            " ic.ObjectID," +
+            " p.PaymentNo PaymentId, " +
+            " case up.changePaymentFlg when '2' then '改证中' when '4' then '已改证' end changePaymentFlg " +
+            " FROM I_PaymentUpdateSub up ,OT_InstanceContext ic ,I_PaymentSub p " +
+            " where p.ObjectID ='603ea6c6-054e-4eff-8dd9-9a961b248e45' " +
+            " and up.ObjectID = ic.BizObjectId and p.paymentNo = up.paymentno " +
+            " order by CreatedTime desc ");
+        if (dt.Rows.Count > 0) {
+            foreach (DataRow dr in dt.Rows)
+            {
+                Dictionary<string,string> dic = new Dictionary<string,string>();
+                dic.Add("BankName",dr["BankName"].ToString());
+                dic.Add("PaymentAmount",dt.Rows[0]["PaymentAmount"].ToString());
+                dic.Add("DisplayName",dt.Rows[0]["DisplayName"].ToString());
+                dic.Add("changePaymentFlg",dt.Rows[0]["changePaymentFlg"].ToString());
+
+                ls.Add(dic);
+            }
+
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取到货批次
+    public void getDHSeq (HttpContext context) {
+        string ContractNo = context.Request["ContractNo"];
+        string DHSeq = "";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " select ISNULL(Max(DHSeq),0) + 1 DHSeq from I_DH dh" +
+            " where ContractNo = '"+ContractNo+"' ");
+        if (dt.Rows.Count > 0)
+        {
+            DHSeq = dt.Rows[0]["DHSeq"].ToString();
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(DHSeq);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取到货批次的数量
+    public void getDHSeqCnt (HttpContext context) {
+        string ContractNo = context.Request["ContractNo"];
+        string DHSeq = context.Request["DHSeq"];
+        string Cnt = "";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " select Count(1) Cnt from I_DH" +
+            " where ContractNo = '"+ContractNo+"' and DHSeq = '"+DHSeq+"'  ");
+        if (dt.Rows.Count > 0)
+        {
+            Cnt = dt.Rows[0]["Cnt"].ToString();
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(Cnt);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取商品数量
+    public void getGoodNum (HttpContext context) {
+        string ContractNo = context.Request["ContractNo"];
+        string DHSeq = context.Request["DHSeq"];
+        string GoodName = context.Request["GoodName"];
+        string Num = "";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " select g.Num from I_DHGoodsTbl g, I_DH d " +
+            " where d.ContractNo = '"+ContractNo+"' " +
+            " and d.DHSeq = '"+DHSeq+"' " +
+            " and g.GoodName = '"+GoodName+"'" +
+            " and g.parentObjectId = d.ObjectId" );
+        if (dt.Rows.Count > 0)
+        {
+            Num = dt.Rows[0]["Num"].ToString();
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(Num);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取海关保证金
+    public void getHGBZJ (HttpContext context) {
+        List<Dictionary<string,string>> ls = new List<Dictionary<string,string>>();
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " select '海关保证金' as ZJKX, '2.00美元' as Amount, '17人民币' as ConvertAmount, '无' as PayContent, '汇款' as PayType,'询诺' as Receiver " +
+            " UNION " +
+            " select '海关保证金' as ZJKX, '3.00美元' as Amount, '22人民币' as ConvertAmount, '无' as PayContent, '支付宝' as PayType,'询诺' as Receiver " );
+
+        if (dt.Rows.Count > 0) {
+            foreach (DataRow dr in dt.Rows)
+            {
+                Dictionary<string,string> dic = new Dictionary<string,string>();
+                dic.Add("ZJKX",dr["ZJKX"].ToString());
+                dic.Add("Amount",dr["Amount"].ToString());
+                dic.Add("ConvertAmount",dr["ConvertAmount"].ToString());
+                dic.Add("PayContent",dr["PayContent"].ToString());
+                dic.Add("PayType",dr["PayType"].ToString());
+                dic.Add("Receiver",dr["Receiver"].ToString());
+                ls.Add(dic);
+            }
+
+        }
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    //public void doBGContract (HttpContext context) {
+    //    string BizObjcetID = context.Request["BizObjcetID"];
+
+    //    System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+    //        " select * from I_BG where ObjectID = '"+BizObjcetID+"' ");
+    //    System.Data.DataTable dt2 = null;
+
+    //    if (dt.Rows.Count > 0)
+    //    {
+
+    //        var ContractNo = dt.Rows[0]["ContractNo"].ToString();
+    //        var IsChangeAmountRMB = dt.Rows[0]["IsChangeAmountRMB"].ToString();
+    //        var IsChangeAmountWB = dt.Rows[0]["IsChangeAmountWB"].ToString();
+    //        var IsChangeDHDate = dt.Rows[0]["IsChangeDHDate"].ToString();
+    //        var IsChangeAgency = dt.Rows[0]["IsChangeAgency"].ToString();
+    //        var IsChangePayCondition = dt.Rows[0]["IsChangePayCondition"].ToString();
+    //        string sql_update1 = " update I_ContractMain set ";
+    //        string sql_update2 = " where ContractNo = '"+ContractNo+"'";
+    //        string sql_t = "";
+    //        if (IsChangeAmountRMB == "是")
+    //        {
+    //            sql_t += " ,ContractTotalPrice=" + dt.Rows[0]["AmountRMBNew"].ToString();
+    //        }
+    //        if (IsChangeAmountWB == "是")
+    //        {
+    //            sql_t += " ,JKTotalAmount=" + dt.Rows[0]["AmountWBNew"].ToString();
+    //        }
+    //        if (IsChangeDHDate == "是")
+    //        {
+    //            sql_t += " ,ContractDHDate='" + dt.Rows[0]["DHDateNew"].ToString() + "'";
+    //        }
+    //        if (IsChangeAgency == "是")
+    //        {
+    //            sql_t += " ,AgencyComputerNum=" + dt.Rows[0]["AgencyNumNew"].ToString();
+    //        }
+    //        if (IsChangePayCondition == "是")
+    //        {
+    //            sql_t += " ,PayCondition='" + dt.Rows[0]["PayConditionNew"].ToString() + "'";
+    //        }
+    //        if(sql_t != "")
+    //        {
+    //            dt2 = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+    //                sql_update1 + sql_t.Substring(2) + sql_update2);
+
+    //        }
+    //    }
+
+    //    object JSONObj = JsonConvert.SerializeObject(dt2);
+    //    context.Response.ContentType = "application/json";
+    //    context.Response.Write(JSONObj);
+    //}
+
+
+    public bool IsReusable
+    {
+        get
+        {
+            return false;
+        }
+    }
+    private IEngine _Engine = null;
+    /// <summary>
+    /// 流程引擎的接口，该接口会比this.Engine的方式更快，因为其中使用了缓存
+    /// </summary>
+    public IEngine Engine
+    {
+        get
+        {
+            if (OThinker.H3.Controllers.AppConfig.ConnectionMode == ConnectionStringParser.ConnectionMode.Mono)
+            {
+                return OThinker.H3.Controllers.AppUtility.Engine;
+            }
+            return _Engine;
+        }
+        set
+        {
+            _Engine = value;
+        }
+    }
+
+}

@@ -1,0 +1,294 @@
+﻿// 表单验证接口
+$.MvcSheet.Validate = function () {
+
+    // 填写申请单环节，设置  必填
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+        if (this.Action == "Submit") {
+            var total_dkamount_rmb = 0.0;
+            var total_dkamount_wb = 0.0;
+            var total_fkamount_rmb = 0.0;
+            var total_fkamount_wb = 0.0;
+            var IsCheckCnt = 0;
+            var dtl_dk = $.MvcSheetUI.GetElement("DKTblOfJS").SheetGridView();
+            for (var i = 0; i < dtl_dk.RowCount; i++) {
+                var IsCheck = $.MvcSheetUI.GetControlValue("DKTblOfJS.IsCheck", i + 1);
+                var DKCurrency = $.MvcSheetUI.GetControlValue("DKTblOfJS.DKCurrency", i + 1);
+                // 选中(选中为" " ,没选中没"")
+                if (IsCheck == "是;") {
+                    if (DKCurrency != "人民币") {
+                        total_dkamount_wb += (parseFloat($.MvcSheetUI.GetControlValue("DKTblOfJS.DKAmount", i + 1)));
+                    }
+                    IsCheckCnt++;
+                }
+            }
+            var dtl_fk = $.MvcSheetUI.GetElement("FKTblOfJS").SheetGridView();
+            for (var i = 0; i < dtl_fk.RowCount; i++) {
+                var IsCheck = $.MvcSheetUI.GetControlValue("FKTblOfJS.IsCheck", i + 1);
+                var FKCurrency = $.MvcSheetUI.GetControlValue("FKTblOfJS.FKCurrency", i + 1);
+                var ConvertAmount = $.MvcSheetUI.GetControlValue("FKTblOfJS.ConvertAmount", i + 1);
+                var FKObjectID = $.MvcSheetUI.GetControlValue("FKTblOfJS.FKObjectID", i + 1);
+                // 选中
+                if (IsCheck == "是;") {
+                    if (ConvertAmount == "") {
+                        for (var j = 0; j < dtl_fk.RowCount; j++) {
+                            var FKObjectID2 = $.MvcSheetUI.GetControlValue("FKTblOfJS.FKObjectID", j + 1);
+                            if (FKObjectID == FKObjectID2) {
+                                total_fkamount_wb += (parseFloat($.MvcSheetUI.GetControlValue("FKTblOfJS.FKAmount", j + 1)));
+                            }
+                        }
+                    }
+                    IsCheckCnt++;
+                }
+            }
+            if (IsCheckCnt == 0) {
+                layer.alert('没有选择要结算的到款或付款记录！', { icon: 2 });
+                return false;
+            }
+            if (total_fkamount_wb != total_dkamount_wb) {
+                layer.alert('外币到款必须与现汇付款结清！', { icon: 2 });
+                return false;
+            }
+
+        }
+    }
+    return true;
+}
+
+//}
+//数据加载后
+$.MvcSheet.Loaded = function () {
+    // 合同号码
+    var ContractNo = getUrlParam("ContractNo");
+    var Currency = "";
+    if (ContractNo != null && ContractNo != "") {
+        // 根据合同号码获取对应合同相关数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getByContractNo",   //处理页的相对地址
+            data: {
+                ContractNo: ContractNo,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                $.MvcSheetUI.SetControlValue("ContractNo", ret.ContractNo);
+                $.MvcSheetUI.SetControlValue("ContractName", ret.ContractName);
+                $.MvcSheetUI.SetControlValue("PostAB", ret.PostA + "," + ret.PostB);
+                $.MvcSheetUI.SetControlValue("CurrencyRMB", "人民币");
+                $.MvcSheetUI.SetControlValue("CurrencyWB", ret.CurrencyName);
+                if (ret.ContractProperty == "航空煤油") {
+                    $.MvcSheetUI.SetControlValue("IsHYFlg", "true");
+                } else {
+                    $.MvcSheetUI.SetControlValue("IsHYFlg", "false");
+                }
+            }
+        });
+
+        // 到款记录相关数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getDKTblOfJS",   //处理页的相对地址
+            data: {
+                ContractNo: ContractNo,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                var dtl = $.MvcSheetUI.GetElement("DKTblOfJS").SheetGridView();
+                dtl._Clear();
+                var len = dtl.RowCount;
+                var j = 1;
+                for (var i = 0; i < ret.length; i++) {
+                    dtl._AddRow();
+                    len += 1;
+                    $.MvcSheetUI.SetControlValue("DKTblOfJS.TheNo", ret[i].TheNo, len);
+                    $.MvcSheetUI.SetControlValue("DKTblOfJS.QKTarget", ret[i].QKTarget, len);
+                    $.MvcSheetUI.SetControlValue("DKTblOfJS.DKType", ret[i].DKType, len);
+                    $.MvcSheetUI.SetControlValue("DKTblOfJS.DKAmount", ret[i].DKAmount, len);
+                    $.MvcSheetUI.SetControlValue("DKTblOfJS.DKCurrency", ret[i].DKCurrency, len);
+                    $.MvcSheetUI.SetControlValue("DKTblOfJS.DKDate", ret[i].DKDate, len);
+                    $.MvcSheetUI.SetControlValue("DKTblOfJS.WorkItemId", ret[i].WorkItemId, len);
+                    $.MvcSheetUI.SetControlValue("DKTblOfJS.DKObjectID", ret[i].DKObjectID, len);
+                }
+
+            }
+        });
+
+        // 付款记录相关数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getFKTblOfJS",   //处理页的相对地址
+            data: {
+                ContractNo: ContractNo,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                var dtl = $.MvcSheetUI.GetElement("FKTblOfJS").SheetGridView();
+                dtl._Clear();
+                var len = dtl.RowCount;
+                var j = 1;
+                for (var i = 0; i < ret.length; i++) {
+                    dtl._AddRow();
+                    len += 1;
+                    $.MvcSheetUI.SetControlValue("FKTblOfJS.TheNo", ret[i].TheNo, len);
+                    $.MvcSheetUI.SetControlValue("FKTblOfJS.Cnt", ret[i].Cnt, len);
+                    $.MvcSheetUI.SetControlValue("FKTblOfJS.Receiver", ret[i].Receiver, len);
+                    $.MvcSheetUI.SetControlValue("FKTblOfJS.ZKMS", ret[i].ZKMS, len);
+                    $.MvcSheetUI.SetControlValue("FKTblOfJS.FKAmount", ret[i].FKAmount, len);
+                    $.MvcSheetUI.SetControlValue("FKTblOfJS.FKCurrency", ret[i].FKCurrency, len);
+                    $.MvcSheetUI.SetControlValue("FKTblOfJS.ConvertAmount", ret[i].ConvertAmount, len);
+                    $.MvcSheetUI.SetControlValue("FKTblOfJS.FKDate", ret[i].FKDate, len);
+                    $.MvcSheetUI.SetControlValue("FKTblOfJS.WorkItemId", ret[i].WorkItemId, len);
+                    $.MvcSheetUI.SetControlValue("FKTblOfJS.FKObjectID", ret[i].FKObjectID, len);
+                }
+
+            }
+        });
+        
+    } 
+
+    // 付款子表的合并单元格操作
+    var dtl = $.MvcSheetUI.GetElement("FKTblOfJS").SheetGridView();
+    var len = dtl.RowCount;
+    var FKObjectID = "";
+    if (len > 0) {
+        for (var i = 0; i < len; i++) {
+
+            if (FKObjectID == "" || FKObjectID != $.MvcSheetUI.GetControlValue("FKTblOfJS.FKObjectID", i + 1)) {
+                FKObjectID = $.MvcSheetUI.GetControlValue("FKTblOfJS.FKObjectID", i + 1);
+                var Cnt = $.MvcSheetUI.GetControlValue("FKTblOfJS.Cnt", i + 1);
+                var k = 0;
+                $("[data-datafield='FKTblOfJS']").find("tr.rows").each(function () {
+                    if (k == i) {
+                        $(this).find("td[data-field='FKTblOfJS.IsCheck']").attr("rowspan", Cnt);
+                        $(this).find("td[data-field='FKTblOfJS.TheNo']").attr("rowspan", Cnt);
+                        $(this).find("td[data-field='FKTblOfJS.Receiver']").attr("rowspan", Cnt);
+                        $(this).find("td[data-field='FKTblOfJS.ConvertAmount']").attr("rowspan", Cnt);
+                        $(this).find("td[data-field='FKTblOfJS.FKDate']").attr("rowspan", Cnt);
+                        $(this).find("td[data-field='FKTblOfJS.Operate']").attr("rowspan", Cnt);
+                    }
+                    k++;
+                });
+            } else {
+                FKObjectID = $.MvcSheetUI.GetControlValue("FKTblOfJS.FKObjectID", i + 1);
+                var k = 0;
+                $("[data-datafield='FKTblOfJS']").find("tr.rows").each(function () {
+                    if (k == i) {
+                        $(this).find("td[data-field='FKTblOfJS.IsCheck']").remove();
+                        $(this).find("td[data-field='FKTblOfJS.TheNo']").remove();
+                        $(this).find("td[data-field='FKTblOfJS.Receiver']").remove();
+                        $(this).find("td[data-field='FKTblOfJS.ConvertAmount']").remove();
+                        $(this).find("td[data-field='FKTblOfJS.FKDate']").remove();
+                        $(this).find("td[data-field='FKTblOfJS.Operate']").remove();
+                    }
+                    k++;
+                });
+            }
+        }
+    }
+
+    $(".CurrencyRMB").text($.MvcSheetUI.GetControlValue("CurrencyRMB"));
+    $(".CurrencyWB").text($.MvcSheetUI.GetControlValue("CurrencyWB"));
+    
+    $("input[data-datafield='ContractNo']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractName']").attr("disabled", "disabled");
+    $("input[data-datafield='PostAB']").attr("disabled", "disabled");
+    $("input[data-datafield='LJDKAmountRMB']").attr("disabled", "disabled");
+    $("input[data-datafield='LJDKAmountWB']").attr("disabled", "disabled");
+    $("input[data-datafield='LJFKAmountRMB']").attr("disabled", "disabled");
+    $("input[data-datafield='LJFKAmountWB']").attr("disabled", "disabled");
+    $("input[data-datafield='JSResult']").attr("disabled", "disabled");
+    $("input[data-datafield='DKTblOfJS.TheNo']").attr("disabled", "disabled");
+    $("input[data-datafield='DKTblOfJS.QKTarget']").attr("disabled", "disabled");
+    $("input[data-datafield='DKTblOfJS.DKType']").attr("disabled", "disabled");
+    $("input[data-datafield='DKTblOfJS.DKAmount']").attr("disabled", "disabled");
+    $("input[data-datafield='DKTblOfJS.DKCurrency']").attr("disabled", "disabled");
+    $("input[data-datafield='DKTblOfJS.DKDate']").attr("disabled", "disabled");
+    $("input[data-datafield='FKTblOfJS.TheNo']").attr("disabled", "disabled");
+    $("input[data-datafield='FKTblOfJS.Receiver']").attr("disabled", "disabled");
+    $("input[data-datafield='FKTblOfJS.ZKMS']").attr("disabled", "disabled");
+    $("input[data-datafield='FKTblOfJS.FKAmount']").attr("disabled", "disabled");
+    $("input[data-datafield='FKTblOfJS.FKCurrency']").attr("disabled", "disabled");
+    $("input[data-datafield='FKTblOfJS.ConvertAmount']").attr("disabled", "disabled");
+    $("input[data-datafield='FKTblOfJS.FKDate']").attr("disabled", "disabled");
+    $("input[data-datafield='JSStatus']").attr("disabled", "disabled");
+}
+
+// 到款查看
+function viewDK(el) {
+    var rowIndex = el.parentElement.parentElement.rowIndex;
+    var WorkItemId = $.MvcSheetUI.GetControlValue('DKTblOfJS.WorkItemId', rowIndex - 1);
+    window.location.href = "/Portal/Sheets/Contract/DKMy.aspx?Mode=View&WorkItemID=" + WorkItemId;
+}
+
+// 付款查看
+function viewFK(el) {
+    var rowIndex = el.parentElement.parentElement.rowIndex;
+    var WorkItemId = $.MvcSheetUI.GetControlValue('FKTblOfJS.WorkItemId', rowIndex - 1);
+    window.location.href = "/Portal/Sheets/Contract/FKMy.aspx?Mode=View&WorkItemID=" + WorkItemId;
+}
+
+function compute() {
+    // 只有申请节点才计算
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+        var i = 0;
+        var total_dkamount_rmb = 0.0;
+        var total_dkamount_wb = 0.0;
+        var total_fkamount_rmb = 0.0;
+        var total_fkamount_wb = 0.0;
+        var dtl_dk = $.MvcSheetUI.GetElement("DKTblOfJS").SheetGridView();
+        for (var i = 0; i < dtl_dk.RowCount; i++) {
+            var IsCheck = $.MvcSheetUI.GetControlValue("DKTblOfJS.IsCheck", i + 1);
+            var DKCurrency = $.MvcSheetUI.GetControlValue("DKTblOfJS.DKCurrency", i + 1);
+            // 选中(选中为" " ,没选中没"")
+            if (IsCheck == "是;") {
+                if (DKCurrency == "人民币") {
+                    total_dkamount_rmb += (parseFloat($.MvcSheetUI.GetControlValue("DKTblOfJS.DKAmount", i + 1)));
+                } else {
+                    total_dkamount_wb += (parseFloat($.MvcSheetUI.GetControlValue("DKTblOfJS.DKAmount", i + 1)));
+                }
+            }
+        }
+        var dtl_fk = $.MvcSheetUI.GetElement("FKTblOfJS").SheetGridView();
+        for (var i = 0; i < dtl_fk.RowCount; i++) {
+            var IsCheck = $.MvcSheetUI.GetControlValue("FKTblOfJS.IsCheck", i + 1);
+            var FKCurrency = $.MvcSheetUI.GetControlValue("FKTblOfJS.FKCurrency", i + 1);
+            var ConvertAmount = $.MvcSheetUI.GetControlValue("FKTblOfJS.ConvertAmount", i + 1);
+            var FKObjectID = $.MvcSheetUI.GetControlValue("FKTblOfJS.FKObjectID", i + 1);
+            // 选中
+            if (IsCheck == "是;") {
+                if (ConvertAmount != "") {
+                    var ConvertAmount = ConvertAmount.replace("人民币", "");
+                    total_fkamount_rmb += (parseFloat(ConvertAmount));
+                } else {
+                    for (var j = 0; j < dtl_fk.RowCount; j++) {
+                        var FKObjectID2 = $.MvcSheetUI.GetControlValue("FKTblOfJS.FKObjectID", j + 1);
+                        if (FKObjectID == FKObjectID2) {
+                            total_fkamount_wb += (parseFloat($.MvcSheetUI.GetControlValue("FKTblOfJS.FKAmount", j + 1)));
+                        }
+                    }
+                }
+            }
+        }
+
+        $.MvcSheetUI.SetControlValue("LJDKAmountRMB", (total_dkamount_rmb).toFixed(2));
+        $.MvcSheetUI.SetControlValue("LJDKAmountWB", (total_dkamount_wb).toFixed(2));
+        $.MvcSheetUI.SetControlValue("LJFKAmountRMB", (total_fkamount_rmb).toFixed(2));
+        $.MvcSheetUI.SetControlValue("LJFKAmountWB", (total_fkamount_wb).toFixed(2));
+
+        var BankFY = parseFloat($.MvcSheetUI.GetControlValue("BankFY", i + 1));
+        var AgencyFY = parseFloat($.MvcSheetUI.GetControlValue("AgencyFY", i + 1));
+        var OtherFY = parseFloat($.MvcSheetUI.GetControlValue("OtherFY", i + 1));
+
+        var subs = total_dkamount_rmb - total_fkamount_rmb - BankFY - AgencyFY - OtherFY;
+        if (subs > 0) {
+            $.MvcSheetUI.SetControlValue("JSStatus", "应退");
+        } else if (subs < 0) {
+            $.MvcSheetUI.SetControlValue("JSStatus", "应收");
+            subs = subs * (-1);
+        } else {
+            $.MvcSheetUI.SetControlValue("JSStatus", "");
+        }
+        $.MvcSheetUI.SetControlValue("JSResult", subs.toFixed(2));
+
+    }
+
+}

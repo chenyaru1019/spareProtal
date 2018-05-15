@@ -1,0 +1,32 @@
+﻿
+$.MvcSheet.Loaded = function () {
+    // 协议号码
+    var AgreeMent_number = getUrlParam("AgreeMent_number");
+    //console.log(AgreeMent_number);
+    // 根据合同号码获取对应合同相关数据
+  
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "AgreeMent_change.ashx?Command=getAgreement",   //处理页的相对地址
+            data: {
+                AgreeMent_number:AgreeMent_number,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                console.log(ret);
+                $.MvcSheetUI.SetControlValue("Agreement_name", ret.Agreement_name);
+                $.MvcSheetUI.SetControlValue("Agreenment_number", ret.Agreenment_number);
+                $.MvcSheetUI.SetControlValue("Agreement_entrust", ret.Agreement_entrust);
+                $.MvcSheetUI.SetControlValue("Old_pay_condition", ret.Old_pay_condition);
+                $.MvcSheetUI.SetControlValue("Old_agency_fee", ret.Old_agency_fee);
+                $.MvcSheetUI.SetControlValue("CreatedTime", ret.CreatedTime);
+            }
+        });
+       
+    $("input[data-datafield='Agreenment_number']").attr("disabled", "disabled");
+    $("input[data-datafield='Agreement_name']").attr("disabled", "disabled");
+    $("input[data-datafield='Agreement_entrust']").attr("disabled", "disabled");
+    $("input[data-datafield='Old_agency_fee']").attr("disabled", "disabled");
+    $("input[data-datafield='Old_pay_condition']").attr("disabled", "disabled");
+
+}

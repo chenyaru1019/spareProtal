@@ -1,0 +1,72 @@
+﻿<div>
+    <input type="radio" value="my1" name="my_project" checked="checked">我的项目
+    <input type="radio" value="my2" name="my_contract">代职项目
+    <input type="radio" value="my3" name="my_contract" id="">全部
+    项目状态:<input type="checkbox" value="创建合同" name="contract_state" id="ct1">创建项目
+    <input type="checkbox" value="创建合同" name="contract_state" id="ct2">招标准备
+    <input type="checkbox" value="合同执行" name="contract_state" id="ct3">发表开标
+    <input type="checkbox" value="合同完成" name="contract_state" id="ct4">评标
+    <input type="checkbox" value="合同完成" name="contract_state" id="ct4">中标退保
+    <input type="checkbox" value="合同完成" name="contract_state" id="ct4">归档归尾
+    <input type="checkbox" value="合同完成" name="contract_state" id="ct4">项目完成
+</div>
+<div>
+    我的角色:<select name="my_role" id="my_role">
+        <option value="my_a">我是A角</option>
+        <option value="my_b">我是B角</option>
+        <option value="my_all">全部</option>
+    </select>
+    招标编号:<input type="text" name="contractno" value="" id="contractno">
+    中标通知书:<input ui-jq="wdatePicker" id="q_StartTime" wind="10%">-<input ui-jq="wdatePicker" id="q_OverTime" wind="10%">
+    <input type="button" value="查找" id="sel_finds">
+</div>
+<div style='margin-top: 40px;'>
+
+    <table id="table_one" class="display">
+        <thead>            
+            <tr>
+                <th>项目简称</th>
+                <th>招标编号</th>
+                <th>包号</th>
+                <th>创建日期</th>
+                <th>招标范围</th>
+                <th>招标方式</th>
+                <th>招标人</th>
+                <th>项目负责人</th>
+                <th>中标通知书</th>
+                <th>当前状态</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <input type="hidden" value="" name="versions" id="versions">
+</div>
+<script type="text/javascript">
+    var cottageDom = $('#table_one');
+    //window.cottageApp.agreement_num = $('#agreement_num').val();
+    //window.cottageApp.entrust = $("#entrust").val();
+    //window.cottageApp.Agreement_name = $("#Agreement_name").val();
+    
+    window.cottageApp.dataTableInit(cottageDom);
+    $("#finds").click(
+        function () {
+            window.cottageApp.cottageObj.fnClearTable();
+            window.cottageApp.cottageObj.fnDestroy();
+            cottageDom.DataTable().destroy();
+            window.cottageApp.agreement_num = $('#agreement_num').val();
+            window.cottageApp.entrust = $("#entrust").val();
+            window.cottageApp.Agreement_name = $("#Agreement_name").val();
+            window.cottageApp.dataTableInit(cottageDom);
+            cottageDom.DataTable().ajax.reload();
+
+        }
+    )
+    function execute(Agreement_num) {
+        //获取版本号 
+        var versions = $("#versions").val();
+        //window.location = "/Portal/Sheets/AgreeMent/AgreeMent_change/AgreeMent_change.aspx?Mode=Originate&WorkflowCode=Agreenment_change&WorkflowVersion=17";
+        window.location.href = "/Portal/Sheets/Agreement/Agreement_execute/Agreement_execute.aspx?Mode=Originate&WorkflowCode=Agreen_perform&WorkflowVersion=" + versions + "&AgreeMent_number=" + Agreement_num;
+    }
+
+</script>

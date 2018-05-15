@@ -1,0 +1,119 @@
+﻿//数据加载后
+$.MvcSheet.Loaded = function () {
+    // 合同号码
+    var ContractNo = getUrlParam("ContractNo");
+    //var ContractNo = $.MvcSheetUI.GetControlValue("ContractNo");
+    if (ContractNo != null && ContractNo != "") {
+        // 根据合同号码获取对应合同相关数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getByContractNo",   //处理页的相对地址
+            data: {
+                ContractNo: ContractNo,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                $.MvcSheetUI.SetControlValue("ContractNo", ret.ContractNo);
+                $.MvcSheetUI.SetControlValue("ContractName", ret.ContractName);
+                $.MvcSheetUI.SetControlValue("ContractType", ret.ContractType);
+                $.MvcSheetUI.SetControlValue("ContractProperty", ret.ContractProperty);
+                $.MvcSheetUI.SetControlValue("PostAB", ret.PostA + "," + ret.PostB);
+                $.MvcSheetUI.SetControlValue("Salers", ret.Salers);
+                $.MvcSheetUI.SetControlValue("FinalUser", ret.FinalUser);
+                $.MvcSheetUI.SetControlValue("BidNo", ret.BidNo);
+                $.MvcSheetUI.SetControlValue("ContractRemark", ret.ContractRemark);
+                $.MvcSheetUI.SetControlValue("AgencyType", ret.AgencyType);
+                if (ret.ContractProperty == "航空煤油") {
+                    $.MvcSheetUI.SetControlValue("IsHYFlg", "true");
+                } else {
+                    $.MvcSheetUI.SetControlValue("IsHYFlg", "false");
+                }
+
+                $("#ContractFile").xnfile();
+                var ContractFile = ret.ContractFile;
+                if (ContractFile != "") {
+                    var arr = ContractFile.split(",");
+                    $("#ContractFile").xnfile("value", arr);
+                }
+                $("#TalkFile").xnfile();
+                var TalkFile = ret.TalkFile;
+                if (TalkFile != "") {
+                    var arr = TalkFile.split(",");
+                    $("#TalkFile").xnfile("value", arr);
+                }
+            }
+        });
+    } else {
+        // 自定义文件格式 合同文本
+        $("#ContractFile").xnfile();
+        var ContractFile = $.MvcSheetUI.GetControlValue("ContractFile");
+        if (ContractFile != "") {
+            var arr = ContractFile.split(",");
+            $("#ContractFile").xnfile("value", arr);
+        }
+
+        // 自定义文件格式 合同谈判小结
+        $("#TalkFile").xnfile();
+        var TalkFile = $.MvcSheetUI.GetControlValue("TalkFile");
+        if (TalkFile != "") {
+            var arr = TalkFile.split(",");
+            $("#TalkFile").xnfile("value", arr);
+        }
+    }
+    $("input[data-datafield='ContractNo']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractName']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractType']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractProperty']").attr("disabled", "disabled");
+    $("input[data-datafield='PostAB']").attr("disabled", "disabled");
+    $("input[data-datafield='Salers']").attr("disabled", "disabled");
+    $("input[data-datafield='FinalUser']").attr("disabled", "disabled");
+    $("input[data-datafield='BidNo']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractRemark']").attr("disabled", "disabled");
+    $("input[data-datafield='AgencyType']").attr("disabled", "disabled");
+
+    $("#ContractFile button").prop("disabled", true);
+    $("#TalkFile button").prop("disabled", true);
+
+    
+
+    // 自定义文件格式 资质证明文件
+    $("#Attachment").xnfile();
+    var Attachment = $.MvcSheetUI.GetControlValue("Attachment");
+    if (Attachment != "") {
+        var arr = Attachment.split(",");
+        $("#Attachment").xnfile("value", arr);
+    }
+
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+        setFileReadOnly("ContractFile");
+        setFileReadOnly("TalkFile");
+        setFileWriteable("Attachment");
+    } else {
+        setFileReadOnly("ContractFile");
+        setFileReadOnly("TalkFile");
+        setFileReadOnly("Attachment");
+    }
+}
+
+// 表单验证接口
+$.MvcSheet.Validate = function () {
+
+    var ContractNo = $.MvcSheetUI.GetControlValue("ContractNo");
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+        var ContractFile = $("#ContractFile").xnfile("value");
+        $.MvcSheetUI.SetControlValue("ContractFile", ContractFile);
+        var TalkFile = $("#TalkFile").xnfile("value");
+        $.MvcSheetUI.SetControlValue("TalkFile", TalkFile);
+        var Attachment = $("#Attachment").xnfile("value");
+        $.MvcSheetUI.SetControlValue("Attachment", Attachment);
+        if (this.Action == "Submit") {
+            if (Attachment == "") {
+                layer.alert('请资质证明文件！', { icon: 2 });
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+

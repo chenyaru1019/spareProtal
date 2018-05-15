@@ -1,0 +1,1054 @@
+﻿// 提交前事件
+$.MvcSheet.SubmitAction.OnActionPreDo = function () {
+    //// 申请修改合同号状态
+    //var UpdateNoFlg = $.MvcSheetUI.GetControlValue("UpdateNoFlg");
+    //// 审签合同状态
+    //var ApproveFlg = $.MvcSheetUI.GetControlValue("ApproveFlg");
+    //// 执行合同状态
+    //var OperateFlg = $.MvcSheetUI.GetControlValue("OperateFlg");
+    //// 合同完成状态
+    //var CompleteFlg = $.MvcSheetUI.GetControlValue("CompleteFlg");
+    // 当前节点是合同创建节点
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityCreate") {
+        // AB角check
+        var PostA = $.MvcSheetUI.GetControlValue("PostA");
+        var PostB = $.MvcSheetUI.GetControlValue("PostB");
+        if ($.MvcSheetUI.SheetInfo.Originator != PostA && $.MvcSheetUI.SheetInfo.Originator != PostB) {
+            alert("当前用户必须是A角或B角之一！");
+            return false;
+        }
+        var el = $("table[data-datafield='UpdateNoTbl']").find("[data-datafield='UpdateNoTbl.Status']");
+        var txt = el.length > 1 ? el[1].value : "";
+        // 审批完了后才可以修改合同金额以下的数据
+        if (txt == "审批中") {
+            alert("当前正在申请修改合同号，不能提交到下一步！");
+            return false;
+        }
+        //if (UpdateNoFlg == '2') {
+        //    alert("当前正在申请修改合同号，不能提交到下一步！");
+        //    return false;
+        //}
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityApprove") {
+        var dtl = $.MvcSheetUI.GetElement("ContractApproveTbl").SheetGridView();
+        if (dtl.RowCount <= 0) {
+            alert("当前还没有审签过，不能提交到下一步！");
+            return false;
+        }
+    }
+}
+////初始化
+//$.MvcSheet.PreInit = function () {
+
+
+//}
+//数据加载后
+$.MvcSheet.Loaded = function () {
+    $.MvcSheetUI.SetControlValue("ToApproveSubFlg", "");
+    $("input[data-datafield='AgencyComment']").attr("disabled", "disabled");
+    // 当前节点是合同创建节点
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityCreate") {
+        // 申请修改合同号子表 不能编辑
+        $("input[data-datafield='UpdateNoTbl.Approver']").attr("disabled", "disabled");
+        $("input[data-datafield='UpdateNoTbl.ApproveDate']").attr("disabled", "disabled");
+        $("input[data-datafield='UpdateNoTbl.ContractNoNew']").attr("disabled", "disabled");
+        $("input[data-datafield='UpdateNoTbl.Status']").attr("disabled", "disabled");
+        // 流程图
+        $("#apDiv1 input").removeClass("bt_project1").removeClass("bt_project3").addClass("bt_project2");
+        $("#apDiv22 input").removeClass("bt_project1").removeClass("bt_project2").addClass("bt_project3");
+        $("#apDiv3 input").removeClass("bt_project1").removeClass("bt_project2").addClass("bt_project3");
+        $("#apDiv4 input").removeClass("bt_project1").removeClass("bt_project2").addClass("bt_project3");
+        $('.operateChild').attr("disabled", "disabled");
+
+        // 审批申请按钮 不显示
+        $("#ApplyApproveId").hide();
+        // 信用证
+        $("#ApprovePaymentId").hide();
+        // 进口许可证
+        $("#ApproveImportLicenseId").hide();
+        // 到货
+        $("#ApproveDHId").hide();
+        // 合同变更
+        $("#ApproveBGId").hide();
+        // 请款
+        $("#ApproveQKId").hide();
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityApprove") {
+        // 审签子表不能编辑
+        $("input[data-datafield='ContractApproveTbl.Approver']").attr("disabled", "disabled");
+        $("input[data-datafield='ContractApproveTbl.ApproveDate']").attr("disabled", "disabled");
+        $("input[data-datafield='ContractApproveTbl.Status']").attr("disabled", "disabled");
+        $("input[data-datafield='ContractApproveTbl.Operate']").attr("disabled", "disabled");
+        // 流程图
+        $("#apDiv1 input").removeClass("bt_project2").removeClass("bt_project3").addClass("bt_project1");
+        $("#apDiv22 input").removeClass("bt_project1").removeClass("bt_project3").addClass("bt_project2");
+        $("#apDiv3 input").removeClass("bt_project1").removeClass("bt_project2").addClass("bt_project3");
+        $("#apDiv4 input").removeClass("bt_project1").removeClass("bt_project2").addClass("bt_project3");
+        $('.operateChild').attr("disabled", "disabled");
+        // 生成合同号、申请修改合同号按钮 不显示
+        $("#generateContractNoId").hide();
+        $("#ApplyContractNoId").hide();
+        // 信用证
+        $("#ApprovePaymentId").hide();
+        // 进口许可证
+        $("#ApproveImportLicenseId").hide();
+        // 到货
+        $("#ApproveDHId").hide();
+        // 合同变更
+        $("#ApproveBGId").hide();
+        // 请款
+        $("#ApproveQKId").hide();
+        var el = $("table[data-datafield='ContractApproveTbl']").find("[data-datafield='ContractApproveTbl.Status']");
+        var txt = el.length > 1 ? el[1].value : "";
+        // 审批完了后才可以修改合同金额以下的数据
+        if (txt != "审批完了") {
+            // 合同金额
+            $("input[data-datafield='ContractTotalPrice']").attr("disabled", "disabled");
+            // 代理协议签约日期
+            $("input[data-datafield='AgencySignDate']").attr("disabled", "disabled");
+            // 签约日期
+            $("input[data-datafield='SignDate']").attr("disabled", "disabled");
+            // 合同到货期
+            $("[data-datafield='ContractDHDate']").attr("disabled", "disabled");
+            // 代理费费率／金额
+            $("[data-datafield='AgencyComputerType']").attr("disabled", "disabled");
+            // 支付条件
+            $("[data-datafield='PayCondition']").attr("disabled", "disabled");
+            // 总金额
+            $("input[data-datafield='JKTotalAmount']").attr("disabled", "disabled");
+            // 币种
+            $("[data-datafield='Currency']").attr("disabled", "disabled");
+            // 签约日汇率
+            $("input[data-datafield='SignDayExchangeRate']").attr("disabled", "disabled");
+            // 签约日汇率截屏文件
+            $("[data-datafield='SignDayERFile']").find("div").attr("disabled", "disabled");
+            $("[data-datafield='SignDayERFile']").find("table tr").each(function () {
+                $(this).find("a.fa-minus").hide();
+            });
+        }
+        if (txt == '审批中' || txt == '审批完了'){
+            // 计价方式
+            $("input[data-datafield='ValuationType']").attr("disabled", "disabled");
+            $("input[data-datafield='Agio']").attr("disabled", "disabled");
+            // 到货日期
+            $("input[data-datafield='DHDate']").attr("disabled", "disabled");
+            // 代理协议类型
+            $("select[data-datafield='AgencyType']").attr("disabled", "disabled");
+            // 代理协议选择
+            $("input[data-datafield='AgencySelect']").attr("disabled", "disabled");
+            $("input[data-datafield='AgencySelect']").next().next().hide();
+            // 代理协议文件
+            $("[data-datafield='AgencyFile']").find("div").attr("disabled", "disabled");
+            $("[data-datafield='AgencyFile']").find("table tr").each(function () {
+                $(this).find("a.fa-minus").hide();
+            });
+            // 协议后审说明
+            $("[data-datafield='AgencyAfterRemark']").attr("disabled", "disabled");
+            // 合同文本
+            $("[data-datafield='ContractFile']").find("div").attr("disabled", "disabled");
+            $("[data-datafield='ContractFile']").find("table tr").each(function () {
+                $(this).find("a.fa-minus").hide();
+            });
+            // 合同谈判小结
+            $("[data-datafield='TalkFile']").find("div").attr("disabled", "disabled");
+            $("[data-datafield='TalkFile']").find("table tr").each(function () {
+                $(this).find("a.fa-minus").hide();
+            });
+        }
+        // 对应人民币总金额
+        $("[data-datafield='RMBTotalAmount']").attr("disabled", "disabled");
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOperate") {
+        // 审批申请按钮 不显示
+        $("#ApplyApproveId").hide();
+        // 生成合同号、申请修改合同号按钮 不显示
+        $("#generateContractNoId").hide();
+        $("#ApplyContractNoId").hide();
+        // 流程图
+        $("#apDiv1 input").removeClass("bt_project2").removeClass("bt_project3").addClass("bt_project1");
+        $("#apDiv22 input").removeClass("bt_project2").removeClass("bt_project3").addClass("bt_project1");
+        $("#apDiv3 input").removeClass("bt_project1").removeClass("bt_project3").addClass("bt_project2");
+        $("#apDiv4 input").removeClass("bt_project1").removeClass("bt_project2").addClass("bt_project3");
+        // 信用证记录子表不能编辑
+        $("input[data-datafield='PaymentTbl.Bank']").attr("disabled", "disabled");
+        $("input[data-datafield='PaymentTbl.TotalAmount']").attr("disabled", "disabled");
+        $("input[data-datafield='PaymentTbl.Status']").attr("disabled", "disabled");
+        $("input[data-datafield='PaymentTbl.UpdatePayment']").attr("disabled", "disabled");
+        $("input[data-datafield='PaymentTbl.TheNo']").attr("disabled", "disabled");
+    }
+    // 信用证子表的改证显示判断
+    var rowp = 0;
+    $("[data-datafield='PaymentTbl']").find("tr.rows").each(function () {
+        rowp++;
+        var Status = $.MvcSheetUI.GetControlValue("PaymentTbl.Status", rowp);
+        var changePaymentFlg = $.MvcSheetUI.GetControlValue("PaymentTbl.changePaymentFlg", rowp);
+        var RejectFlg = $.MvcSheetUI.GetControlValue("PaymentTbl.RejectFlg", rowp);
+        if (Status == "已开证") {
+            $(this).find("td[data-field='PaymentTbl.UpdatePayment'] a").show();
+            if (changePaymentFlg == "2") {
+                $(this).find("td[data-field='PaymentTbl.UpdatePayment'] a").hide();
+                $(this).find("td[data-field='PaymentTbl.UpdatePayment']").text("改证中");
+            } else if (changePaymentFlg == "4") {
+                $(this).find("td[data-field='PaymentTbl.UpdatePayment'] a").hide();
+                $(this).find("td[data-field='PaymentTbl.UpdatePayment']").text("已改证");
+            }
+        } else {
+            $(this).find("td[data-field='PaymentTbl.UpdatePayment'] a").hide();
+        }
+        if (RejectFlg == "1") {
+            $(this).find("td[data-field='PaymentTbl.Operate'] a.updatePayment").show();
+        } else {
+            $(this).find("td[data-field='PaymentTbl.Operate'] a.updatePayment").hide();
+        }
+        
+    });
+
+    // 进口许可证子表的显示判断
+    var rowp = 0;
+    $("[data-datafield='ImportLicenceTbl']").find("tr.rows").each(function () {
+        rowp++;
+        var Status = $.MvcSheetUI.GetControlValue("ImportLicenceTbl.Status", rowp);
+        var RejectFlg = $.MvcSheetUI.GetControlValue("ImportLicenceTbl.RejectFlg", rowp);
+        var CancelFlg = $.MvcSheetUI.GetControlValue("ImportLicenceTbl.CancelFlg", rowp);
+        var DisplayName = $.MvcSheetUI.GetControlValue("ImportLicenceTbl.DisplayName", rowp);
+
+        if (Status == "4") {
+            if (RejectFlg == "1" || DisplayName == "草稿") {
+                $(this).find("td[data-field='ImportLicenceTbl.Operate'] a.updateImportLicence").show();
+            } else {
+                $(this).find("td[data-field='ImportLicenceTbl.Operate'] a.updateImportLicence").hide();
+            }
+            if (CancelFlg == "1") {
+                $(this).find("td[data-field='ImportLicenceTbl.Operate'] a.cancelImportLicence").hide();
+                $(this).find("td[data-field='ImportLicenceTbl.Operate'] a.undocancelImportLicence").show();
+            } else {
+                $(this).find("td[data-field='ImportLicenceTbl.Operate'] a.cancelImportLicence").show();
+                $(this).find("td[data-field='ImportLicenceTbl.Operate'] a.undocancelImportLicence").hide();
+            }
+        } else {
+            if (RejectFlg == "1" || DisplayName == "草稿") {
+                $(this).find("td[data-field='ImportLicenceTbl.Operate'] a.updateImportLicence").show();
+            } else {
+                $(this).find("td[data-field='ImportLicenceTbl.Operate'] a.updateImportLicence").hide();
+            }
+            $(this).find("td[data-field='ImportLicenceTbl.Operate'] a.cancelImportLicence").hide();
+            $(this).find("td[data-field='ImportLicenceTbl.Operate'] a.undocancelImportLicence").hide();
+        }         
+        
+    });
+    // 请款子表的合并单元格操作
+    var dtl = $.MvcSheetUI.GetElement("QKMainTbl").SheetGridView();
+    var len = dtl.RowCount;
+    var QKSeq = "";
+    if (len > 0) {
+        for (var i = 0; i < len; i++) {
+
+            if (QKSeq == "" || QKSeq != $.MvcSheetUI.GetControlValue("QKMainTbl.QKSeq", i+1)) {
+                var SeqCnt = $.MvcSheetUI.GetControlValue("QKMainTbl.SeqCnt", i + 1);
+                var k = 0;
+                $("[data-datafield='QKMainTbl']").find("tr.rows").each(function () {
+                    if (k == i) {
+                        $(this).find("td[data-field='QKMainTbl.QKSeq']").attr("rowspan", SeqCnt);
+                        $(this).find("td[data-field='QKMainTbl.QKTotalAmount']").attr("rowspan", SeqCnt);
+                        $(this).find("td[data-field='QKMainTbl.QKTarget']").attr("rowspan", SeqCnt);
+                        $(this).find("td[data-field='QKMainTbl.Status']").attr("rowspan", SeqCnt);
+                    }
+                    k++;
+                });
+            } else {
+                var k = 0;
+                $("[data-datafield='QKMainTbl']").find("tr.rows").each(function () {
+                    if (k == i) {
+                        $(this).find("td[data-field='QKMainTbl.QKSeq']").remove();
+                        $(this).find("td[data-field='QKMainTbl.QKTotalAmount']").remove();
+                        $(this).find("td[data-field='QKMainTbl.QKTarget']").remove();
+                        $(this).find("td[data-field='QKMainTbl.Status']").remove();
+                    }
+                    k++;
+                });
+            }
+            QKSeq = $.MvcSheetUI.GetControlValue("QKMainTbl.QKSeq", i + 1);
+            
+        }
+    }
+
+    // 到货子表的合并单元格操作
+    var dtl_dh = $.MvcSheetUI.GetElement("DHTbl").SheetGridView();
+    var len_dh = dtl_dh.RowCount;
+    var DHSeq = "";
+    if (len_dh > 0) {
+        for (var i = 0; i < len_dh; i++) {
+
+            if (DHSeq == "" || DHSeq != $.MvcSheetUI.GetControlValue("DHTbl.DHSeq", i + 1)) {
+                var SeqCnt = $.MvcSheetUI.GetControlValue("DHTbl.SeqCnt", i + 1);
+                var RejectFlg = $.MvcSheetUI.GetControlValue("DHTbl.RejectFlg", i + 1);
+                var DisplayName = $.MvcSheetUI.GetControlValue("DHTbl.DisplayName", i + 1);
+                var k = 0;
+                $("[data-datafield='DHTbl']").find("tr.rows").each(function () {
+                    if (k == i) {
+                        $(this).find("td[data-field='DHTbl.TheNo']").attr("rowspan", SeqCnt);
+                        $(this).find("td[data-field='DHTbl.DHType']").attr("rowspan", SeqCnt);
+                        $(this).find("td[data-field='DHTbl.DHSeq']").attr("rowspan", SeqCnt);
+                        $(this).find("td[data-field='DHTbl.ShippingType']").attr("rowspan", SeqCnt);
+                        $(this).find("td[data-field='DHTbl.Supplier']").attr("rowspan", SeqCnt);
+                        $(this).find("td[data-field='DHTbl.DisplayName']").attr("rowspan", SeqCnt);
+                        $(this).find("td[data-field='DHTbl.Operate']").attr("rowspan", SeqCnt);
+                        if (RejectFlg == "1" || DisplayName == "草稿") {
+                            $(this).find("td[data-field='DHTbl.Operate'] a.updateDH").show();
+                        } else {
+                            $(this).find("td[data-field='DHTbl.Operate'] a.updateDH").hide();
+                        }
+                    }
+                    k++;
+                });
+            } else {
+                var k = 0;
+                $("[data-datafield='DHTbl']").find("tr.rows").each(function () {
+                    if (k == i) {
+                        $(this).find("td[data-field='DHTbl.TheNo']").remove();
+                        $(this).find("td[data-field='DHTbl.DHType']").remove();
+                        $(this).find("td[data-field='DHTbl.DHSeq']").remove();
+                        $(this).find("td[data-field='DHTbl.ShippingType']").remove();
+                        $(this).find("td[data-field='DHTbl.Supplier']").remove();
+                        $(this).find("td[data-field='DHTbl.DisplayName']").remove();
+                        $(this).find("td[data-field='DHTbl.Operate']").remove();
+                    }
+                    k++;
+                });
+            }
+            DHSeq = $.MvcSheetUI.GetControlValue("DHTbl.DHSeq", i + 1);
+
+        }
+    }
+
+    // 合同变更子表的显示判断
+    var rowp = 0;
+    $("[data-datafield='BGTbl']").find("tr.rows").each(function () {
+        rowp++;
+        var Status = $.MvcSheetUI.GetControlValue("BGTbl.Status", rowp);
+        var RejectFlg = $.MvcSheetUI.GetControlValue("BGTbl.RejectFlg", rowp);
+        var DisplayName = $.MvcSheetUI.GetControlValue("BGTbl.DisplayName", rowp);
+
+        if (Status == "4") {
+            if (RejectFlg == "1" || DisplayName == "草稿") {
+                $(this).find("td[data-field='BGTbl.Operate'] a.updateBG").show();
+            } else {
+                $(this).find("td[data-field='BGTbl.Operate'] a.updateBG").hide();
+            }
+        } else {
+            if (RejectFlg == "1" || DisplayName == "草稿") {
+                $(this).find("td[data-field='BGTbl.Operate'] a.updateBG").show();
+            } else {
+                $(this).find("td[data-field='BGTbl.Operate'] a.updateBG").hide();
+            }
+        }
+
+    });
+  
+
+    // 审签节点中显示不显示
+    var ContractNo = $.MvcSheetUI.GetControlValue("ContractNo");
+    var ContractType = "";
+    var ContractProperty = "";
+    var AgencyType = "";
+    if (ContractNo != null && ContractNo != "") {
+        // 根据合同号码获取对应合同相关数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getByContractNo",   //处理页的相对地址
+            data: {
+                ContractNo: ContractNo,
+            },
+            //async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                if (ret.ContractNo != null && ret.ContractNo != "") {
+                    ContractType = ret.ContractType;
+                    ContractProperty = ret.ContractProperty;
+                    AgencyType = ret.AgencyType;
+                    if (ContractType == "国内合同") {
+                        $(".NotHYDiv").show();
+                        $(".HYDiv").hide();
+                        $(".JKDiv").hide();
+                    } else if (ContractType == "进口合同") {
+                        $(".NotHYDiv").show();
+                        if (ContractProperty == "航空煤油") {
+                            $(".HYDiv").show();
+                        } else {
+                            $(".HYDiv").hide();
+                        }
+                        $(".JKDiv").show();
+                    }
+
+                    if (AgencyType == '不需要' || AgencyType == '') {
+                        $('.AgencyFile').hide();
+                        $('.AgencySelect').hide();
+                        $('.AgencyAfterRemark').hide();
+                        $('.AgencyComment').hide();
+                    } else if (AgencyType == '已审') {
+                        if (ContractProperty == '航空煤油') {
+                            $('.AgencyFile').show();
+                            $('.AgencySelect').hide();
+                        } else {
+                            $('.AgencyFile').hide();
+                            $('.AgencySelect').show();
+                        }
+                        $('.AgencyAfterRemark').hide();
+                        $('.AgencyComment').show();
+                    } else if (AgencyType == '后审') {
+                        $('.AgencyFile').hide();
+                        $('.AgencySelect').hide();
+                        $('.AgencyAfterRemark').show();
+                        $('.AgencyComment').hide();
+                    }
+                }
+                
+            }
+        });
+    }
+
+
+}
+
+// 点击执行中的各个图片
+function clickToggle(Type, opflg) {
+    $('.bannerTitle' + Type).next().show();
+    if (opflg == "1") {
+        $('.bt_progress_child_long1').removeClass("bt_progress_child_long1").addClass("bt_progress_child_long2");
+        $('.operateChild' + Type).removeClass("bt_progress_child_long2").addClass("bt_progress_child_long1");
+    }
+}
+
+// 生成合同号
+function generateContractNo() {
+    // 合同类型
+    var ContractType = $.MvcSheetUI.GetControlValue("ContractType");
+    // 合同性质
+    var ContractProperty = $.MvcSheetUI.GetControlValue("ContractProperty");
+    // 工程编码
+    var SubProjectCode = $.MvcSheetUI.GetControlValue("SubProjectCode");
+    // 国别编码
+    var Country = $.MvcSheetUI.GetControlValue("Country");
+    if (ContractType == "") {
+        alert("请选择合同类型!");
+    } else if (ContractProperty == "") {
+        alert("请选择合同性质!");
+    } else if (SubProjectCode == "") {
+        alert("请选择最终用户!");
+    } else {
+        if (ContractType == "JK" && Country == "" ) {
+            alert("请选择国别!");
+        } else {
+            //给合同号申请成功标识符赋值
+            $.ajax({
+                type: "POST",    //页面请求的类型
+                url: "ContractHandler.ashx?Command=generateContractNo",   //处理页的相对地址
+                data: {
+                    ContractType: ContractType,
+                    ContractProperty: ContractProperty,
+                    SubProjectCode: SubProjectCode,
+                    Country: Country,
+                },
+                async: false,
+                success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                    $.MvcSheetUI.SetControlValue("ContractNo", ret);
+
+                }
+            });
+        }
+        
+    }
+
+}
+// 申请修改合同号
+function ApplyContractNo() {
+    var ContractNo = $.MvcSheetUI.GetControlValue("ContractNo");
+    var ContractName = $.MvcSheetUI.GetControlValue("ContractName");
+    var canUpdateFlg = true;
+    //判断当前合同号是否有数据（是否进行保存过）
+    $.ajax({
+        type: "POST",    //页面请求的类型
+        url: "ContractHandler.ashx?Command=getByContractNo",   //处理页的相对地址
+        data: {
+            ContractNo: ContractNo,
+        },
+        async: false,
+        success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+            if (ret.ContractNo == null || ret.ContractNo == '') {
+                alert("合同号还不存在，无法申请修改（请先进行保存）");
+                canUpdateFlg = false;
+            }
+        }
+    });
+    if (canUpdateFlg) {
+        //判断当前合同号是否正在审批中
+        var dtl = $.MvcSheetUI.GetElement("UpdateNoTbl").SheetGridView();
+        var len = dtl.RowCount;
+        if (len > 0 && $.MvcSheetUI.GetControlValue("UpdateNoTbl.Status", 1) == "审批中") {
+            alert("当前有正在审批中的数据，不能进行申请！");
+            return false;
+        }
+        var WorkflowVersion_Update = $.MvcSheetUI.GetControlValue("WorkflowVersion_Update");
+        // window.location.href = "/Portal/StartInstance.html?WorkflowCode=Apply2&ContractNo=" + ContractNo + "&ContractName=" + ContractName;
+        //window.location.href = "/Portal/MvcDefaultSheet.aspx?SheetCode=UpdateContractNoMy&Mode=Originate&WorkflowCode=UpdateContractNo&WorkflowVersion=" + WorkflowVersion_Update + "&ContractNo=" + ContractNo + "&ContractName=" + ContractName;
+        window.location.href = "/Portal/Sheets/Contract/UpdateContractNoMy.aspx?Mode=Originate&WorkflowCode=UpdateContractNo&WorkflowVersion=" + WorkflowVersion_Update + "&ContractNo=" + ContractNo;
+
+    }
+}
+
+// 申请审签
+function ApplyApprove() {
+    //判断当前合同是否已经申请过审签
+    var ContractNo = $.MvcSheetUI.GetControlValue("ContractNo");
+    var ContractFileCount = 0;
+    var TalkFileCount = 0;
+    $("div[data-datafield='ContractFile']").find(".LongWord").each(function () {
+        ContractFileCount++;
+    }); 
+    if (ContractFileCount == 0) {
+        alert("请上传合同文本！");
+        return false;
+    }
+    $("div[data-datafield='TalkFile']").find(".LongWord").each(function () {
+        TalkFileCount++;
+    }); 
+    if (TalkFileCount == 0) {
+        alert("请上传合同谈判小结！");
+        return false;
+    }
+    
+    
+    var canApproveFlg = true;
+    $.ajax({
+        type: "POST",    //页面请求的类型
+        url: "ContractHandler.ashx?Command=getBizStatusOfContract",   //处理页的相对地址
+        data: {
+            ContractNo: ContractNo,
+            BizNo: "ContractApprove",
+        },
+        async: false,
+        success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+            if (ret == null || ret == '') {
+                canApproveFlg = true;
+            } else {
+                canApproveFlg = false;
+                alert("当前有正在申请中的数据，不能进行申请！");
+            }
+        }
+    });
+
+   if (canApproveFlg == true) {
+        $.MvcSheetUI.SetControlValue("ToApproveSubFlg","true");
+        // 提交（不弹出确认框）
+        $.MvcSheet.Submit2(this);
+        //var url = "";
+        //$.ajax({
+        //    type: "POST",    //页面请求的类型
+        //    url: "ContractHandler.ashx?Command=getWorkItemIDByICPID",   //处理页的相对地址
+        //    data: {
+        //        InstanceId: $.MvcSheetUI.SheetInfo.InstanceId,
+        //    },
+        //    async: false,
+        //    success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+        //        if (ret == null || ret == '') {
+        //            alert("跳转失败，请尝试手动进入审签子页面！");
+        //        } else {
+        //            // 跳转到审签子页面
+        //            url = "/Portal/Sheets/Contract/ContractApproveMy.aspx?Mode=Work&WorkItemID=" + ret;
+        //        }
+        //    }
+        //});
+        //window.location.href = url;
+    // 提交(jqury 提交)
+    //$(".navbar-inner [data-action='Submit']").click();
+
+        // 发起审签子页面
+        //var WorkflowVersion_Approve = $.MvcSheetUI.GetControlValue("WorkflowVersion_Approve");
+        //window.location.href = "/Portal/Sheets/Contract/ContractApproveMy.aspx?Mode=Originate&WorkflowCode=ContractApprove&WorkflowVersion=" + WorkflowVersion_Approve + "&ContractNo=" + ContractNo;
+
+   }
+
+}
+
+// 申请信用证
+function ApprovePayment() {
+    var ContractNo = $.MvcSheetUI.GetControlValue("ContractNo");
+    var WorkflowVersion_Payment = $.MvcSheetUI.GetControlValue("WorkflowVersion_Payment");
+    window.location.href = "/Portal/Sheets/Contract/PaymentMy.aspx?Mode=Originate&WorkflowCode=PaymentSub&WorkflowVersion=" + WorkflowVersion_Payment + "&ContractNo=" + ContractNo;
+
+}
+
+// 申请进口许可证
+function ApproveImportLicense() {
+    var ContractNo = $.MvcSheetUI.GetControlValue("ContractNo");
+    var WorkflowVersion_ImportLicense = $.MvcSheetUI.GetControlValue("WorkflowVersion_ImportLicense");
+    window.location.href = "/Portal/Sheets/Contract/ImportLicenseMy.aspx?Mode=Originate&WorkflowCode=ImportLicenseSub&WorkflowVersion=" + WorkflowVersion_ImportLicense + "&ContractNo=" + ContractNo;
+}
+
+// 申请到货
+function ApproveDH() {
+    var ContractNo = $.MvcSheetUI.GetControlValue("ContractNo");
+    var WorkflowVersion_DH = $.MvcSheetUI.GetControlValue("WorkflowVersion_DH");
+    window.location.href = "/Portal/Sheets/Contract/DHMy.aspx?Mode=Originate&WorkflowCode=DH&WorkflowVersion=" + WorkflowVersion_DH + "&ContractNo=" + ContractNo + "&IsHYFlg=1";
+}
+
+// 申请合同变更
+function ApproveBG() {
+    var ContractNo = $.MvcSheetUI.GetControlValue("ContractNo");
+    var WorkflowVersion_BG = $.MvcSheetUI.GetControlValue("WorkflowVersion_BG");
+    window.location.href = "/Portal/Sheets/Contract/BGMy.aspx?Mode=Originate&WorkflowCode=BG&WorkflowVersion=" + WorkflowVersion_BG + "&ContractNo=" + ContractNo;
+}
+
+
+// 申请请款
+function ApproveQK() {
+    var ContractNo = $.MvcSheetUI.GetControlValue("ContractNo");
+    var WorkflowVersion_QK = $.MvcSheetUI.GetControlValue("WorkflowVersion_QK");
+    window.location.href = "/Portal/Sheets/Contract/QKMy.aspx?Mode=Originate&WorkflowCode=QK&WorkflowVersion=" + WorkflowVersion_QK + "&ContractNo=" + ContractNo;
+}
+
+// 
+function EmailSalerChange() {
+    var dtl = $.MvcSheetUI.GetElement('SalerTbl').SheetGridView();
+    var len = dtl.RowCount;
+    dtl._AddRow();
+    var CompanyNameSaler = $.MvcSheetUI.GetControlValue('CompanyNameSaler');
+    var ContactNameSaler = $.MvcSheetUI.GetControlValue('ContactNameSaler');
+    var TelephoneSaler = $.MvcSheetUI.GetControlValue('TelephoneSaler');
+    var MobileSaler = $.MvcSheetUI.GetControlValue('MobileSaler');
+    var FaxSaler = $.MvcSheetUI.GetControlValue('FaxSaler');
+    var EmailSaler = $.MvcSheetUI.GetControlValue('EmailSaler');
+    $.MvcSheetUI.SetControlValue("SalerTbl.CompanyName", CompanyNameSaler, len + 1);
+    $.MvcSheetUI.SetControlValue("SalerTbl.ContactName", ContactNameSaler, len + 1);
+    $.MvcSheetUI.SetControlValue("SalerTbl.Telephone", TelephoneSaler, len + 1);
+    $.MvcSheetUI.SetControlValue("SalerTbl.Mobile", MobileSaler, len + 1);
+    $.MvcSheetUI.SetControlValue("SalerTbl.Fax", FaxSaler, len + 1);
+    $.MvcSheetUI.SetControlValue("SalerTbl.Email", EmailSaler, len + 1);
+    $("input[data-datafield='SalerTbl.CompanyName']").attr("disabled", "disabled");
+    $("input[data-datafield='SalerTbl.ContactName']").attr("disabled", "disabled");
+    $("input[data-datafield='SalerTbl.Telephone']").attr("disabled", "disabled");
+    $("input[data-datafield='SalerTbl.Mobile']").attr("disabled", "disabled");
+    $("input[data-datafield='SalerTbl.Fax']").attr("disabled", "disabled");
+    $("input[data-datafield='SalerTbl.Email']").attr("disabled", "disabled");
+    $.MvcSheetUI.SetControlValue('Salers', $.MvcSheetUI.GetControlValue('Salers') + ContactNameSaler + ',')
+
+}
+// 航油合同预设数据
+function setDataFromHY() {
+    var ContractProperty = $.MvcSheetUI.GetControlValue('ContractProperty');
+    if (ContractProperty == 'ContractProperty_HKMY') {
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getHYData",   //处理页的相对地址
+            data: {
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                if (ret.ObjectID != null && ret.ObjectID != '') {
+                    $.MvcSheetUI.SetControlValue("FinalUser", ret.FinalUser);
+                    $.MvcSheetUI.SetControlValue("PostB", ret.PostB);
+                    $.MvcSheetUI.SetControlValue("BidType", ret.BidType);
+                    BidTypeChange();
+                    $.MvcSheetUI.SetControlValue("BidNo", ret.BidNo);
+                    $.MvcSheetUI.SetControlValue("ContractName", ret.ContractName);
+                    $.MvcSheetUI.SetControlValue("ContractShortName", ret.ContractShortName);
+                    $.MvcSheetUI.SetControlValue("ProjectName", ret.ProjectName);
+                    $.MvcSheetUI.SetControlValue("SubProjectName", ret.SubProjectName);
+                    $.MvcSheetUI.SetControlValue("SubProjectCode", ret.SubProjectCode);
+                    $.MvcSheetUI.SetControlValue("TradeMethod", ret.TradeMethod);
+                    $.MvcSheetUI.SetControlValue("Country", ret.Country);
+                    $.MvcSheetUI.SetControlValue("ContractRemark", ret.ContractRemark);
+
+                    $.ajax({
+                        type: "POST",    //页面请求的类型
+                        url: "ContractHandler.ashx?Command=getSalesHYData",   //处理页的相对地址
+                        data: {
+                            ObjectID : ret.ObjectID
+                        },
+                        async: false,
+                        success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                            var dtl = $.MvcSheetUI.GetElement("SalerTbl").SheetGridView();
+                            dtl._Clear();
+                            for (var i = 0; i < ret.length; i++) {
+                                dtl._AddRow();
+                                $.MvcSheetUI.SetControlValue("SalerTbl.CompanyName", ret[i].CompanyName, i + 1);
+                                $.MvcSheetUI.SetControlValue("SalerTbl.ContactName", ret[i].ContactName, i + 1);
+                                $.MvcSheetUI.SetControlValue("SalerTbl.Telephone", ret[i].Telephone, i + 1);
+                                $.MvcSheetUI.SetControlValue("SalerTbl.Mobile", ret[i].Mobile, i + 1);
+                                $.MvcSheetUI.SetControlValue("SalerTbl.Fax", ret[i].Fax, i + 1);
+                                $.MvcSheetUI.SetControlValue("SalerTbl.Email", ret[i].Email, i + 1);
+                            }
+                            $("input[data-datafield='SalerTbl.CompanyName']").attr("disabled", "disabled");
+                            $("input[data-datafield='SalerTbl.ContactName']").attr("disabled", "disabled");
+                            $("input[data-datafield='SalerTbl.Telephone']").attr("disabled", "disabled");
+                            $("input[data-datafield='SalerTbl.Mobile']").attr("disabled", "disabled");
+                            $("input[data-datafield='SalerTbl.Fax']").attr("disabled", "disabled");
+                            $("input[data-datafield='SalerTbl.Email']").attr("disabled", "disabled"); 
+                        }
+                    });
+
+                    $.MvcSheetUI.SetControlValue("Salers", ret.Salers);
+
+                    $.ajax({
+                        type: "POST",    //页面请求的类型
+                        url: "ContractHandler.ashx?Command=getBidsHYData",   //处理页的相对地址
+                        data: {
+                            ObjectID: ret.ObjectID
+                        },
+                        async: false,
+                        success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                            var dtl = $.MvcSheetUI.GetElement("BidTbl").SheetGridView();
+                            dtl._Clear();
+                            for (var i = 0; i < ret.length; i++) {
+                                dtl._AddRow();
+                                $.MvcSheetUI.SetControlValue("BidTbl.ProjectShortName", ret[i].ProjectShortName, i + 1);
+                                $.MvcSheetUI.SetControlValue("BidTbl.BidPrice", ret[i].BidPrice, i + 1);
+                            }
+                            $("input[data-datafield='BidTbl.ProjectShortName']").attr("disabled", "disabled");
+                            $("input[data-datafield='BidTbl.BidPrice']").attr("disabled", "disabled");
+                        }
+                    });
+                }
+            }
+        });
+    }
+}
+
+function viewUpdateNo(el) {
+    var rowIndex = el.parentElement.parentElement.rowIndex;
+    var WorkItemId = $.MvcSheetUI.GetControlValue('UpdateNoTbl.WorkItemId', rowIndex - 1);
+    window.location.href = "/Portal/Sheets/Contract/UpdateContractNoMy.aspx?Mode=View&WorkItemID=" + WorkItemId;
+}
+
+function viewApprove(el) {
+    var rowIndex = el.parentElement.parentElement.rowIndex;
+    var WorkItemId = $.MvcSheetUI.GetControlValue('ContractApproveTbl.WorkItemId', rowIndex - 1);
+    window.location.href = "/Portal/Sheets/Contract/ContractApproveMy.aspx?Mode=View&WorkItemID=" + WorkItemId;
+}
+
+// 信用证改证
+function updatePaymentApprove(el) {
+    var ContractNo = $.MvcSheetUI.GetControlValue("ContractNo");
+    var rowIndex = el.parentElement.parentElement.rowIndex;
+    var PaymentId = $.MvcSheetUI.GetControlValue('PaymentTbl.PaymentId', rowIndex - 1);
+    var WorkflowVersion_PaymentUpdate = $.MvcSheetUI.GetControlValue("WorkflowVersion_PaymentUpdate");
+    window.location.href = "/Portal/Sheets/Contract/PaymentUpdateMy.aspx?Mode=Originate&WorkflowCode=PaymentUpdateSub&WorkflowVersion=" + WorkflowVersion_PaymentUpdate + "&ContractNo=" + ContractNo + "&PaymentId=" + PaymentId;
+}
+// 信用证查看
+function viewPayment(el) {
+    var rowIndex = el.parentElement.parentElement.rowIndex;
+    var WorkItemId = $.MvcSheetUI.GetControlValue('PaymentTbl.WorkItemId', rowIndex - 1);
+    var TheNo = $.MvcSheetUI.GetControlValue('PaymentTbl.TheNo', rowIndex - 1);
+    if (TheNo == "") {
+        window.location.href = "/Portal/Sheets/Contract/PaymentUpdateMy.aspx?Mode=View&WorkItemID=" + WorkItemId;
+    } else {
+        window.location.href = "/Portal/Sheets/Contract/PaymentMy.aspx?Mode=View&WorkItemID=" + WorkItemId;
+    }
+    
+}
+// 信用证修改
+function updatePayment(el) {
+    var rowIndex = el.parentElement.parentElement.rowIndex;
+    var WorkItemId = $.MvcSheetUI.GetControlValue('PaymentTbl.WorkItemId', rowIndex - 1);
+    var TheNo = $.MvcSheetUI.GetControlValue('PaymentTbl.TheNo', rowIndex - 1);
+    if (TheNo == "") {
+        window.location.href = "/Portal/Sheets/Contract/PaymentUpdateMy.aspx?Mode=Work&WorkItemID=" + WorkItemId;
+    } else {
+        window.location.href = "/Portal/Sheets/Contract/PaymentMy.aspx?Mode=Work&WorkItemID=" + WorkItemId;
+    }
+}
+
+// 进口许可证查看
+function viewImportLicence(el) {
+    var rowIndex = el.parentElement.parentElement.rowIndex;
+    var WorkItemId = $.MvcSheetUI.GetControlValue('ImportLicenceTbl.WorkItemId', rowIndex - 1);
+    window.location.href = "/Portal/Sheets/Contract/ImportLicenseMy.aspx?Mode=View&WorkItemID=" + WorkItemId;
+}
+
+// 进口许可证修改
+function updateImportLicence(el) {
+    var rowIndex = el.parentElement.parentElement.rowIndex;
+    var WorkItemId = $.MvcSheetUI.GetControlValue('ImportLicenceTbl.WorkItemId', rowIndex - 1);
+    window.location.href = "/Portal/Sheets/Contract/ImportLicenseMy.aspx?Mode=Work&WorkItemID=" + WorkItemId;
+}
+
+// 进口许可证废除
+function cancelImportLicence(el) {
+    var rowIndex = el.parentElement.parentElement.rowIndex;
+    var ImportLicenseId = $.MvcSheetUI.GetControlValue('ImportLicenceTbl.ImportLicenseId', rowIndex - 1);
+    $.ajax({
+        type: "POST",    //页面请求的类型
+        url: "ContractHandler.ashx?Command=cancelImportLicence",   //处理页的相对地址
+        data: {
+            ImportLicenseId: ImportLicenseId,
+            flg: "cancel",
+        },
+        async: false,
+        success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+            var rowp = 1;
+            $("[data-datafield='ImportLicenceTbl']").find("tr.rows").each(function () {
+                if (rowp == rowIndex - 1) {
+                    $(this).find("td[data-field='ImportLicenceTbl.Operate'] a.cancelImportLicence").hide();
+                    $(this).find("td[data-field='ImportLicenceTbl.Operate'] a.undocancelImportLicence").show();
+                    $(this).find("td[data-field='ImportLicenceTbl.DisplayName']").text("已废除");
+                }
+                rowp++;
+            });
+        }
+    });
+}
+
+// 到货查看
+function viewDH(el) {
+    var rowIndex = el.parentElement.parentElement.rowIndex;
+    var WorkItemId = $.MvcSheetUI.GetControlValue('DHTbl.WorkItemId', rowIndex - 1);
+    window.location.href = "/Portal/Sheets/Contract/DHMy.aspx?Mode=View&WorkItemID=" + WorkItemId;
+}
+
+// 到货修改
+function updateDH(el) {
+    var rowIndex = el.parentElement.parentElement.rowIndex;
+    var WorkItemId = $.MvcSheetUI.GetControlValue('DHTbl.WorkItemId', rowIndex - 1);
+    window.location.href = "/Portal/Sheets/Contract/DHMy.aspx?Mode=Work&WorkItemID=" + WorkItemId;
+}
+
+// 变更查看
+function viewBG(el) {
+    var rowIndex = el.parentElement.parentElement.rowIndex;
+    var WorkItemId = $.MvcSheetUI.GetControlValue('BGTbl.WorkItemId', rowIndex - 1);
+    window.location.href = "/Portal/Sheets/Contract/BGMy.aspx?Mode=View&WorkItemID=" + WorkItemId;
+}
+
+// 变更修改
+function updateBG(el) {
+    var rowIndex = el.parentElement.parentElement.rowIndex;
+    var WorkItemId = $.MvcSheetUI.GetControlValue('BGTbl.WorkItemId', rowIndex - 1);
+    window.location.href = "/Portal/Sheets/Contract/BGMy.aspx?Mode=Work&WorkItemID=" + WorkItemId;
+}
+
+function undocancelImportLicence(el) {
+    var rowIndex = el.parentElement.parentElement.rowIndex;
+    var ImportLicenseId = $.MvcSheetUI.GetControlValue('ImportLicenceTbl.ImportLicenseId', rowIndex - 1);
+    $.ajax({
+        type: "POST",    //页面请求的类型
+        url: "ContractHandler.ashx?Command=cancelImportLicence",   //处理页的相对地址
+        data: {
+            ImportLicenseId: ImportLicenseId,
+            flg: "undocancel",
+        },
+        async: false,
+        success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+            var rowp = 1;
+            $("[data-datafield='ImportLicenceTbl']").find("tr.rows").each(function () {
+                if (rowp == rowIndex - 1) {
+                    $(this).find("td[data-field='ImportLicenceTbl.Operate'] a.cancelImportLicence").show();
+                    $(this).find("td[data-field='ImportLicenceTbl.Operate'] a.undocancelImportLicence").hide();
+                    $(this).find("td[data-field='ImportLicenceTbl.DisplayName']").text("已办证");
+                }
+                rowp++;
+            });
+        }
+    });
+}
+
+/*
+    子表删除行事件
+    参数：row -> 被删除的行
+*/
+var rowPreRemoved = function (row) {
+    var rownum = row.attr("data-row");
+    var ContactName = $.MvcSheetUI.GetControlValue("SalerTbl.ContactName", rownum);
+    var Salers = $.MvcSheetUI.GetControlValue('Salers');
+    $.MvcSheetUI.SetControlValue('Salers', Salers.replace(ContactName + ",",''))
+}
+
+// 增加自定义工具栏按钮方法，触发后台事件
+$.MvcSheet.AddAction({
+    //Action: "GetBackAction",       // 执行后台方法名称
+    Icon: "fa-sign-in",           // 按钮图标
+    Text: "取回",           // 按钮名称
+    Datas: [],    // 参数，多个参数 "{Param1}","Param2"...
+    OnAction: function () {
+        /*
+        自定义按钮执行事件，如果为 null 则调用$.MvcSheet.Action 执行后台方法
+        如果不为 null，那么会执行这里的方法，需要自己Post到后台或写前端逻辑
+        */
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "/Portal/InstanceDetail/GetAdjustActivityInfo",   //处理页的相对地址
+            data: {
+                InstanceID: $.MvcSheetUI.SheetInfo.InstanceId,
+            },
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                var options = "";
+                if (ret.SUCCESS == true) {
+                    console.log("GetAdjustActivityInfo=" + ret);
+                    for (var i = 0; i < ret.InstanceActivity.length; i++) {
+                        if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityApprove") {
+                            if (ret.InstanceActivity[i].ActivityName == "创建合同") {
+                                options += '<option value="' + ret.InstanceActivity[i].ActivityCode + '">' + ret.InstanceActivity[i].ActivityName + '</option>';
+                            }
+                        }
+                        if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOperate") {
+                            if (ret.InstanceActivity[i].ActivityName == "创建合同") {
+                                options += '<option value="' + ret.InstanceActivity[i].ActivityCode + '">' + ret.InstanceActivity[i].ActivityName + '</option>';
+                            }
+                            if (ret.InstanceActivity[i].ActivityName == "合同审签") {
+                                options += '<option value="' + ret.InstanceActivity[i].ActivityCode + '">' + ret.InstanceActivity[i].ActivityName + '</option>';
+                            }
+                        }
+                        if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityComplete") {
+                            if (ret.InstanceActivity[i].ActivityName == "创建合同") {
+                                options += '<option value="' + ret.InstanceActivity[i].ActivityCode + '">' + ret.InstanceActivity[i].ActivityName + '</option>';
+                            }
+                            if (ret.InstanceActivity[i].ActivityName == "合同审签") {
+                                options += '<option value="' + ret.InstanceActivity[i].ActivityCode + '">' + ret.InstanceActivity[i].ActivityName + '</option>';
+                            }
+                            if (ret.InstanceActivity[i].ActivityName == "合同执行") {
+                                options += '<option value="' + ret.InstanceActivity[i].ActivityCode + '">' + ret.InstanceActivity[i].ActivityName + '</option>';
+                            }
+                        }
+                        
+                    }
+                }
+                //让弹出框显示的操作方法
+                $('#message-module').find('.modal-body').html(
+                    '<div style="text-align: center;padding: 50px;line-height: 25px">' +
+                    '<form class="bs-example form-horizontal" name="form" >' +
+                    '<div class="row">' +
+                    '    <h5 class="col-md-4" style="padding-top: 14px;">选择活动: </h5><div class="col-md-6 input-group">' +
+                    '        <select class="form-control" id="ActivityCodes" ><option value="">请选择</option>' + options +
+                    '                 </select > ' +
+                    '    </div>' +
+                    '</div > ' +
+                    '</form > ' +
+                    '</div > '
+                );
+                var moduleFooter = $('#message-module').find('.modal-footer');
+                var cancleButton = $('<button type="button" class="btn " data-dismiss="modal" style=" border-radius: 0px;border: 0px;margin-left: 0px;width: 50%;background-color:white;float: left;border-bottom-left-radius: 5px;border-color: #ff993b;line-height: 25px;color:black">取消</button>');
+                var confirmButton = $('<button type="button" class="btn btn-default" style="border-radius: 0px;border: 0px;background-color: #FF993B;width: 50%;float: right;border-bottom-right-radius: 6px;line-height: 25px;margin-left: 0px;">确定</button>');
+
+                if (moduleFooter.find('button').length === 0) {
+                    cancleButton.appendTo(moduleFooter);
+                    confirmButton.appendTo(moduleFooter);
+                }
+                $('#message-module').modal({ keyboard: true, show: true, backdrop: true });
+                $('#message-module').on('shown.bs.modal', function () {
+                    $.LoadingMask.Hide();
+                });
+                confirmButton.click(function () {
+                    $.MvcSheetUI.SetControlValue("NeedActivityCode", $("#ActivityCodes").val());
+                    $.MvcSheetUI.SetControlValue("NeedActivityName", $("#ActivityCodes").find("option:selected").text());
+                    $.MvcSheetUI.SetControlValue("GetBackFlg", "1");
+                    $('#message-module').modal('hide');
+                    //doGoBack($("#ActivityCodes").val());
+                    GotoBackPage();
+                    
+                });
+            }
+        });
+    },
+    //OnActionDone: function (ret) {
+
+    
+    //},
+    PostSheetInfo: true         // 是否提交表单数据，如果 false，那么不返回表单的数据
+});
+
+function GotoBackPage() {
+    var WorkflowVersion_Back = $.MvcSheetUI.GetControlValue("WorkflowVersion_Back");
+    var InstanceActivity = $("#ActivityCodes").val();
+    var InstanceId = $.MvcSheetUI.SheetInfo.InstanceId;
+    var ContractNo = $.MvcSheetUI.GetControlValue("ContractNo");
+    if (InstanceActivity != "") {
+        window.location.href = "/Portal/Sheets/Contract/GetBackMy.aspx?Mode=Originate&WorkflowCode=GetBackContract&WorkflowVersion=" + WorkflowVersion_Back + "&InstanceId=" + InstanceId + "&InstanceActivity=" + InstanceActivity + "&ContractNo=" + ContractNo;
+    } else {
+        alert("请选择取回的节点！");
+        return false;
+    }
+}
+
+function AgencyTypeChange() {
+    if ($("select[data-datafield='AgencyType']").children('option:selected').val() == 'NotNeed') {
+        $('.AgencyFile').hide();
+        $('.AgencySelect').hide();
+        $('.AgencyAfterRemark').hide();
+        $('.AgencyComment').hide();
+    } else if ($("select[data-datafield='AgencyType']").children('option:selected').val() == 'Approved') {
+        if ($.MvcSheetUI.GetControlValue('ContractProperty') == 'ContractProperty_HKMY') {
+            $('.AgencyFile').show();
+            $('.AgencySelect').hide();
+        } else {
+            $('.AgencyFile').hide();
+            $('.AgencySelect').show();
+        }
+        $('.AgencyAfterRemark').hide();
+        $('.AgencyComment').show();
+    } else if ($("select[data-datafield='AgencyType']").children('option:selected').val() == 'AfterApprove') {
+        $('.AgencyFile').hide();
+        $('.AgencySelect').hide();
+        $('.AgencyAfterRemark').show();
+        $('.AgencyComment').hide();
+    }
+}
+
+function AgencySelectChange() {
+    // 代理协议返回类型为01 （固定值）
+    if ($.MvcSheetUI.GetControlValue('AgencyReturnType') == '01') {
+        $.MvcSheetUI.SetControlValue('AgencyComment', "代理费计算：固定金额");
+    } else if ($.MvcSheetUI.GetControlValue('AgencyReturnType') == '02') {
+        $.MvcSheetUI.SetControlValue('AgencyComment', "代理费计算：按合同价＊费率");
+    }
+}
+
+function compRMBAmount() {
+    // 合同金额(人民币合同） + 总金额（外币） * 签约日汇率
+    var ContractTotalPrice = $.MvcSheetUI.GetControlValue('ContractTotalPrice');
+    var JKTotalAmount = $.MvcSheetUI.GetControlValue('JKTotalAmount');
+    var SignDayExchangeRate = $.MvcSheetUI.GetControlValue('SignDayExchangeRate');
+    $.MvcSheetUI.SetControlValue('RMBTotalAmount', (parseFloat(ContractTotalPrice) + parseFloat(JKTotalAmount) * parseFloat(SignDayExchangeRate)).toFixed(2));
+}
+
+function ContractTypeChange() {
+    if ($("select[data-datafield='ContractType']").children('option:selected').val() == 'GN') {
+        //当为国内合同时禁用按钮
+        var List = $('.nav-tabs li').find('a');
+        for(var i=0;i<List.length;i++){
+            if($(List[i]).html() =='信用证' || $(List[i]).html() =='进口许可证' || $(List[i]).html() =='到货'){
+                $(List[i]).removeAttr('href');
+                $(List[i]).addClass('disableBtn');
+            }
+        }
+        $('.CountryTitle').hide();
+        $('.CountrySelect').hide();
+    } else {
+        //进口合同时恢复
+        var List = $('.nav-tabs li').find('a');
+        for(var i=0;i<List.length;i++){
+            if($(List[i]).html() =='信用证'){
+                $(List[i]).attr('href','#xyztab');
+                $(List[i]).removeClass('disableBtn');
+            }else if($(List[i]).html() =='进口许可证'){
+                $(List[i]).attr('href','#importlicensetab');
+                $(List[i]).removeClass('disableBtn');
+            }else if($(List[i]).html() =='到货'){
+                $(List[i]).attr('href','#dhtab');
+                $(List[i]).removeClass('disableBtn');
+            }
+        }
+        $('.CountryTitle').show();
+        $('.CountrySelect').show();
+    }
+}
+
+function BidTypeChange() {
+    var BidType = $.MvcSheetUI.GetControlValue('BidType');
+    if (BidType == '0') {
+        $.MvcSheetUI.SetControlValue('BidNo', '');
+        $('.BidNo').hide();
+        var dtl = $.MvcSheetUI.GetElement("BidTbl").SheetGridView();
+        dtl._Clear();
+    } else {
+        $('.BidNo').show();
+    }
+}
+
+$(function () {
+   // console.log($('.bannerTitleCreate').find('.select2-chosen').html());
+});

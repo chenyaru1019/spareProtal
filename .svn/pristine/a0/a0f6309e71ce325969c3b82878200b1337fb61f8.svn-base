@@ -1,0 +1,41 @@
+﻿//数据加载后
+$.MvcSheet.Loaded = function () {
+    // 合同号码
+    //var ContractNo = getUrlParam("ContractNo");
+    var ContractNo = $.MvcSheetUI.GetControlValue("ContractNo");
+    if (ContractNo != null && ContractNo != "") {
+        // 根据合同号码获取对应合同相关数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getByContractNo",   //处理页的相对地址
+            data: {
+                ContractNo: ContractNo,
+            },
+            //async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                //$.MvcSheetUI.SetControlValue("ContractNo", ret.ContractNo);
+                //$.MvcSheetUI.SetControlValue("ContractName", ret.ContractName);
+                $.MvcSheetUI.SetControlValue("ContractType", ret.ContractType);
+                $.MvcSheetUI.SetControlValue("ContractProperty", ret.ContractProperty);
+                $.MvcSheetUI.SetControlValue("PostAB", ret.PostA + "," + ret.PostB);
+                $.MvcSheetUI.SetControlValue("Salers", ret.Salers);
+                $.MvcSheetUI.SetControlValue("FinalUser", ret.FinalUser);
+                $.MvcSheetUI.SetControlValue("BidNo", ret.BidNo);
+                $.MvcSheetUI.SetControlValue("ContractRemark", ret.ContractRemark);
+                $.MvcSheetUI.SetControlValue("AgencyType", ret.AgencyType);
+            }
+        });
+    }
+    $("input[data-datafield='ContractNo']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractName']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractType']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractProperty']").attr("disabled", "disabled");
+    $("input[data-datafield='PostAB']").attr("disabled", "disabled");
+    $("input[data-datafield='Salers']").attr("disabled", "disabled");
+    $("input[data-datafield='FinalUser']").attr("disabled", "disabled");
+    $("input[data-datafield='BidNo']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractRemark']").attr("disabled", "disabled");
+    $("input[data-datafield='AgencyType']").attr("disabled", "disabled");
+}
+
+

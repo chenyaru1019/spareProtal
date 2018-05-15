@@ -1,0 +1,296 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using OThinker.H3.Portal.Entity;
+using System.Data;
+
+/// <summary>
+/// Class1 的摘要说明
+/// </summary>
+namespace OThinker.H3.Portal.service
+{
+    public class Common
+    {
+       public static OThinker.Organization.User getUserById(string id)
+        {
+            System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT * " +
+            " FROM OT_User " +
+            " where ObjectID = '" + id + "'");
+            OThinker.Organization.User u = new OThinker.Organization.User();
+            if (dt.Rows.Count > 0)
+            {
+                u.Code = dt.Rows[0]["Code"].ToString();
+                u.Name = dt.Rows[0]["Name"].ToString();
+            }
+            return u;
+        }
+
+        public static string getUrlParam(string url,string key)
+        {
+            string value = "";
+            var uri = new Uri(url);
+            var queryString = uri.Query;
+            var regPattern = @""+ key + "=([^&]*)?";
+            var regMatch = System.Text.RegularExpressions.Regex.Match(url, regPattern);
+            value = regMatch.Groups[1].ToString();
+            return value;
+        }
+
+        // 传入id或者ContractNo
+        public static ContractMain getContractByBizId(string id)
+        {
+            // 国内合同
+            ContractMain con = new ContractMain();
+            System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+                " SELECT * FROM I_ContractMain con" +
+                " where con.ObjectID = '" + id + "' or con.ContractNo = '" + id + "'");
+            if (dt.Rows.Count > 0)
+            {
+                con.ContractNo = dt.Rows[0]["ContractNo"].ToString();
+                con.ContractTotalPrice = dt.Rows[0]["ContractTotalPrice"].ToString();
+                con.JKTotalAmount = dt.Rows[0]["JKTotalAmount"].ToString();
+                con.ContractDHDate = dt.Rows[0]["ContractDHDate"].ToString();
+                con.AgencyComputerNum = dt.Rows[0]["AgencyComputerNum"].ToString();
+                con.PayCondition = dt.Rows[0]["PayCondition"].ToString();
+                con.Currency = dt.Rows[0]["Currency"].ToString();
+            }
+
+            return con;
+        }
+
+        // 根据流程id获取workitemid
+        public static Dictionary<string, string> getWorkItemId(string instanceid , string status)
+        {
+            Dictionary<string, string> dic = new Dictionary<string, string>();
+            //var workItemId = "";
+            if ("2".Equals(status))
+            {
+                System.Data.DataTable dt_wi = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+                    " select top 1 ObjectID,ActivityCode from OT_WorkItem  " +
+                    " where InstanceId = '" + instanceid + "' " +
+                    " order by FinishTime desc");
+                if (dt_wi.Rows.Count > 0)
+                {
+                    dic.Add("workItemId", dt_wi.Rows[0]["ObjectID"].ToString());
+                    dic.Add("ActivityCode", dt_wi.Rows[0]["ActivityCode"].ToString());
+                }
+            }
+            else if ("4".Equals(status))
+            {
+                System.Data.DataTable dt_wi = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+                    " select top 1 ObjectID,ActivityCode from OT_WorkItemFinished  " +
+                    " where InstanceId = '" + instanceid + "' " +
+                    " order by FinishTime desc");
+                if (dt_wi.Rows.Count > 0)
+                {
+                    dic.Add("workItemId", dt_wi.Rows[0]["ObjectID"].ToString());
+                    dic.Add("ActivityCode", dt_wi.Rows[0]["ActivityCode"].ToString());
+                }
+            }
+            return dic;
+        }
+
+        // 获取累计到款（到款模块）
+        // param1：100 人民币, 50 美元
+        // param2：20
+        // param3：美元
+        public static string getLJDK(string LJDKAmount, double lj, string cu)
+        {
+            var ret = "";
+            if(!LJDKAmount.Equals(""))
+            {
+                string [] ls = LJDKAmount.Split(',');
+                int eqflg = 0;
+                foreach (string item in ls)
+                {
+                    string[] ljitem = item.Split(' ');
+                    if(ljitem[1].Equals(cu))
+                    {
+                        var ljvar = lj + (double)Convert.ToSingle(ljitem[0]);
+                        ret += ljvar + " " +cu + ",";
+                        eqflg++;
+                    } else
+                    {
+                        ret += item + ",";
+                    }
+                }
+                if(eqflg == 0)
+                {
+                    if (lj != 0)
+                    {
+                        ret += lj + " " + cu + ",";
+                    }
+
+                }
+            } else
+            {
+                if(lj != 0 )
+                {
+                    ret = lj + " " + cu + ",";
+                }
+            }
+            return ret!=""?ret.Substring(0,ret.Length-1):"";
+        }
+
+        // 判断List中包含每个值
+        public static bool Contains(List<Dictionary<string, string>> ls, string value)
+        {
+            foreach (Dictionary<string, string> dic in ls)
+            {
+                foreach (var item in dic)
+                {
+                    if (item.Key.Equals("DKObjectID") || item.Key.Equals("FKObjectID"))
+                    {
+                        if(value.Equals(item.Value))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        // 判断dt中包含每个值
+        public static bool Contains(System.Data.DataTable dt, string value)
+        {
+            if (dt.Rows.Count > 0)
+            {
+                foreach (DataRow dr in dt.Rows)
+                {
+                    if (dr["QKObjectID"].ToString().Equals(value))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public static List<Dictionary<string, string>> Subs(List<Dictionary<string, string>> ls, List<Dictionary<string, string>> ls_sub)
+        {
+            List<Dictionary<string, string>> ret = new List<Dictionary<string, string>>();
+            foreach (Dictionary<string, string> dic in ls)
+            {
+                string ContractNo1 = "";
+                string QKSeq1 = "";
+                bool IsSub = false;
+                foreach (var item in dic)
+                {
+                    if(item.Key.Equals("ContractNo"))
+                    {
+                        ContractNo1 = item.Value;
+                    }
+                    if (item.Key.Equals("QKSeq"))
+                    {
+                        QKSeq1 = item.Value;
+                    }
+                }
+                foreach (Dictionary<string, string> dic2 in ls_sub)
+                {
+                    string ContractNo2 = "";
+                    string QKSeq2 = "";
+                    foreach (var item2 in dic2)
+                    {
+                        if (item2.Key.Equals("ContractNo"))
+                        {
+                            ContractNo2 = item2.Value;
+                        }
+                        if (item2.Key.Equals("QKSeq"))
+                        {
+                            QKSeq2 = item2.Value;
+                        }
+                    }
+                    if(ContractNo1.Equals(ContractNo2) && QKSeq1.Equals(QKSeq2))
+                    {
+                        IsSub = true;
+                        break;
+                    } else
+                    {
+                        IsSub = false;
+                    }
+                }
+                if(IsSub == true)
+                {
+                    Dictionary<string, string> dictmp = new Dictionary<string, string>();
+                    foreach (var item in dic)
+                    {
+                        if (item.Key.Equals("ContractNo"))
+                        {
+                            dictmp.Add("ContractNo", item.Value);
+                        }
+                        if (item.Key.Equals("QKSeq"))
+                        {
+                            dictmp.Add("QKSeq", item.Value);
+                        }
+                        if (item.Key.Equals("QKType"))
+                        {
+                            dictmp.Add("QKType", item.Value);
+                        }
+                        if (item.Key.Equals("QKTarget"))
+                        {
+                            dictmp.Add("QKTarget", item.Value);
+                        }
+                        if (item.Key.Equals("QKDate"))
+                        {
+                            dictmp.Add("QKDate", item.Value);
+                        }
+                        if (item.Key.Equals("ZJKX"))
+                        {
+                            dictmp.Add("ZJKX", item.Value);
+                        }
+                        if (item.Key.Equals("ZJMS"))
+                        {
+                            dictmp.Add("ZJMS", item.Value);
+                        }
+                        if (item.Key.Equals("QKAmount"))
+                        {
+                            dictmp.Add("QKAmount", item.Value);
+                        }
+                        if (item.Key.Equals("QKCurrency"))
+                        {
+                            dictmp.Add("QKCurrency", item.Value);
+                        }
+                        if (item.Key.Equals("QKConvertAmount"))
+                        {
+                            dictmp.Add("QKConvertAmount", item.Value);
+                        }
+                        if (item.Key.Equals("SeqCnt"))
+                        {   // 过滤掉ContractNo、Seq相同的数据后，对应的Cnt要减去1
+                            dictmp.Add("SeqCnt", ((int)Convert.ToSingle(item.Value) -1).ToString() );
+                        }
+                        if (item.Key.Equals("QKCurrencyCode"))
+                        {
+                            dictmp.Add("QKCurrencyCode", item.Value);
+                        }
+                        if (item.Key.Equals("LJDKAmount"))
+                        {
+                            dictmp.Add("LJDKAmount", item.Value);
+                        }
+                        if (item.Key.Equals("QKSeqHidden"))
+                        {
+                            dictmp.Add("QKSeqHidden", item.Value);
+                        }
+                        if (item.Key.Equals("QKTypeCode"))
+                        {
+                            dictmp.Add("QKTypeCode", item.Value);
+                        }
+                        if (item.Key.Equals("QKObjectID"))
+                        {
+                            dictmp.Add("QKObjectID", item.Value);
+                        }
+                    }
+                    ret.Add(dictmp);
+                } else
+                {
+                    ret.Add(dic);
+                }
+            }
+
+            return ret;
+        }
+        
+    }
+}

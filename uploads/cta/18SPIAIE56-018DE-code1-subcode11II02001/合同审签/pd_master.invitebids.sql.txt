@@ -1,0 +1,4 @@
+insert into [dbo].[PD_Master]([type], [key], [value], [attr1]) values(N'InviteBids', N'FileBidding', N'', N'归档审批');
+insert into [dbo].[PD_Master]([type], [key], [value], [attr1]) values(N'InviteBids', N'BiddingNotice', N'', N'招标公告审批');
+insert into [dbo].[PD_Master]([type], [key], [value], [attr1]) values(N'InviteBids', N'BiddingDocAudit', N'', N'招标文件审批');
+

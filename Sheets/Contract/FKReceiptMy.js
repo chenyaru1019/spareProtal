@@ -1,0 +1,120 @@
+﻿
+//数据加载后
+$.MvcSheet.Loaded = function () {
+    // InsObjectID
+    var InsObjectID = getUrlParam("InsObjectID");
+    if (InsObjectID != null && InsObjectID != "") {
+        // 根据FKObjectID获取对应数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getFKById",   //处理页的相对地址
+            data: {
+                InsObjectID: InsObjectID,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                
+                $.MvcSheetUI.SetControlValue("Receiver", ret.Receiver);
+                $.MvcSheetUI.SetControlValue("FKReason", ret.Content);
+                $.MvcSheetUI.SetControlValue("BankName", ret.BankName);
+                $.MvcSheetUI.SetControlValue("BankAccount", ret.BankAccount);
+                $.MvcSheetUI.SetControlValue("LeftRemark", ret.LeftRemark);
+                $.MvcSheetUI.SetControlValue("RightRemark", ret.RightRemark);
+                $.MvcSheetUI.SetControlValue("CurrencyCode", ret.Currency);
+                $.MvcSheetUI.SetControlValue("Currency", ret.CurrencyName);
+                $.MvcSheetUI.SetControlValue("Amount", ret.CurZJAmount);
+                var QW = parseInt(parseFloat(ret.CurZJAmount) / 10000000);
+                var QW_YS = parseFloat(ret.CurZJAmount) % 10000000;
+                var BW = parseInt(QW_YS / 1000000);
+                var BW_YS = parseFloat(QW_YS) % 1000000;
+                var SW = parseInt(BW_YS / 100000);
+                var SW_YS = parseFloat(BW_YS) % 100000;
+                var W = parseInt(SW_YS / 10000);
+                var W_YS = parseFloat(SW_YS) % 10000;
+                var Q = parseInt(W_YS / 1000);
+                var Q_YS = parseFloat(W_YS) % 1000;
+                var B = parseInt(Q_YS / 100);
+                var B_YS = parseFloat(Q_YS) % 100;
+                var S = parseInt(B_YS / 10);
+                var S_YS = parseFloat(B_YS) % 10;
+                var Y = parseInt(S_YS / 1);
+                var Y_YS = parseFloat(S_YS) % 1;
+                var J = parseInt(Y_YS * 10 );
+                var J_YS = parseFloat(Y_YS * 10) % 1;
+                var F = Math.round(J_YS * 10);
+                var F_YS = parseFloat(J_YS * 10) % 1;
+                var isFirstZero = QW == 0 ? true:false;
+                $.MvcSheetUI.SetControlValue("QW", TranMon(QW, isFirstZero));
+                var isFirstZero = isFirstZero == false ? false : BW == 0 ? true : false;
+                $.MvcSheetUI.SetControlValue("BW", TranMon(BW, isFirstZero));
+                var isFirstZero = isFirstZero == false ? false : SW == 0 ? true : false;
+                $.MvcSheetUI.SetControlValue("SW", TranMon(SW, isFirstZero));
+                var isFirstZero = isFirstZero == false ? false : W == 0 ? true : false;
+                $.MvcSheetUI.SetControlValue("W", TranMon(W, isFirstZero));
+                var isFirstZero = isFirstZero == false ? false : Q == 0 ? true : false;
+                $.MvcSheetUI.SetControlValue("Q", TranMon(Q, isFirstZero));
+                var isFirstZero = isFirstZero == false ? false : B == 0 ? true : false;
+                $.MvcSheetUI.SetControlValue("B", TranMon(B, isFirstZero));
+                var isFirstZero = isFirstZero == false ? false : S == 0 ? true : false;
+                $.MvcSheetUI.SetControlValue("S", TranMon(S, isFirstZero));
+                var isFirstZero = false ;
+                $.MvcSheetUI.SetControlValue("Y", TranMon(Y, isFirstZero));
+                $.MvcSheetUI.SetControlValue("J", TranMon(J, isFirstZero));
+                $.MvcSheetUI.SetControlValue("F", TranMon(F, isFirstZero));
+                var Nowdate = new Date();
+                var vYear = Nowdate.getFullYear();
+                var vMon = Nowdate.getMonth() + 1;
+                var vDay = Nowdate.getDate();
+                $.MvcSheetUI.SetControlValue("ApplyDateY", vYear);
+                $.MvcSheetUI.SetControlValue("ApplyDateM", vMon);
+                $.MvcSheetUI.SetControlValue("ApplyDateD", vDay);
+            }
+        });
+        $('input.AmountFormat').blur();
+    }
+    $.MvcSheetUI.SetControlValue("RemarkTip", "注意：详细填写，字迹清楚，不得修改。");
+
+    $("input").attr("disabled", "disabled");
+    $("textarea").attr("disabled", "disabled");
+    // 不显示按钮
+    //$("li[data-action='Save']").hide();
+    //$("li[data-action='Submit']").hide();
+    //$("li[data-action='Print']").hide();
+    //$("li[data-action='Forward']").hide();
+    //$("li[data-action='ViewInstance']").hide();
+
+    window.print();
+
+}
+
+function TranMon(num, isFirstZero) {
+    if (num == 0) {
+        if (isFirstZero) {
+            return "/";
+        } else {
+            return "零";
+        }
+    } else {
+        if (num == 1) {
+            return "壹";
+        } else if (num == 2) {
+            return "贰";
+        } else if (num == 3) {
+            return "叁";
+        } else if (num == 4) {
+            return "肆";
+        } else if (num == 5) {
+            return "伍";
+        } else if (num == 6) {
+            return "陆";
+        } else if (num == 7) {
+            return "柒";
+        } else if (num == 8) {
+            return "捌";
+        } else if (num == 9) {
+            return "玖";
+        } else {
+            return num;
+        }
+    }
+}

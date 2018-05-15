@@ -1,0 +1,48 @@
+.xn-group-box {
+    border: 1.5px solid darkgray;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 35px;
+}
+.xn-group-box .xn-title {
+    width: 12%!important;
+    position: relative;
+    top: -25px;
+    text-align: center;
+    border: 0px;
+    background-color: white;
+    box-shadow: 0 0 0 rgba(7, 14, 69, 0.28);
+}
+.xn-group-box .xn-content {
+    width: 96%;
+    margin: 0 auto;
+    padding-bottom: 10px;
+}
+
+.xn-table {
+    width: 94.6%;
+    padding-left: 3px;
+    min-height: 30px;
+    display: table;
+}
+.xn-table thead {
+    text-align: center;
+    height: 28px;
+    background-color: #F7F7F7;
+}
+.xn-table td, th {
+    border: 1px solid #C7C7C7 !important;
+    padding: 4px;
+}
+.xn-table th {
+    text-align: center;
+}
+
+.xn-notice {
+    padding: 8px;
+    background-color: #fff7ef;
+}
+
+.modal-body {
+    padding: 16px; !important
+}

@@ -1,0 +1,272 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="BatchDK_DKMy.aspx.cs" Inherits="OThinker.H3.Portal.Sheets.DefaultEngine.BatchDK_DKMy" EnableEventValidation="false" MasterPageFile="~/MvcSheet.master" %>
+
+<%@ OutputCache Duration="999999" VaryByParam="T" VaryByCustom="browser" %>
+<asp:Content ID="head" ContentPlaceHolderID="headContent" runat="Server">
+    <script type="text/javascript">
+
+</script>
+</asp:Content>
+<asp:Content ID="menu" ContentPlaceHolderID="cphMenu" runat="Server">
+</asp:Content>
+<asp:Content ID="master" ContentPlaceHolderID="masterContent" runat="Server">
+    <script src="BatchDK_DKMy.js"></script>
+    <div style="text-align: center;" class="DragContainer">
+        <label id="lblTitle" class="panel-title">批量到款流程</label>
+    </div>
+    <div class="panel-body sheetContainer">
+        <div class="ContractContent" style="margin-top: 15px">
+            <div class="nav-icon fa  fa-chevron-right bannerTitle">
+                <label id="divSheetInfo" data-en_us="Sheet information">表单信息</label>
+            </div>
+            <div class="divContent" id="divSheet">
+                <div class="row">
+                    <div id="title1" class="col-md-2">
+                        <span id="Label11" data-type="SheetLabel" data-datafield="DK_Target" style="">到款对象</span>
+                    </div>
+                    <div id="control1" class="col-md-4">
+                        <input id="Control11" type="text" data-datafield="DK_Target" data-type="SheetTextBox" style="">
+                    </div>
+                    <div id="title2" class="col-md-2">
+                    </div>
+                    <div id="control2" class="col-md-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title1" class="col-md-12">
+                        <span id="Label16" data-type="SheetLabel" data-datafield="BatchDKTblOfDK" style="" class="">批量到款子表</span>
+                    </div>
+                </div>
+                <div class="row BatchDKTblOfDK">
+                    <div id="div996425" class="col-md-12">
+                        <table id="Control16" data-datafield="BatchDKTblOfDK" data-type="SheetGridView" class="SheetGridView" data-displayadd="false" data-displaydelete="false" data-defaultrowcount="0" data-displaysequenceno="false">
+                            <tbody>
+
+                                <tr class="header">
+                                    <td id="Control16_SerialNo" class="rowSerialNo">序号								</td>
+                                    <td id="Control16_Header3" data-datafield="BatchDKTblOfDK.ContractNo" style="width:11%">
+                                        <label id="Control16_Label3" data-datafield="BatchDKTblOfDK.ContractNo" data-type="SheetLabel" style="">合同号</label>
+                                    </td>
+                                    <td id="Control16_Header4" data-datafield="BatchDKTblOfDK.QKSeq" style="width:4%">
+                                        <label id="Control16_Label4" data-datafield="BatchDKTblOfDK.QKSeq" data-type="SheetLabel" style="">请款批次</label>
+                                    </td>
+                                    <td id="Control16_Header5" data-datafield="BatchDKTblOfDK.QKType">
+                                        <label id="Control16_Label5" data-datafield="BatchDKTblOfDK.QKType" data-type="SheetLabel" style="">请款类型</label>
+                                    </td>
+                                    <td id="Control16_Header6" data-datafield="BatchDKTblOfDK.QKTarget">
+                                        <label id="Control16_Label6" data-datafield="BatchDKTblOfDK.QKTarget" data-type="SheetLabel" style="">请款对象</label>
+                                    </td>
+                                    <td id="Control16_Header7" data-datafield="BatchDKTblOfDK.QKDate">
+                                        <label id="Control16_Label7" data-datafield="BatchDKTblOfDK.QKDate" data-type="SheetLabel" style="">请款日期</label>
+                                    </td>
+                                    <td id="Control16_Header8" data-datafield="BatchDKTblOfDK.ZJKX">
+                                        <label id="Control16_Label8" data-datafield="BatchDKTblOfDK.ZJKX" data-type="SheetLabel" style="">资金款项</label>
+                                    </td>
+                                    <td id="Control16_Header9" data-datafield="BatchDKTblOfDK.ZJMS">
+                                        <label id="Control16_Label9" data-datafield="BatchDKTblOfDK.ZJMS" data-type="SheetLabel" style="">资金描述</label>
+                                    </td>
+                                    <td id="Control16_Header10" data-datafield="BatchDKTblOfDK.QKAmount">
+                                        <label id="Control16_Label10" data-datafield="BatchDKTblOfDK.QKAmount" data-type="SheetLabel" style="">请款金额</label>
+                                    </td>
+                                    <td id="Control16_Header11" data-datafield="BatchDKTblOfDK.QKCurrency">
+                                        <label id="Control16_Label11" data-datafield="BatchDKTblOfDK.QKCurrency" data-type="SheetLabel" style="">请款币种</label>
+                                    </td>
+                                    <td id="Control16_Header12" data-datafield="BatchDKTblOfDK.QKConvertAmount" class="hidden">
+                                        <label id="Control16_Label12" data-datafield="BatchDKTblOfDK.QKConvertAmount" data-type="SheetLabel" style="">折算金额</label>
+                                    </td>
+                                    <td id="Control16_Header13" data-datafield="BatchDKTblOfDK.CurDKAmount">
+                                        <label id="Control16_Label13" data-datafield="BatchDKTblOfDK.CurDKAmount" data-type="SheetLabel" style="">本次到款金额</label>
+                                    </td>
+                                    <td id="Control16_Header14" data-datafield="BatchDKTblOfDK.CurDKCurrency" style="width:6%">
+                                        <label id="Control16_Label14" data-datafield="BatchDKTblOfDK.CurDKCurrency" data-type="SheetLabel" style="">本次币种</label>
+                                    </td>
+                                    <td id="Control16_Header15" data-datafield="BatchDKTblOfDK.Status">
+                                        <label id="Control16_Label15" data-datafield="BatchDKTblOfDK.Status" data-type="SheetLabel" style="">状态</label>
+                                    </td>
+                                    <td id="Control16_Header16" data-datafield="BatchDKTblOfDK.SeqCnt" class="hidden">
+                                        <label id="Control16_Label16" data-datafield="BatchDKTblOfDK.SeqCnt" data-type="SheetLabel" style="">SeqCnt</label>
+                                    </td>
+                                    <td id="Control16_Header17" data-datafield="BatchDKTblOfDK.QKCurrencyCode" class="hidden">
+                                        <label id="Control16_Label17" data-datafield="BatchDKTblOfDK.QKCurrencyCode" data-type="SheetLabel" style="">请款币种Code</label>
+                                    </td>
+                                    <td id="Control16_Header18" data-datafield="BatchDKTblOfDK.LJDKAmount" class="hidden">
+                                        <label id="Control16_Label18" data-datafield="BatchDKTblOfDK.LJDKAmount" data-type="SheetLabel" style="">已累计到款</label>
+                                    </td>
+                                    <td id="Control16_Header19" data-datafield="BatchDKTblOfDK.QKSeqHidden" class="hidden">
+                                        <label id="Control16_Label19" data-datafield="BatchDKTblOfDK.QKSeqHidden" data-type="SheetLabel" style="">请款批次Hidden</label>
+                                    </td>
+                                    <td id="Control16_Header20" data-datafield="BatchDKTblOfDK.QKTypeCode" class="hidden">
+                                        <label id="Control16_Label20" data-datafield="BatchDKTblOfDK.QKTypeCode" data-type="SheetLabel" style="">请款类型</label>
+                                    </td>
+                                    <td id="Control16_Header21" data-datafield="BatchDKTblOfDK.QKTargetCode" class="hidden">
+                                        <label id="Control16_Label21" data-datafield="BatchDKTblOfDK.QKTargetCode" data-type="SheetLabel" style="">请款对象</label>
+                                    </td>
+                                    <td id="Control16_Header22" data-datafield="BatchDKTblOfDK.QKObjectID" class="hidden">
+                                        <label id="Control16_Label22" data-datafield="BatchDKTblOfDK.QKObjectID" data-type="SheetLabel" style="">QKObjectID</label>
+                                    </td>
+                                    <td class="rowOption hidden">删除								</td>
+                                </tr>
+                                <tr class="template">
+                                    <td id="Control16_Option" class="rowOption"></td>
+                                    <td data-datafield="BatchDKTblOfDK.ContractNo">
+                                        <input id="Control16_ctl3" type="text" data-datafield="BatchDKTblOfDK.ContractNo" data-type="SheetTextBox" style="">
+                                    </td>
+                                    <td data-datafield="BatchDKTblOfDK.QKSeq">
+                                        <input id="Control16_ctl4" type="text" data-datafield="BatchDKTblOfDK.QKSeq" data-type="SheetTextBox" style="">
+                                    </td>
+                                    <td data-datafield="BatchDKTblOfDK.QKType">
+                                        <input id="Control16_ctl5" type="text" data-datafield="BatchDKTblOfDK.QKType" data-type="SheetTextBox" style="">
+                                    </td>
+                                    <td data-datafield="BatchDKTblOfDK.QKTarget">
+                                        <input id="Control16_ctl6" type="text" data-datafield="BatchDKTblOfDK.QKTarget" data-type="SheetTextBox" style="">
+                                    </td>
+                                    <td data-datafield="BatchDKTblOfDK.QKDate">
+                                        <input id="Control16_ctl7" type="text" data-datafield="BatchDKTblOfDK.QKDate" data-type="SheetTextBox" style="">
+                                    </td>
+                                    <td data-datafield="BatchDKTblOfDK.ZJKX">
+                                        <input id="Control16_ctl8" type="text" data-datafield="BatchDKTblOfDK.ZJKX" data-type="SheetTextBox" style="">
+                                    </td>
+                                    <td data-datafield="BatchDKTblOfDK.ZJMS">
+                                        <input id="Control16_ctl9" type="text" data-datafield="BatchDKTblOfDK.ZJMS" data-type="SheetTextBox" style="">
+                                    </td>
+                                    <td data-datafield="BatchDKTblOfDK.QKAmount">
+                                        <input id="Control16_ctl10" type="text" data-datafield="BatchDKTblOfDK.QKAmount" data-type="SheetTextBox" style="">
+                                    </td>
+                                    <td data-datafield="BatchDKTblOfDK.QKCurrency">
+                                        <input id="Control16_ctl11" type="text" data-datafield="BatchDKTblOfDK.QKCurrency" data-type="SheetTextBox" style="">
+                                    </td>
+                                    <td data-datafield="BatchDKTblOfDK.QKConvertAmount" class="hidden">
+                                        <input id="Control16_ctl12" type="text" data-datafield="BatchDKTblOfDK.QKConvertAmount" data-type="SheetTextBox" style="">
+                                    </td>
+                                    <td data-datafield="BatchDKTblOfDK.CurDKAmount">
+                                        <input id="Control16_ctl13" type="text" data-datafield="BatchDKTblOfDK.CurDKAmount" data-type="SheetTextBox" style="">
+                                    </td>
+                                    <td data-datafield="BatchDKTblOfDK.CurDKCurrency">
+                                        <select data-datafield="BatchDKTblOfDK.CurDKCurrency" data-type="SheetDropDownList" id="ctl780150" class="" style="" data-queryable="false" data-masterdatacategory="币种"></select>
+                                    </td>
+                                    <td data-datafield="BatchDKTblOfDK.Status">
+                                        <input id="Control16_ctl15" type="text" data-datafield="BatchDKTblOfDK.Status" data-type="SheetTextBox" style="">
+                                    </td>
+                                    <td data-datafield="BatchDKTblOfDK.SeqCnt" class="hidden">
+                                        <input id="Control16_ctl16" type="text" data-datafield="BatchDKTblOfDK.SeqCnt" data-type="SheetTextBox" style="">
+                                    </td>
+                                    <td data-datafield="BatchDKTblOfDK.QKCurrencyCode" class="hidden">
+                                        <input id="Control16_ctl17" type="text" data-datafield="BatchDKTblOfDK.QKCurrencyCode" data-type="SheetTextBox" style="">
+                                    </td>
+                                    <td data-datafield="BatchDKTblOfDK.LJDKAmount" class="hidden">
+                                        <input id="Control16_ctl18" type="text" data-datafield="BatchDKTblOfDK.LJDKAmount" data-type="SheetTextBox" style="">
+                                    </td>
+                                    <td data-datafield="BatchDKTblOfDK.QKSeqHidden" class="hidden">
+                                        <input id="Control16_ctl19" type="text" data-datafield="BatchDKTblOfDK.QKSeqHidden" data-type="SheetTextBox" style="">
+                                    </td>
+                                    <td data-datafield="BatchDKTblOfDK.QKTypeCode" class="hidden">
+                                        <input id="Control16_ctl20" type="text" data-datafield="BatchDKTblOfDK.QKTypeCode" data-type="SheetTextBox" style="">
+                                    </td>
+                                    <td data-datafield="BatchDKTblOfDK.QKTargetCode" class="hidden">
+                                        <input id="Control16_ctl21" type="text" data-datafield="BatchDKTblOfDK.QKTargetCode" data-type="SheetTextBox" style="">
+                                    </td>
+                                    <td data-datafield="BatchDKTblOfDK.QKObjectID" class="hidden">
+                                        <input id="Control16_ctl22" type="text" data-datafield="BatchDKTblOfDK.QKObjectID" data-type="SheetTextBox" style="">
+                                    </td>
+                                    <td class="rowOption hidden">
+                                        <a class="delete">
+                                            <div class="fa fa-minus">
+                                            </div>
+                                        </a>
+                                        <a class="insert">
+                                            <div class="fa fa-arrow-down">
+                                            </div>
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr class="footer">
+                                    <td class="rowOption"></td>
+                                    <td data-datafield="BatchDKTblOfDK.ContractNo"></td>
+                                    <td data-datafield="BatchDKTblOfDK.QKSeq"></td>
+                                    <td data-datafield="BatchDKTblOfDK.QKType"></td>
+                                    <td data-datafield="BatchDKTblOfDK.QKTarget"></td>
+                                    <td data-datafield="BatchDKTblOfDK.QKDate"></td>
+                                    <td data-datafield="BatchDKTblOfDK.ZJKX"></td>
+                                    <td data-datafield="BatchDKTblOfDK.ZJMS"></td>
+                                    <td data-datafield="BatchDKTblOfDK.QKAmount"></td>
+                                    <td data-datafield="BatchDKTblOfDK.QKCurrency"></td>
+                                    <td data-datafield="BatchDKTblOfDK.QKConvertAmount" class="hidden"></td>
+                                    <td data-datafield="BatchDKTblOfDK.CurDKAmount"></td>
+                                    <td data-datafield="BatchDKTblOfDK.CurDKCurrency"></td>
+                                    <td data-datafield="BatchDKTblOfDK.Status"></td>
+                                    <td data-datafield="BatchDKTblOfDK.SeqCnt" class="hidden"></td>
+                                    <td data-datafield="BatchDKTblOfDK.QKCurrencyCode" class="hidden"></td>
+                                    <td data-datafield="BatchDKTblOfDK.LJDKAmount" class="hidden"></td>
+                                    <td data-datafield="BatchDKTblOfDK.QKSeqHidden" class="hidden"></td>
+                                    <td data-datafield="BatchDKTblOfDK.QKTypeCode" class="hidden"></td>
+                                    <td data-datafield="BatchDKTblOfDK.QKTargetCode" class="hidden"></td>
+                                    <td data-datafield="BatchDKTblOfDK.QKObjectID" class="hidden"></td>
+                                    <td class="rowOption"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="div538703" class="col-md-2">
+                        <span id="Label13" data-type="SheetLabel" data-datafield="Amount" style="" class="">到款金额</span>
+                    </div>
+                    <div id="div738174" class="col-md-4">
+                        <input id="Control13" type="text" data-datafield="Amount" data-type="SheetTextBox" style="" class="">
+                    </div>
+                    <div id="div605208" class="col-md-2">
+                    </div>
+                    <div id="div896260" class="col-md-4">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div id="div930551" class="col-md-2">
+                        <label data-datafield="Remark" data-type="SheetLabel" id="ctl155265" class="" style="">申请备注</label>
+                    </div>
+                    <div id="div895115" class="col-md-10">
+                        <textarea data-datafield="Remark" style="height: 60px; width: 100%;" data-type="SheetRichTextBox" id="ctl738409" class=""></textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="div722622" class="col-md-2">
+                        <span id="Label12" data-type="SheetLabel" data-datafield="DKDate" style="" class="">到款日期</span>
+                    </div>
+                    <div id="div633378" class="col-md-4">
+                        <input id="Control12" type="text" data-datafield="DKDate" data-type="SheetTime" style="" class="">
+                    </div>
+                    <div id="div293022" class="col-md-2">
+                    </div>
+                    <div id="div501078" class="col-md-4">
+                    </div>
+                </div>
+                <div class="row tableContent">
+                    <div id="title5" class="col-md-2">
+                        <span id="Label15" data-type="SheetLabel" data-datafield="ConfirmComment" style="">审批意见</span>
+                    </div>
+                    <div id="control5" class="col-md-10">
+                        <div id="Control15" data-datafield="ConfirmComment" data-type="SheetComment" style="">
+                        </div>
+                    </div>
+                </div>
+                <div class="row hidden">
+                    <div id="div454238" class="col-md-1">
+                        <input type="text" data-datafield="RejectFlg" data-type="SheetTextBox" id="ctl341857" class="hidden" style="">
+                    </div>
+                    <div id="div562910" class="col-md-1">
+                        <textarea data-datafield="QKObjectIDs" style="height: 60px; width: 100%;" data-type="SheetRichTextBox" id="ctl674230" class="hidden"></textarea>
+                    </div>
+                    <div id="div544852" class="col-md-1"></div>
+                    <div id="div523468" class="col-md-1"></div>
+                    <div id="div315418" class="col-md-1"></div>
+                    <div id="div836564" class="col-md-1"></div>
+                    <div id="div74315" class="col-md-1"></div>
+                    <div id="div895520" class="col-md-1"></div>
+                    <div id="div21012" class="col-md-1"></div>
+                    <div id="div616170" class="col-md-1"></div>
+                    <div id="div411135" class="col-md-1"></div>
+                    <div id="div260964" class="col-md-1"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</asp:Content>

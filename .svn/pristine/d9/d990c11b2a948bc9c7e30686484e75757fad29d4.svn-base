@@ -1,0 +1,85 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Agreement_pigeonhole.aspx.cs" Inherits="OThinker.H3.Portal.Sheets.Agreement.Agreement_pigeonhole" EnableEventValidation="false" MasterPageFile="~/MvcSheet.master" %>
+<%@ OutputCache Duration="999999" VaryByParam="T" VaryByCustom="browser" %>
+<asp:Content ID="head" ContentPlaceHolderID="headContent" runat="Server">
+    <script src="Agreement_pigeonhole.js"></script>
+	<script type="text/javascript">
+
+</script>
+</asp:Content>
+<asp:Content ID="menu" ContentPlaceHolderID="cphMenu" runat="Server">
+</asp:Content>
+<asp:Content ID="master" ContentPlaceHolderID="masterContent" runat="Server">
+<div style="text-align: center;" class="DragContainer">
+	<label id="lblTitle" class="panel-title">协议归档</label>
+</div>
+<div class="panel-body sheetContainer">
+	<div class="ContractContent ">
+		<div class="nav-icon fa  fa-chevron-right bannerTitle">
+			<label id="divSheetInfo" data-en_us="Sheet information">表单信息</label>
+		</div>
+		<div class="divContent" id="divSheet">
+			
+			
+            <div class="row">
+                <div id="div190809" class="col-md-2">
+                    <label data-datafield="Agreement_Number" data-type="SheetLabel" id="ctl820253" class="" style="">协议编号</label></div>
+                <div id="div620348" class="col-md-4">
+                    <input type="text" data-datafield="Agreement_Number" data-type="SheetTextBox" id="ctl144337" class="" style=""></div>
+                <div id="div243534" class="col-md-2">
+                    <label data-datafield="Agreement_name" data-type="SheetLabel" id="ctl947451" class="" style="">协议名称</label></div>
+                <div id="div872109" class="col-md-4">
+                    <input type="text" data-datafield="Agreement_name" data-type="SheetTextBox" id="ctl252165" class="" style=""></div>
+            </div>
+            <div class="row">
+                <div id="div536373" class="col-md-2">
+                    <label data-datafield="Project_man" data-type="SheetLabel" id="ctl103882" class="" style="">项目负责人</label></div>
+                <div id="div976854" class="col-md-4">
+                    <input type="text" data-datafield="Project_man" data-type="SheetTextBox" id="ctl533703" class="" style=""></div>
+                <div id="div322625" class="col-md-2">
+                    <label data-datafield="Agreement_clint" data-type="SheetLabel" id="ctl335298" class="" style="">协议委托人</label></div>
+                <div id="div962362" class="col-md-4">
+                    <input type="text" data-datafield="Agreement_clint" data-type="SheetTextBox" id="ctl931617" class="" style=""></div>
+            </div>
+            <div class="row">
+                <div id="div641273" class="col-md-2">
+                    <label data-datafield="Agency_rate" data-type="SheetLabel" id="ctl618669" class="" style="">代理费率/金额</label></div>
+                <div id="div102385" class="col-md-10">
+                    <input type="text" data-datafield="Agency_rate" data-type="SheetTextBox" id="ctl906543" class="" style=""></div>
+            </div>
+            <div class="row">
+                <div id="div298397" class="col-md-2">
+                    <label data-datafield="Pay_condition" data-type="SheetLabel" id="ctl377944" class="" style="">支付条件</label></div>
+                <div id="div73931" class="col-md-10">
+                    <input type="text" data-datafield="Pay_condition" data-type="SheetTextBox" id="ctl403387" class="" style=""></div>
+            </div>
+            <div class="row">
+                <div id="div249349" class="col-md-2">
+                    <label data-datafield="Remarks" data-type="SheetLabel" id="ctl681368" class="" style="">备注</label></div>
+                <div id="div870868" class="col-md-10">
+                    <input type="text" data-datafield="Remarks" data-type="SheetTextBox" id="ctl320035" class="" style=""></div>
+            </div>
+            <div class="row">
+                <div id="div404508" class="col-md-2">
+                    <label data-datafield="Agency_original" data-type="SheetLabel" id="ctl325477" class="" style="">代理协议正本</label></div>
+                <div id="div674165" class="col-md-10">
+                    <div data-datafield="Agency_original" data-type="SheetAttachment" id="ctl447224" class="" style=""></div>
+                </div>
+            </div>
+            <div class="row">
+                <div id="div499777" class="col-md-2">
+                    <label data-datafield="Agency_change" data-type="SheetLabel" id="ctl764560" class="" style="">代理协议变更书</label></div>
+                <div id="div112258" class="col-md-10">
+                    <div data-datafield="Agency_change" data-type="SheetAttachment" id="ctl482480" class="" style=""></div>
+                </div>
+            </div>
+            <div class="row">
+                <div id="div904043" class="col-md-2">
+                    <label data-datafield="Other_file" data-type="SheetLabel" id="ctl202051" class="" style="">其它文件</label></div>
+                <div id="div235400" class="col-md-10">
+                    <div data-datafield="Other_file" data-type="SheetAttachment" id="ctl174860" class="" style=""></div>
+                </div>
+            </div>
+		</div>
+        </div>
+	</div>
+</asp:Content>

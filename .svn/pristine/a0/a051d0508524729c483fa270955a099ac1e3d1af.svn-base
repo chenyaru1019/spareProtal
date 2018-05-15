@@ -1,0 +1,117 @@
+﻿//数据加载后
+$.MvcSheet.Loaded = function () {
+    // 合同号码
+    var ContractNo = getUrlParam("ContractNo");
+    // InstanceId
+    var NeedInstanceId = getUrlParam("InstanceId");
+    var NeedInstanceActivity = getUrlParam("InstanceActivity");
+    var InstanceActivityName = GetName(NeedInstanceActivity);
+    if (ContractNo != null && ContractNo != ""
+        && NeedInstanceId != null && NeedInstanceId != ""
+        && NeedInstanceActivity != null && NeedInstanceActivity != "") {
+        // 设置相关数据
+        $.MvcSheetUI.SetControlValue("ContractNo", ContractNo);
+        $.MvcSheetUI.SetControlValue("NeedInstanceId", NeedInstanceId);
+        $.MvcSheetUI.SetControlValue("NeedInstanceActivity", NeedInstanceActivity);
+        $.MvcSheetUI.SetControlValue("InstanceActivityName", InstanceActivityName);
+        // 根据合同号码获取对应合同相关数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getByContractNo",   //处理页的相对地址
+            data: {
+                ContractNo: ContractNo,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                if (ret.ContractProperty == "航空煤油") {
+                    $.MvcSheetUI.SetControlValue("IsHYFlg", "true");
+                } else {
+                    $.MvcSheetUI.SetControlValue("IsHYFlg", "false");
+                }
+            }
+        });
+    }
+    $("input[data-datafield='ContractNo']").attr("disabled", "disabled");
+    $("input[data-datafield='InstanceActivityName']").attr("disabled", "disabled");
+}
+
+function GetName(InstanceActivity) {
+    if (InstanceActivity == "ActivityCreate") {
+        return "创建合同";
+    } else if (InstanceActivity == "ActivityApprove") {
+        return "合同审签";
+    } else if (InstanceActivity == "ActivityOperate") {
+        return "合同执行";
+    } else if (InstanceActivity == "ActivityComplete") {
+        return "合同完成";
+    }
+}
+// 提交后事件
+$.MvcSheet.ActionDone = function (data) {
+    // this.Action; // 获取当前按钮名称
+    if (this.Action == "Submit") {
+        if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityAdmin") {
+            var UserID = $.MvcSheetUI.SheetInfo.UserID;
+            doGoBack(UserID);
+        }
+    }
+}
+
+// 先取消，再激活，再调整活动节点
+function doGoBack(UserID) {
+    //alert(ActivityCode);
+    var NeedInstanceId = $.MvcSheetUI.GetControlValue("NeedInstanceId");
+    var NeedActivityCode = $.MvcSheetUI.GetControlValue("NeedInstanceActivity");
+    var participants = new Array();
+    participants.push(UserID);//("18f923a7-5a5e-426d-94ae-a55ad1a4b239");
+    // ------ 取消
+    $.ajax({
+        type: "POST",    //页面请求的类型
+        url: "/Portal/InstanceDetail/CancelInstance",   //处理页的相对地址
+        async: false,
+        data: {
+            InstanceID: NeedInstanceId,
+        },
+        success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+            if (ret.SUCCESS == true) {
+                // ------ 激活
+                $.ajax({
+                    type: "POST",    //页面请求的类型
+                    url: "/Portal/InstanceDetail/ActivateInstance",   //处理页的相对地址
+                    async: false,
+                    data: {
+                        InstanceID: NeedInstanceId,
+                    },
+                    success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                        if (ret.SUCCESS == true) {
+                            // ------ 调整活动节点
+
+                            $.ajax({
+                                type: "POST",    //页面请求的类型
+                                url: "/Portal/InstanceDetail/ActivateActivity",   //处理页的相对地址
+                                async: false,
+                                data: {
+                                    InstanceID: NeedInstanceId,
+                                    ActivityCode: NeedActivityCode,
+                                    Participants: participants,
+                                },
+                                success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                                    if (ret.SUCCESS == true) {
+                                        layer.alert('取回成功！', { icon: 2 });
+                                    } else {
+                                        layer.alert('取回失败！（调整活动节点失败）', { icon: 2 });
+                                    }
+                                }
+                            });
+                        } else {
+                            layer.alert('取回失败！（激活流程失败）', { icon: 2 });
+                        }
+                    }
+                });
+            } else {
+                layer.alert('取回失败！（取消流程失败）', { icon: 2 });
+            }
+        }
+    });
+}
+

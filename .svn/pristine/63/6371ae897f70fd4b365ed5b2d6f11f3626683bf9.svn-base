@@ -1,0 +1,76 @@
+﻿using System;
+using System.Collections;
+using System.Configuration;
+using System.Data;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.IO;
+using System.Text;
+using OThinker.H3.Controllers;
+using OThinker.H3.DataModel;
+using OThinker.H3.Portal;
+using OThinker.H3.BizBus.BizService;
+using OThinker.H3.Sheet;
+using OThinker.Data;
+using OThinker.H3.Instance;
+using OThinker.Organization;
+using System.Collections.Generic;
+using OThinker.H3.Acl;
+using OThinker.H3.Data;
+
+namespace OThinker.H3.Portal.Sheets.DefaultEngine
+{
+    public partial class ContractApproveMy : OThinker.H3.Controllers.MvcPage 
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+        }
+
+        public override MvcViewContext LoadDataFields()
+        {
+
+            //Attachment at = this.ActionContext.Engine.BizObjectManager.GetAttachment(this.ActionContext.User.UserID,
+            //    "ContractApprove", "c9e7c185-2b9a-48d4-b939-a8ff59875a51", "6cc180e7-9267-4df2-b1a3-9db3c587cd03");
+            //byte[] fileContents = at.Content; // 附件二进制内容
+            //BizObjectSchema schema = this.ActionContext.Engine.BizObjectManager.GetPublishedSchema("ContractApprove");
+            //BizObject bo = new BizObject(this.ActionContext.Engine, schema, this.ActionContext.User.UserID);
+            //this.ActionContext.InstanceData["ContractFile"].Value = at;
+            //this.ActionContext.Engine.BizObjectManager.AddAttachment(new Data.Attachment()
+            //{
+            //    BizObjectId = bo.ObjectID,
+            //    BizObjectSchemaCode = bo.Schema.SchemaCode,
+            //    DataField = "ContractFile",
+            //    Content = fileContents,
+            //    ContentLength = fileContents.Length,
+            //    ContentType = at.ContentType, // HttpPostedFile.ContentType
+            //    FileName = at.FileName,
+            //    CreatedBy = at.CreatedBy,
+            //    CreatedTime = at.CreatedTime,
+            //    LastVersion = true
+            //});
+            if (this.ActionContext.IsOriginateMode)
+            {
+
+            }
+            else
+            {
+                this.ActionContext.InstanceData.Submit();
+            }
+            return base.LoadDataFields();
+        }
+
+        /// <summary>
+        /// 保存表单数据到引擎中
+        /// </summary>
+        /// <param name="Args"></param>
+        public override void SaveDataFields(MvcPostValue MvcPost, MvcResult result)
+        {
+            // 保存后，后台执行事件
+            base.SaveDataFields(MvcPost, result);
+
+            
+        }
+        
+    }
+}

@@ -1,0 +1,150 @@
+﻿// 提交前事件
+$.MvcSheet.SubmitAction.OnActionPreDo = function () {
+    //if (!checkCurrency()) {
+    //    return false;
+    //}
+}
+// 表单验证接口
+$.MvcSheet.Validate = function () {
+
+    return true;
+}
+// 提交后事件
+$.MvcSheet.ActionDone = function (data) {
+    // this.Action; // 获取当前按钮名称
+    
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+        if (this.Action == "Submit" || this.Action == "Save") {
+            var JSObjectIDs = $.MvcSheetUI.GetControlValue("JSObjectIDs");
+            // 设置请付款状态为BatchQK_Start
+            // 获取客户信息数据
+            $.ajax({
+                type: "POST",    //页面请求的类型
+                url: "ContractHandler.ashx?Command=setJS_Status",   //处理页的相对地址
+                data: {
+                    JSObjectIDs: JSObjectIDs,
+                    Status: "BatchJQ_Start",
+                },
+                async: false,
+                success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                    console.log("设置请付款状态为BatchJQ_Start成功");
+                }
+            });
+        }
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityCompanyLeader") {
+        if (this.Action == "Submit") {
+            var JSObjectIDs = $.MvcSheetUI.GetControlValue("JSObjectIDs");
+            // 设置请付款状态为BatchQK_OK
+            // 获取客户信息数据
+            $.ajax({
+                type: "POST",    //页面请求的类型
+                url: "ContractHandler.ashx?Command=setJS_Status",   //处理页的相对地址
+                data: {
+                    JSObjectIDs: JSObjectIDs,
+                    Status: "BatchJQ_OK",
+                },
+                async: false,
+                success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                    console.log("设置请付款状态为BatchJQ_OK成功");
+                }
+            });
+        }
+    }
+
+}
+//数据加载后
+$.MvcSheet.Loaded = function () {
+    // 请款对象
+    var Target = getUrlParam("Target");
+    var JSObjectIDs = getUrlParam("JSObjectIDs");
+    var IsHYFlg = getUrlParam("IsHYFlg");
+    var JQ_Target = "";
+    if (Target != null && Target != "") {
+        $.MvcSheetUI.SetControlValue("JSObjectIDs", JSObjectIDs);
+        var JSObjectIDArr = JSObjectIDs.split(",");
+        // 获取客户信息数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getCustomerById",   //处理页的相对地址
+            data: {
+                ObjectID: Target,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                JQ_Target = ret.CompanyName + '（' + ret.ModelOrDepartment + '）';
+                
+            }
+        });
+        $.MvcSheetUI.SetControlValue("JQ_Target", JQ_Target);
+        $.MvcSheetUI.SetControlValue("IsHYFlg", IsHYFlg);
+        
+        // 表格数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getJSLSData",   //处理页的相对地址
+            data: {
+                JS_Target: JQ_Target,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                var dtl = $.MvcSheetUI.GetElement("BatchJSTblOfJQ").SheetGridView();
+                dtl._Clear();
+                var index = 0;
+                for (var i = 0; i < ret.length; i++) {
+                    // 勾选的数据是否在所有批量数据中
+                    if (IsInArr(JSObjectIDArr, ret[i].JSObjectID)) {
+                        dtl._AddRow();
+                        index++;
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfJQ.ContractNo", ret[i].ContractNo, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfJQ.ContractNoHidden", ret[i].ContractNoHidden, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfJQ.ContractName", ret[i].ContractName, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfJQ.PostAB", ret[i].PostAB, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfJQ.DKAmount", ret[i].DKAmount, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfJQ.FKAmount", ret[i].FKAmount, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfJQ.BankFY", ret[i].BankFY, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfJQ.AgencyFY", ret[i].AgencyFY, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfJQ.OtherFY", ret[i].OtherFY, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfJQ.JSResult", ret[i].JSResult, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfJQ.WorkItemId", ret[i].WorkItemId, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfJQ.Cnt", ret[i].Cnt, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfJQ.JSObjectID", ret[i].JSObjectID, index);
+                    }
+                }
+            }
+        });
+    }
+
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+        $(".BatchJSTblOfJQ").hide();
+    }
+    
+
+    $("input[data-datafield='JQ_Target']").attr("disabled", "disabled");
+
+    $("input[data-datafield='BatchJSTblOfJQ.ContractNo']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfJQ.ContractNoHidden']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfJQ.ContractName']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfJQ.PostAB']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfJQ.DKAmount']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfJQ.FKAmount']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfJQ.BankFY']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfJQ.AgencyFY']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfJQ.OtherFY']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfJQ.JSResult']").attr("disabled", "disabled");
+}
+
+function IsInArr(arr, str) {
+    for (var j = 0; j < arr.length; j++) {
+        if (str == arr[j]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// 查看
+function viewJS(el) {
+    var rowIndex = el.parentElement.parentElement.rowIndex;
+    var WorkItemId = $.MvcSheetUI.GetControlValue('BatchJSTblOfJQ.WorkItemId', rowIndex - 1);
+    window.location.href = "/Portal/Sheets/Contract/JSMy.aspx?Mode=View&WorkItemID=" + WorkItemId;
+}

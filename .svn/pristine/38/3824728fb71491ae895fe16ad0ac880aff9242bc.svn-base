@@ -1,0 +1,474 @@
+﻿// 表单验证接口
+$.MvcSheet.Validate = function () {
+
+    // 填写申请单环节，设置  必填
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+        if (this.Action == "Submit") {
+            // 验证是否有不同的请款对象同时提交数据
+            var dtl = $.MvcSheetUI.GetElement("DKTbl").SheetGridView();
+            var len = dtl.RowCount;
+            if (len > 0) {
+                var QKTargetArr = new Array();
+                for (var i = 0; i < len ; i++) {
+                    var CurDKAmount = $.MvcSheetUI.GetControlValue("DKTbl.CurDKAmount", i + 1).replace(/,/g, '');
+                    CurDKAmount = CurDKAmount == "" ? 0 : CurDKAmount;
+                    if (parseFloat(CurDKAmount) > 0) {
+                        QKTargetArr.push($.MvcSheetUI.GetControlValue("DKTbl.QKTargetCode", i + 1));
+                        
+                    }
+                }
+                for (var j = 0; j < QKTargetArr.length-1;j++) {
+                    if (QKTargetArr[j] != QKTargetArr[j+1]) {
+                        layer.alert('请款对象必须一致！', { icon: 2 });
+                        return false;
+                    }
+                }
+            }
+
+        }
+    }
+    return true;
+}
+
+//}
+//数据加载后
+$.MvcSheet.Loaded = function () {
+    // 合同号码
+    var ContractNo = getUrlParam("ContractNo");
+    var DKType = getUrlParam("DKType");
+    // 从支付管理迁移过来
+    var QKSubObjectIDs = getUrlParam("QKSubObjectIDs");
+    if (ContractNo != null && ContractNo != "") {
+        // 根据合同号码获取对应合同相关数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getByContractNo",   //处理页的相对地址
+            data: {
+                ContractNo: ContractNo,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                $.MvcSheetUI.SetControlValue("ContractNo", ret.ContractNo);
+                $.MvcSheetUI.SetControlValue("ContractName", ret.ContractName);
+                $.MvcSheetUI.SetControlValue("PostAB", ret.PostA + "," + ret.PostB);
+
+                $.MvcSheetUI.SetControlValue("DKType", DKType);
+                // 根据合同号码获取请款相关数据
+                $.ajax({
+                    type: "POST",    //页面请求的类型
+                    url: "ContractHandler.ashx?Command=getDKTbl",   //处理页的相对地址
+                    data: {
+                        ContractNo: ContractNo,
+                    },
+                    async: false,
+                    success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                        var DKCurrency = "";
+                        var QKType = "";
+                        var dtl = $.MvcSheetUI.GetElement("DKTbl").SheetGridView();
+                        dtl._Clear();
+                        var len = dtl.RowCount;
+                        var j = 1;
+                        for (var i = 0; i < ret.length; i++) {
+                            dtl._AddRow();
+                            len += 1;
+                            $.MvcSheetUI.SetControlValue("DKTbl.QKSeq", ret[i].QKSeq, len);
+                            $.MvcSheetUI.SetControlValue("DKTbl.QKObjectID", ret[i].QKObjectID, len);
+                            $.MvcSheetUI.SetControlValue("DKTbl.QKSeqHidden", ret[i].QKSeq, len);
+                            $.MvcSheetUI.SetControlValue("DKTbl.QKType", ret[i].QKType, len);
+                            $.MvcSheetUI.SetControlValue("DKTbl.QKTypeCode", ret[i].QKTypeCode, len);
+                            $.MvcSheetUI.SetControlValue("DKTbl.QKTarget", ret[i].QKTarget, len);
+                            $.MvcSheetUI.SetControlValue("DKTbl.QKTargetCode", ret[i].QKTarget, len);
+                            $.MvcSheetUI.SetControlValue("DKTbl.QKDate", ret[i].QKDate, len);
+                            $.MvcSheetUI.SetControlValue("DKTbl.ZJKX", ret[i].ZJKX, len);
+                            $.MvcSheetUI.SetControlValue("DKTbl.ZJMS", ret[i].ZJMS, len);
+                            $.MvcSheetUI.SetControlValue("DKTbl.QKAmount", ret[i].QKAmount, len);
+                            $.MvcSheetUI.SetControlValue("DKTbl.QKCurrencyCode", ret[i].QKCurrencyCode, len);
+                            $.MvcSheetUI.SetControlValue("DKTbl.QKCurrency", ret[i].QKCurrency, len);
+                            $.MvcSheetUI.SetControlValue("DKTbl.QKRate", ret[i].QKRate, len);
+                            $.MvcSheetUI.SetControlValue("DKTbl.QKConvertAmount", ret[i].QKConvertAmount, len);
+                            $.MvcSheetUI.SetControlValue("DKTbl.SeqCnt", ret[i].SeqCnt, len);
+                            $.MvcSheetUI.SetControlValue("DKTbl.LJDKAmount", ret[i].LJDKAmount, len);
+                            $.MvcSheetUI.SetControlValue("DKTbl.LJDKAmountWB", ret[i].LJDKAmountWB, len);
+                            if (QKSubObjectIDs != null && QKSubObjectIDs != "") {
+                                var arr = QKSubObjectIDs.split(",");
+                                for (var k= 0; k < arr.length; k++ ) {
+                                    if (arr[k] == ret[i].QKObjectID) {
+                                        $.MvcSheetUI.SetControlValue("DKTbl.CurDKAmount", ret[i].QKAmount, len);
+                                        DKCurrency = ret[i].QKCurrencyCode;
+                                        QKType = ret[i].QKTypeCode;
+                                    }
+                                }
+                            }
+                        }
+                        if (DKCurrency != "") {
+                            $.MvcSheetUI.SetControlValue("DKCurrencyTmp", DKCurrency);
+                        }
+                        if (QKType != "") {
+                            $.MvcSheetUI.SetControlValue("QKTypeTmp", QKType);
+                        }
+                    }
+                });
+
+            }
+        });
+        
+    }
+
+    // 请款子表的合并单元格操作
+    var dtl = $.MvcSheetUI.GetElement("DKTbl").SheetGridView();
+    var len = dtl.RowCount;
+    var QKSeqHidden = "Start";
+    if (len > 0) {
+        for (var i = 0; i < len; i++) {
+            // 对需要合并的项目进行合并
+            if (QKSeqHidden == "Start" || QKSeqHidden != $.MvcSheetUI.GetControlValue("DKTbl.QKSeqHidden", i + 1)) {
+                var SeqCnt = $.MvcSheetUI.GetControlValue("DKTbl.SeqCnt", i + 1);
+                var Status = $.MvcSheetUI.GetControlValue("DKTbl.Status", i + 1);
+                var k = 0;
+                $("[data-datafield='DKTbl']").find("tr.rows").each(function () {
+                    if (k == i) {
+                        $(this).find("td[data-field='DKTbl.QKSeq']").attr("rowspan", SeqCnt);
+                        $(this).find("td[data-field='DKTbl.QKType']").attr("rowspan", SeqCnt);
+                        $(this).find("td[data-field='DKTbl.QKTarget']").attr("rowspan", SeqCnt);
+                        $(this).find("td[data-field='DKTbl.QKDate']").attr("rowspan", SeqCnt);
+                        $(this).find("td[data-field='DKTbl.QKConvertAmount']").attr("rowspan", SeqCnt);
+                        //if (Status != "审批完成") {
+                        //    $(this).find("td[data-field='QKMainTbl.Operate'] a.updateQK").show();
+                        //} else {
+                        //    $(this).find("td[data-field='QKMainTbl.Operate'] a.updateQK").hide();
+                        //}
+                    }
+                    k++;
+                });
+            } else {
+                var k = 0;
+                $("[data-datafield='DKTbl']").find("tr.rows").each(function () {
+                    if (k == i) {
+                        $(this).find("td[data-field='DKTbl.QKSeq']").remove();
+                        $(this).find("td[data-field='DKTbl.QKType']").remove();
+                        $(this).find("td[data-field='DKTbl.QKTarget']").remove();
+                        $(this).find("td[data-field='DKTbl.QKDate']").remove();
+                        $(this).find("td[data-field='DKTbl.QKConvertAmount']").remove();
+                    }
+                    k++;
+                });
+            }
+            QKSeqHidden = $.MvcSheetUI.GetControlValue("DKTbl.QKSeqHidden", i + 1);
+            // 币种初始化
+            $.MvcSheetUI.SetControlValue("DKTbl.CurDKCurrency", $.MvcSheetUI.GetControlValue("DKTbl.QKCurrencyCode", i + 1) , i + 1);
+            
+
+        }
+    }
+    $("input[data-datafield='ContractNo']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractName']").attr("disabled", "disabled");
+    $("input[data-datafield='PostAB']").attr("disabled", "disabled");
+    $("input[data-datafield='DKTbl.QKSeq']").attr("disabled", "disabled");
+    $("input[data-datafield='DKTbl.QKType']").attr("disabled", "disabled");
+    $("input[data-datafield='DKTbl.QKTarget']").attr("disabled", "disabled");
+    $("input[data-datafield='DKTbl.QKDate']").attr("disabled", "disabled");
+    $("input[data-datafield='DKTbl.ZJKX']").attr("disabled", "disabled");
+    $("input[data-datafield='DKTbl.ZJMS']").attr("disabled", "disabled");
+    $("input[data-datafield='DKTbl.QKAmount']").attr("disabled", "disabled");
+    $("input[data-datafield='DKTbl.QKCurrency']").attr("disabled", "disabled");
+    $("input[data-datafield='DKTbl.QKRate']").attr("disabled", "disabled");
+    $("input[data-datafield='DKTbl.QKConvertAmount']").attr("disabled", "disabled");
+    $("input[data-datafield='DKTbl.LJDKAmount']").attr("disabled", "disabled");
+    $("input[data-datafield='DKTbl.LJDKAmountWB']").attr("disabled", "disabled");
+    $("input[data-datafield='DKTbl.Status']").attr("disabled", "disabled");
+    //$("[data-datafield='DKTbl.CurDKCurrency']").attr("disabled", "disabled");
+    $("input[data-datafield='DKAmount']").attr("disabled", "disabled");
+
+    // 回退节点是否显示，如果回退记录有，则显示，没有，则不显示
+    var dtl_back = $.MvcSheetUI.GetElement("GetBackDKTbl").SheetGridView();
+    if (dtl_back.RowCount > 0) {
+        $(".ContractContentGetBack").show();
+    } else {
+        $(".ContractContentGetBack").hide();
+    }
+
+    SearchApprovalTbl();
+
+    $('.AmountFormat').blur();
+}
+var IsSetCurrency = false;
+function DKCurrencyChange() {
+    var DKCurrencyTmp = $.MvcSheetUI.GetControlValue("DKCurrencyTmp");
+    var QKTypeTmp = $.MvcSheetUI.GetControlValue("QKTypeTmp");
+    if (!IsSetCurrency) {
+        IsSetCurrency = true;
+        $.MvcSheetUI.SetControlValue("DKCurrency", DKCurrencyTmp);
+        $.MvcSheetUI.SetControlValue("DKType", QKTypeTmp == "HT" ? "DKType_HT" : QKTypeTmp == "FY" ? "DKType_FY" :"DKType_JS");
+    } else {
+        setTbl();
+    }
+
+}
+
+function setTbl() {
+    var DKType = $.MvcSheetUI.GetControlValue("DKType");
+    var DKCurrency = $.MvcSheetUI.GetControlValue("DKCurrency");
+    var dtl = $.MvcSheetUI.GetElement("DKTbl").SheetGridView();
+    var len = dtl.RowCount;
+    if (len > 0 && typeof (DKType) != "undefined" && typeof (DKCurrency) != "undefined") {
+        for (var i = 0; i < len; i++) {
+            var QKCurrencyCode = $.MvcSheetUI.GetControlValue("DKTbl.QKCurrencyCode", i + 1);
+            var QKTypeCode = $.MvcSheetUI.GetControlValue("DKTbl.QKTypeCode", i + 1);
+            var QKRate = $.MvcSheetUI.GetControlValue("DKTbl.QKRate", i + 1);
+            $.MvcSheetUI.SetControlValue("DKTbl.CurDKRate", QKRate, i + 1);
+            // 请款类型和到款类型一致 且 当前币种和到款币种一致，可写
+            if (((DKType == "DKType_HT" && QKTypeCode == "HT") || (DKType == "DKType_FY" && QKTypeCode == "FY") || (DKType == "DKType_JS" && QKTypeCode == "JS") )
+                && (DKCurrency == QKCurrencyCode) ) {
+                var k = 0;
+                $("[data-datafield='DKTbl']").find("tr.rows").each(function () {
+                    if (k == i) {
+                        $(this).find("input[data-datafield='DKTbl.CurDKAmount']").attr("disabled", false);
+                        $(this).find("input[data-datafield='DKTbl.CurDKAmount']").addClass("DKInputAmount");
+                        $(this).find("input[data-datafield='DKTbl.CurDKRate']").attr("disabled", false);
+                        $(this).find("input[data-datafield='DKTbl.CurDKRate']").addClass("DKInputAmount");
+                    }
+                    k++;
+                });
+                $.MvcSheetUI.SetControlValue("DKTbl.CurDKCurrency", DKCurrency, i + 1);
+            } else {
+                // 否则，不可写
+                var k = 0;
+                $("[data-datafield='DKTbl']").find("tr.rows").each(function () {
+                    if (k == i) {
+                        $(this).find("input[data-datafield='DKTbl.CurDKAmount']").attr("disabled", "disabled");
+                        $(this).find("input[data-datafield='DKTbl.CurDKAmount']").removeClass("DKInputAmount");
+                        $(this).find("input[data-datafield='DKTbl.CurDKRate']").attr("disabled", "disabled");
+                        $(this).find("input[data-datafield='DKTbl.CurDKRate']").removeClass("DKInputAmount");
+                    }
+                    k++;
+                });
+                $.MvcSheetUI.SetControlValue('DKTbl.CurDKAmount', 0, i + 1);
+            }
+            
+        }
+    }
+}
+
+function setCurCurrency(el) {
+    var rowIndex = el.parentElement.parentElement.rowIndex;
+    var DKType = $.MvcSheetUI.GetControlValue("DKType");
+    var DKCurrency = $.MvcSheetUI.GetControlValue("DKCurrency");
+    var QKCurrencyCode = $.MvcSheetUI.GetControlValue("DKTbl.QKCurrencyCode", rowIndex-1);
+    var QKTypeCode = $.MvcSheetUI.GetControlValue("DKTbl.QKTypeCode", rowIndex - 1);
+    var CurDKCurrency = $.MvcSheetUI.GetControlValue("DKTbl.CurDKCurrency", rowIndex - 1);
+    // 请款类型和到款类型一致 且 当前币种和到款币种一致，可写
+    if (((DKType == "DKType_HT" && QKTypeCode == "HT") || (DKType == "DKType_FY" && QKTypeCode == "FY") || (DKType == "DKType_JS" && QKTypeCode == "JS"))
+        && (CurDKCurrency == DKCurrency)) {
+        var k = 0;
+        $("[data-datafield='DKTbl']").find("tr.rows").each(function () {
+            if (k == rowIndex - 2) {
+                $(this).find("input[data-datafield='DKTbl.CurDKAmount']").attr("disabled", false);
+                $(this).find("input[data-datafield='DKTbl.CurDKAmount']").addClass("DKInputAmount");
+                $(this).find("input[data-datafield='DKTbl.CurDKRate']").attr("disabled", false);
+                $(this).find("input[data-datafield='DKTbl.CurDKRate']").addClass("DKInputAmount");
+            }
+            k++;
+        });
+    } else {
+        var k = 0;
+        $("[data-datafield='DKTbl']").find("tr.rows").each(function () {
+            if (k == rowIndex - 2) {
+                $(this).find("input[data-datafield='DKTbl.CurDKAmount']").attr("disabled", true);
+                $(this).find("input[data-datafield='DKTbl.CurDKAmount']").removeClass("DKInputAmount");
+                $(this).find("input[data-datafield='DKTbl.CurDKRate']").attr("disabled", true);
+                $(this).find("input[data-datafield='DKTbl.CurDKRate']").removeClass("DKInputAmount");
+            }
+            k++;
+        });
+        
+    }
+}
+
+function compute() {
+    
+    var DKCurrency = $.MvcSheetUI.GetControlValue("DKCurrency");
+    var dtl = $.MvcSheetUI.GetElement("DKTbl").SheetGridView();
+    var len = dtl.RowCount;
+    var totalamount = 0.0;
+    if (len > 0) {
+        for (var i = 0; i < len; i++) {
+            var CurDKCurrency = $.MvcSheetUI.GetControlValue("DKTbl.CurDKCurrency", i + 1);
+            var QKCurrencyCode = $.MvcSheetUI.GetControlValue("DKTbl.QKCurrencyCode", i + 1);
+            // 当前币种和到款币种一致，累计
+            if (typeof (DKCurrency) == "undefined" || DKCurrency == CurDKCurrency) {
+                var CurDKAmount = $.MvcSheetUI.GetControlValue("DKTbl.CurDKAmount", i + 1).replace(/,/g, '');
+                CurDKAmount = CurDKAmount == "" ? 0 : CurDKAmount;
+                totalamount += (parseFloat(CurDKAmount));
+            } 
+            // 状态显示
+            var CurDKAmount = $.MvcSheetUI.GetControlValue("DKTbl.CurDKAmount", i + 1).replace(/,/g, '');
+            CurDKAmount = CurDKAmount == "" ? 0 : CurDKAmount;
+            var CurDKRate = $.MvcSheetUI.GetControlValue("DKTbl.CurDKRate", i + 1);
+            CurDKRate = CurDKRate == "" ? 0 : CurDKRate;
+            var LJDKAmount = $.MvcSheetUI.GetControlValue("DKTbl.LJDKAmount", i + 1).replace(/,/g, '');
+            LJDKAmount = LJDKAmount == "" ? 0 : LJDKAmount;
+            var LJDKAmountWB = $.MvcSheetUI.GetControlValue("DKTbl.LJDKAmountWB", i + 1).replace(/,/g, '');
+            LJDKAmountWB = LJDKAmountWB == "" ? 0 : LJDKAmountWB;
+            var LJDKAmount = LJDKAmount == "" ? 0 : LJDKAmount;
+            var LJDKAmountWB = LJDKAmountWB == "" ? 0 : LJDKAmountWB;
+            var QKAmount = $.MvcSheetUI.GetControlValue("DKTbl.QKAmount", i + 1).replace(/,/g, '');
+            QKAmount = QKAmount == "" ? 0 : QKAmount;
+            // 币种一样，直接比较
+            if (QKCurrencyCode == CurDKCurrency) {
+                // 如果请款和到款是RMB
+                if (QKCurrencyCode == 'RMB') {
+                    if ((parseFloat(CurDKAmount) + parseFloat(LJDKAmount) + parseFloat(LJDKAmountWB) * parseFloat(CurDKRate)) > parseFloat(QKAmount)) {
+                        $.MvcSheetUI.SetControlValue('DKTbl.Status', "超额到款", i + 1);
+                    } else if ((parseFloat(CurDKAmount) + parseFloat(LJDKAmount) + parseFloat(LJDKAmountWB) * parseFloat(CurDKRate)) == parseFloat(QKAmount)) {
+                        $.MvcSheetUI.SetControlValue('DKTbl.Status', "全部到款", i + 1);
+                    } else if ((parseFloat(CurDKAmount) + parseFloat(LJDKAmountWB) + parseFloat(LJDKAmount)) == 0) {
+                        $.MvcSheetUI.SetControlValue('DKTbl.Status', "未到款", i + 1);
+                    } else {
+                        $.MvcSheetUI.SetControlValue('DKTbl.Status', "部分到款", i + 1);
+                    }
+                    // 如果请款和到款是外币
+                } else {
+                    var f = parseFloat(CurDKRate) == 0 ? 0 : (parseFloat(LJDKAmount) / parseFloat(CurDKRate));
+                    if ((parseFloat(CurDKAmount) + parseFloat(LJDKAmountWB) + f) > parseFloat(QKAmount)) {
+                        $.MvcSheetUI.SetControlValue('DKTbl.Status', "超额到款", i + 1);
+                    } else if ((parseFloat(CurDKAmount) + parseFloat(LJDKAmountWB) + f) == parseFloat(QKAmount)) {
+                        $.MvcSheetUI.SetControlValue('DKTbl.Status', "全部到款", i + 1);
+                    } else if ((parseFloat(CurDKAmount) + parseFloat(LJDKAmountWB) + parseFloat(LJDKAmount)) == 0) {
+                        $.MvcSheetUI.SetControlValue('DKTbl.Status', "未到款", i + 1);
+                    } else {
+                        $.MvcSheetUI.SetControlValue('DKTbl.Status', "部分到款", i + 1);
+                    }
+                }
+            } else {
+                // 如果请款是RMB，到款为外币
+                if (QKCurrencyCode == 'RMB') {
+                    if (((parseFloat(CurDKAmount) + parseFloat(LJDKAmountWB)) * parseFloat(CurDKRate) + parseFloat(LJDKAmount)) > parseFloat(QKAmount)) {
+                        $.MvcSheetUI.SetControlValue('DKTbl.Status', "超额到款", i + 1);
+                    } else if (((parseFloat(CurDKAmount) + parseFloat(LJDKAmountWB)) * parseFloat(CurDKRate) + parseFloat(LJDKAmount)) == parseFloat(QKAmount)) {
+                        $.MvcSheetUI.SetControlValue('DKTbl.Status', "全部到款", i + 1);
+                    } else if ((parseFloat(CurDKAmount) + parseFloat(LJDKAmountWB) + parseFloat(LJDKAmount)) == 0) {
+                        $.MvcSheetUI.SetControlValue('DKTbl.Status', "未到款", i + 1);
+                    } else {
+                        $.MvcSheetUI.SetControlValue('DKTbl.Status', "部分到款", i + 1);
+                    }
+                    // 如果请款是外币，到款为RMB
+                } else if (CurDKCurrency == "RMB") {
+                    var f = parseFloat(CurDKRate) == 0 ? 0 : (parseFloat(CurDKAmount) + parseFloat(LJDKAmount)) / parseFloat(CurDKRate);
+                    if ((f + parseFloat(LJDKAmountWB)) > parseFloat(QKAmount)) {
+                        $.MvcSheetUI.SetControlValue('DKTbl.Status', "超额到款", i + 1);
+                    } else if ((f + parseFloat(LJDKAmountWB)) == parseFloat(QKAmount)) {
+                        $.MvcSheetUI.SetControlValue('DKTbl.Status', "全部到款", i + 1);
+                    } else if ((parseFloat(CurDKAmount) + parseFloat(LJDKAmountWB) + parseFloat(LJDKAmount)) == 0) {
+                        $.MvcSheetUI.SetControlValue('DKTbl.Status', "未到款", i + 1);
+                    } else {
+                        $.MvcSheetUI.SetControlValue('DKTbl.Status', "部分到款", i + 1);
+                    }
+                }
+            }
+            
+        }
+    }
+    $.MvcSheetUI.SetControlValue('DKAmount', totalamount.toFixed(2));
+    $('.AmountFormat').blur();
+}
+
+// 增加自定义工具栏按钮方法，触发后台事件
+$.MvcSheet.AddAction({
+    //Action: "GetBackAction",       // 执行后台方法名称
+    Icon: "fa-sign-in",           // 按钮图标
+    Text: "回退",           // 按钮名称
+    Datas: [],    // 参数，多个参数 "{Param1}","Param2"...
+    OnAction: function () {
+        /*
+        自定义按钮执行事件，如果为 null 则调用$.MvcSheet.Action 执行后台方法
+        如果不为 null，那么会执行这里的方法，需要自己Post到后台或写前端逻辑
+        */
+        // 根据InstanceID获取当前流程的活动节点
+        var CurActivity = "";
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getCurActivity",   //处理页的相对地址
+            data: {
+                InstanceID: $.MvcSheetUI.SheetInfo.InstanceId,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                // 设置请款批次
+                if (ret != null && ret != "") {
+                    CurActivity = ret.ActivityCode;
+                }
+            }
+        });
+
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "/Portal/InstanceDetail/GetAdjustActivityInfo",   //处理页的相对地址
+            data: {
+                InstanceID: $.MvcSheetUI.SheetInfo.InstanceId,
+            },
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                var options = "";
+                if (ret.SUCCESS == true) {
+                    console.log("GetAdjustActivityInfo=" + ret);
+                    for (var i = 0; i < ret.InstanceActivity.length; i++) {
+                        if (CurActivity == "ActivityConfirm") {
+                            if (ret.InstanceActivity[i].ActivityName == "发起申请") {
+                                options += '<option value="' + ret.InstanceActivity[i].ActivityCode + '">' + ret.InstanceActivity[i].ActivityName + '</option>';
+                            }
+                        }
+                        if (CurActivity == "End") {
+                            if (ret.InstanceActivity[i].ActivityName == "发起申请") {
+                                options += '<option value="' + ret.InstanceActivity[i].ActivityCode + '">' + ret.InstanceActivity[i].ActivityName + '</option>';
+                            }
+                            if (ret.InstanceActivity[i].ActivityName == "复核") {
+                                options += '<option value="' + ret.InstanceActivity[i].ActivityCode + '">' + ret.InstanceActivity[i].ActivityName + '</option>';
+                            }
+                        }
+                    }
+                }
+                //让弹出框显示的操作方法
+                $('#message-module').find('.modal-body').html(
+                    '<div style="text-align: center;padding: 50px;line-height: 25px">' +
+                    '<form class="bs-example form-horizontal" name="form" >' +
+                    '<div class="row">' +
+                    '    <h5 class="col-md-4" style="padding-top: 14px;">选择活动: </h5><div class="col-md-6 input-group">' +
+                    '        <select class="form-control" id="ActivityCodes" ><option value="">请选择</option>' + options +
+                    '                 </select > ' +
+                    '    </div>' +
+                    '</div > ' +
+                    '</form > ' +
+                    '</div > '
+                );
+                var moduleFooter = $('#message-module').find('.modal-footer');
+                var cancleButton = $('<button type="button" class="btn " data-dismiss="modal" style=" border-radius: 0px;border: 0px;margin-left: 0px;width: 50%;background-color:white;float: left;border-bottom-left-radius: 5px;border-color: #ff993b;line-height: 25px;color:black">取消</button>');
+                var confirmButton = $('<button type="button" class="btn btn-default" style="border-radius: 0px;border: 0px;background-color: #FF993B;width: 50%;float: right;border-bottom-right-radius: 6px;line-height: 25px;margin-left: 0px;">确定</button>');
+
+                if (moduleFooter.find('button').length === 0) {
+                    cancleButton.appendTo(moduleFooter);
+                    confirmButton.appendTo(moduleFooter);
+                }
+                $('#message-module').modal({ keyboard: true, show: true, backdrop: true });
+                $('#message-module').on('shown.bs.modal', function () {
+                    $.LoadingMask.Hide();
+                });
+                confirmButton.click(function () {
+                    $('#message-module').modal('hide');
+                    GotoBackPage("DK", CurActivity);
+
+                });
+            }
+        });
+    },
+    //OnActionDone: function (ret) {
+
+
+    //},
+    PostSheetInfo: true         // 是否提交表单数据，如果 false，那么不返回表单的数据
+});
+
+// 回退查看
+function viewBack(el) {
+    var rowIndex = el.parentElement.parentElement.rowIndex;
+    var WorkItemId = $.MvcSheetUI.GetControlValue('GetBackDKTbl.WorkItemId', rowIndex - 1);
+    window.location.href = "/Portal/Sheets/Contract/GetBackMy.aspx?Mode=View&WorkItemID=" + WorkItemId;
+}

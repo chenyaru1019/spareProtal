@@ -1,0 +1,323 @@
+﻿@charset "utf-8";
+
+html,body {
+
+}
+
+body {
+font-family:"宋体",sans-serif;
+margin-left: 0px;
+margin-top: 0px;
+margin-right: 0px;
+margin-bottom: 0px;
+border:0px;
+}
+
+img {border:0px;}
+
+li {
+	list-style-type:none;
+	/*float:left;*/
+}
+
+
+.bt_project1 {
+width:96px;
+height:50px;
+line-height: 50px;
+position: absolute;
+background:url(../images/tender/progress_1.gif);
+border:0px;
+font:"宋体";
+font-size:16px;
+font-weight:bold;
+color:#FFFFFF;
+text-align:center;
+cursor:pointer;
+}
+
+.bt_project2 {
+width:96px;
+height:50px;
+line-height: 50px;
+position: absolute;
+background:url(../images/tender/progress_01.gif);
+border:0px;
+font:"宋体";
+font-size:14px;
+font-weight:bold;
+color:#bf7800;
+text-align:center;
+cursor:pointer;
+}
+
+.bt_project3 {
+width:96px;
+height:50px;
+line-height: 50px;
+position: absolute;
+background:url(../images/tender/progress_02.gif);
+border:0px;
+font:"宋体";
+font-size:14px;
+font-weight:bold;
+color:#bf7800;
+text-align:center;
+cursor:pointer;
+}
+.bt_progress_child_long1 {
+width:148px;
+height:34px;
+line-height: 34px;
+position: absolute;
+background:url(../images/tender/progress_child_1.gif) no-repeat;
+border:0px;
+font:"宋体";
+font-size:14px;
+font-weight:bold;
+color:#FFFFFF;
+text-align:center;
+cursor:pointer;
+}
+.bt_progress_child_long2 {
+width:148px;
+height:34px;
+line-height: 34px;
+position: absolute;
+background:url(../images/tender/progress_child_01.gif) no-repeat;
+border:0px;
+font:"宋体";
+font-size:12px;
+font-weight:bold;
+color:#669966;
+text-align:center;
+cursor:pointer;
+}
+/*------------------------------------------------------- workflow（工作流管理） ----------------------------------------------------------*/
+#workflow{
+width:99%;
+padding-left:10px;
+padding-bottom:15px;
+}
+
+#workflow p {
+margin:0px;
+padding:0px;
+}
+/*----------------------------------------------------- process_father（合同执行流程图）-----------------------------------------------------*/
+#process_father {
+	position:relative;
+	width:900px;
+	height:233px;
+	line-height:250px;
+	margin:3px auto;
+	left: -26px;
+
+}
+#apDiv1 {
+	position:absolute;
+	left:30px;
+	top:90px;
+	width:100px;
+	height:50px;
+	z-index:1;
+}
+#apDiv22 {
+	position:absolute;
+	left:230px;
+	top:90px;
+	width:100px;
+	height:50px;
+	z-index:1;
+}
+#apDiv3 {
+	position:absolute;
+	left:430px;
+	top:90px;
+	width:100px;
+	height:50px;
+	z-index:1;
+}
+#apDiv4 {
+	position:absolute;
+	left:630px;
+	top:90px;
+	width:100px;
+	height:50px;
+	z-index:1;
+}
+#arr1 {
+	position:absolute;
+	left:161px;
+	top:-10px;
+	width:41px;
+	height:33px;
+	z-index:1;
+}
+#arr2 {
+	position:absolute;
+	left:361px;
+	top:-10px;
+	width:41px;
+	height:33px;
+	z-index:1;
+}
+#arr3 {
+	position:absolute;
+	left:566px;
+	top:-10px;
+	width:41px;
+	height:33px;
+	z-index:1;
+}
+#apDiv3-1 {
+	position:absolute;
+	left:64px;
+	top:16px;
+	width:142px;
+	height:34px;
+	z-index:1;
+}
+#apDiv3-2 {
+	position:absolute;
+	left:230px;
+	top:16px;
+	width:142px;
+	height:34px;
+	z-index:1;
+}
+#apDiv3-3 {
+	position:absolute;
+	left:395px;
+	top:16px;
+	width:142px;
+	height:34px;
+	z-index:1;
+}
+#apDiv3-4 {
+	position:absolute;
+	left:560px;
+	top:16px;
+	width:142px;
+	height:34px;
+	z-index:1;
+}
+#apDiv3-5 {
+	position:absolute;
+	left:725px;
+	top:16px;
+	width:142px;
+	height:34px;
+	z-index:1;
+}
+#apDiv3-6 {
+	position:absolute;
+	left:64px;
+	top:185px;
+	width:142px;
+	height:34px;
+	z-index:1;
+}
+#apDiv3-7 {
+	position:absolute;
+	left:230px;
+	top:185px;
+	width:142px;
+	height:34px;
+	z-index:1;
+}
+#apDiv3-8 {
+	position:absolute;
+	left:395px;
+	top:185px;
+	width:142px;
+	height:34px;
+	z-index:1;
+}
+#apDiv3-9 {
+	position:absolute;
+	left:560px;
+	top:185px;
+	width:142px;
+	height:34px;
+	z-index:1;
+}
+#apDiv3-10 {
+	position:absolute;
+	left:725px;
+	top:185px;
+	width:142px;
+	height:34px;
+	z-index:1;
+}
+#bg-line, .line_1, .line_2,.line_3, .line_4, .line_5, .line_6, .line_7, .line_8, .line_9, .line_10 {
+	background-image:url(../images/tender/progress_line_all.gif);
+	background-repeat:no-repeat;
+}
+#bg-line {
+	position:absolute;
+	left:135px;
+	top:33px;
+	width:673px;
+	height:160px;
+	z-index:0;
+	background-position:0px 0px;
+	overflow:hidden;
+}
+#step3 {
+	width:890px;
+	border:solid 1px #7f989d;
+	margin: 0 5px;
+}
+.bs-bars {
+	float: right!important;
+	margin-bottom: 12px;
+}
+#xzBtn {
+	padding: 4px 8px;
+}
+#tableL02 {
+	margin-top: 0px!important;
+}
+#table_BatchJS_QK {
+    margin-top: 0px !important;
+}
+#table_BatchJS_FK {
+    margin-top: 0px !important;
+}
+#table_BatchJS_JQ {
+    margin-top: 0px !important;
+}
+#table_BatchDK_DK {
+    margin-top: 0px !important;
+}
+.fixed-table-header {
+	display: none!important;
+}
+
+.bootstrap-table .table:not(.table-condensed), .bootstrap-table .table:not(.table-condensed) > tbody > tr > th, .bootstrap-table .table:not(.table-condensed) > tfoot > tr > th, .bootstrap-table .table:not(.table-condensed) > thead > tr > td, .bootstrap-table .table:not(.table-condensed) > tbody > tr > td, .bootstrap-table .table:not(.table-condensed) > tfoot > tr > td {
+	border: 1px solid #e4e4e4!important;
+}
+#TableEditor, #delete, #TableViewQK, #TableViewFK, #TableViewJQ, #TableViewDK, #TableUpdateQK, #TableUpdateFK, #TableUpdateJQ, #TableUpdateDK {
+    padding: 2px 5px;
+}
+
+#delete, #TableUpdateQK, #TableUpdateFK, #TableUpdateJQ, #TableUpdateDK {
+    margin-left: 10px;
+}
+
+.btn-group>.btn:first-child {
+	padding: 3px;
+}
+#selectDjsje {
+	padding: 3PX;
+
+}
+.gb,.tj {
+	padding: 4px 8px;
+}
+
+.DKInputAmount {
+    border: 1px solid red;
+    background-color: #F5F5DC;
+}

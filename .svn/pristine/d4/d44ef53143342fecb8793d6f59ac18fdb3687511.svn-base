@@ -1,0 +1,105 @@
+﻿//数据加载后
+$.MvcSheet.Loaded = function () {
+    // 合同号码
+    var ContractNo = getUrlParam("ContractNo");
+    if (ContractNo != null && ContractNo != "") {
+
+        // 根据合同号码获取对应合同相关数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getByContractNo",   //处理页的相对地址
+            data: {
+                ContractNo: ContractNo,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                $.MvcSheetUI.SetControlValue("ContractNo", ret.ContractNo);
+                $.MvcSheetUI.SetControlValue("ContractName", ret.ContractName);
+                $.MvcSheetUI.SetControlValue("PostAB", ret.PostA + "," + ret.PostB);
+                $.MvcSheetUI.SetControlValue("PaymentType", "开证");
+            }
+        });
+    }
+    $("input[data-datafield='ContractNo']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractName']").attr("disabled", "disabled");
+    $("input[data-datafield='PostAB']").attr("disabled", "disabled");
+    $("input[data-datafield='PaymentType']").attr("disabled", "disabled");
+
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+        $(".BankConfirm").hide();
+        $(".PaymentApprove").hide();
+        $(".ManagerApprove").hide();
+        $(".CompanyLeaderApprove").hide();
+        $(".PaymentOperate").hide();
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityBankApprove") {
+        $(".BankConfirm").show();
+        $(".PaymentApprove").hide();
+        $(".ManagerApprove").hide();
+        $(".CompanyLeaderApprove").hide();
+        $(".PaymentOperate").hide();
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityPaymentApprove") {
+        $(".BankConfirm").show();
+        $(".PaymentApprove").show();
+        $(".ManagerApprove").hide();
+        $(".CompanyLeaderApprove").hide();
+        $(".PaymentOperate").hide();
+
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityManager") {
+        $(".BankConfirm").show();
+        $(".PaymentApprove").show();
+        $(".ManagerApprove").show();
+        $(".CompanyLeaderApprove").hide();
+        $(".PaymentOperate").hide();
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityCompanyLeader") {
+        $(".BankConfirm").show();
+        $(".PaymentApprove").show();
+        $(".ManagerApprove").show();
+        $(".CompanyLeaderApprove").show();
+        $(".PaymentOperate").hide();
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOperate") {
+        $(".BankConfirm").show();
+        $(".PaymentApprove").show();
+        $(".ManagerApprove").show();
+        $(".CompanyLeaderApprove").show();
+        $(".PaymentOperate").show();
+     } 
+    $("input[data-datafield='CurrencyChangeFlg']").next().hide();
+}
+
+function CurrencyChange() {
+    var CurrencyChangeFlg = $.MvcSheetUI.GetControlValue("CurrencyChangeFlg");
+    if (CurrencyChangeFlg == "true") {
+        return;
+    } else {
+        $.MvcSheetUI.SetControlValue("CurrencyChangeFlg", "true");
+        var ContractNo = $.MvcSheetUI.GetControlValue("ContractNo");
+        if (ContractNo != null && ContractNo != "") {
+            // 根据合同号码获取对应合同相关数据
+            $.ajax({
+                type: "POST",    //页面请求的类型
+                url: "ContractHandler.ashx?Command=getByContractNo",   //处理页的相对地址
+                data: {
+                    ContractNo: ContractNo,
+                },
+                async: false,
+                success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                    $.MvcSheetUI.SetControlValue("Currency", ret.Currency);
+                }
+            });
+        }
+    }
+}
+
+function ExpirationDateChange() {
+    var ExpirationDate = $("input[data-datafield='ExpirationDate']").val();
+    var RemindDate = lastMonthDate(ExpirationDate) ;
+    $("input[data-datafield='RemindDate']").val(RemindDate);
+}
+
+// 提交前事件
+$.MvcSheet.SubmitAction.OnActionPreDo = function () {
+    // 当前节点是节点
+    //if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+    //    $.MvcSheetUI.SetControlValue("RejectFlg", "0");
+    //}
+}

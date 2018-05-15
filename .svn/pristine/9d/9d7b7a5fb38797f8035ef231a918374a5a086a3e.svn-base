@@ -1,0 +1,304 @@
+﻿// 提交后事件
+$.MvcSheet.ActionDone = function (data) {
+    // this.Action; // 获取当前按钮名称
+    if (this.Action == "Submit") {
+        if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+            var InsObjectID = $.MvcSheetUI.SheetInfo.InstanceId;
+            var WorkflowVersion_FKReceipt = $.MvcSheetUI.GetControlValue("WorkflowVersion_FKReceipt");
+            window.open("/Portal/Sheets/Contract/FKReceiptMy.aspx?Mode=Originate&WorkflowCode=FKReceipt&WorkflowVersion=" + WorkflowVersion_FKReceipt + "&InsObjectID=" + InsObjectID);
+            //window.location.href = "/Portal/Sheets/Contract/FKReceiptMy.aspx?Mode=Originate&WorkflowCode=FKReceipt&WorkflowVersion=" + WorkflowVersion_FKReceipt + "&InsObjectID=" + InsObjectID;
+        }
+    }
+}
+
+// 表单验证接口
+$.MvcSheet.Validate = function () {
+
+    // 填写申请单环节，设置  必填
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+        var ZJAttachment = $("#ZJAttachment").xnfile("value");
+        $.MvcSheetUI.SetControlValue("ZJAttachment", ZJAttachment);
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityConfirm") {
+        if (this.Action == "Submit") {
+            
+            var IsOperateFK = $.MvcSheetUI.GetControlValue("IsOperateFK");
+            if (IsOperateFK != "是;") {
+                layer.alert('请勾选执行付款！', { icon: 2 });
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+//}
+//数据加载后
+$.MvcSheet.Loaded = function () {
+    // 合同号码
+    var ContractNo = getUrlParam("ContractNo");
+    var FKType = getUrlParam("FKType");
+    var JSObjectID = getUrlParam("JSObjectID");
+    var JSResultNum = getUrlParam("JSResultNum");
+    var Currency = "";
+    if (ContractNo != null && ContractNo != "") {
+        // 根据合同号码获取对应合同相关数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getByContractNo",   //处理页的相对地址
+            data: {
+                ContractNo: ContractNo,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                $.MvcSheetUI.SetControlValue("ContractNo", ret.ContractNo);
+                $.MvcSheetUI.SetControlValue("ContractName", ret.ContractName);
+                $.MvcSheetUI.SetControlValue("PostAB", ret.PostA + "," + ret.PostB);
+                $.MvcSheetUI.SetControlValue("FinalUser", ret.FinalUser);
+                $.MvcSheetUI.SetControlValue("CurrencyRMB", "人民币");
+                $.MvcSheetUI.SetControlValue("CurrencyWB", ret.CurrencyName);
+                $.MvcSheetUI.SetControlValue("ContractTotalPrice", parseFloat(ret.ContractTotalPrice).toFixed(2));
+                $.MvcSheetUI.SetControlValue("JKTotalAmount", parseFloat(ret.JKTotalAmount).toFixed(2));
+                if (ret.ContractProperty == "航空煤油") {
+                    $.MvcSheetUI.SetControlValue("IsHYFlg", "true");
+                } else {
+                    $.MvcSheetUI.SetControlValue("IsHYFlg", "false");
+                }
+            }
+        });
+        
+    } else {
+        ContractNo = $.MvcSheetUI.GetControlValue("ContractNo");
+        // 获取当前付款的货币
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getFKById",   //处理页的相对地址
+            data: {
+                BizObjectID: $.MvcSheetUI.SheetInfo.BizObjectID,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                Currency = ret.Currency;
+            }
+        });
+    }
+
+    if (JSObjectID != null && JSObjectID != "") {
+        $("[data-datafield='ZKType']").attr("disabled", "disabled");
+        $("[data-datafield='Currency']").attr("disabled", "disabled");
+    } else {
+        JSObjectID = $.MvcSheetUI.GetControlValue("JSObjectID");
+        if (JSObjectID != null && JSObjectID != "") {
+            //$.MvcSheetUI.SetControlValue("JSObjectID", JSObjectID);
+            //$.MvcSheetUI.SetControlValue("CurZJAmount", JSResultNum);
+            $("[data-datafield='ZKType']").attr("disabled", "disabled");
+            $("[data-datafield='Currency']").attr("disabled", "disabled");
+        } else {
+            $("[data-datafield='ZKType']").find("option").each(function () {
+                if ($(this)[0].value == 'ZKType_JS') {
+                    $(this).attr("disabled", "disabled");
+                }
+            });
+        }
+    }
+
+    var ContractTotalPrice = $.MvcSheetUI.GetControlValue("ContractTotalPrice");
+    var JKTotalAmount = $.MvcSheetUI.GetControlValue("JKTotalAmount");
+    // 获取已申请付款的相关数据
+    $.ajax({
+        type: "POST",    //页面请求的类型
+        url: "ContractHandler.ashx?Command=getApplyZJAmount",   //处理页的相对地址
+        data: {
+            ContractNo: ContractNo,
+        },
+        async: false,
+        success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+            $.MvcSheetUI.SetControlValue("ApplyZJAmountRMB", parseFloat(ret.RMB).toFixed(2));
+            $.MvcSheetUI.SetControlValue("ApplyZJAmountWB", parseFloat(ret.WB).toFixed(2));
+            var ApplyZJPercentRMB = "";
+            var ApplyZJPercentWB = "";
+            var CurZJPercent = "";
+            var CurZJPercentWB = "";
+            if (parseFloat(ContractTotalPrice) == 0) {
+                ApplyZJPercentRMB = "0%";
+                CurZJPercent = "0%";
+            } else {
+                ApplyZJPercentRMB = (parseFloat(ret.RMB) / parseFloat(ContractTotalPrice) * 100).toFixed(2) + "%";
+                CurZJPercent = (parseFloat(ret.RMB) / parseFloat(ContractTotalPrice) * 100).toFixed(2) + "%";
+            }
+            if (parseFloat(ContractTotalPrice) == 0) {
+                ApplyZJPercentWB = "0%";
+                CurZJPercentWB = "0%";
+            } else {
+                ApplyZJPercentWB = (parseFloat(ret.WB) / parseFloat(JKTotalAmount) * 100).toFixed(2) + "%";
+                CurZJPercentWB = (parseFloat(ret.WB) / parseFloat(JKTotalAmount) * 100).toFixed(2) + "%";
+            }
+            $.MvcSheetUI.SetControlValue("ApplyZJPercentRMB", ApplyZJPercentRMB);
+            $.MvcSheetUI.SetControlValue("ApplyZJPercentWB", ApplyZJPercentWB);
+            $.MvcSheetUI.SetControlValue("CurZJPercent", CurZJPercent);
+            $.MvcSheetUI.SetControlValue("CurZJPercentWB", CurZJPercentWB);
+        }
+    });
+
+    $(".CurrencyRMB").text($.MvcSheetUI.GetControlValue("CurrencyRMB"));
+    $(".CurrencyWB").text($.MvcSheetUI.GetControlValue("CurrencyWB"));
+    
+    $("input[data-datafield='ContractNo']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractName']").attr("disabled", "disabled");
+    $("input[data-datafield='PostAB']").attr("disabled", "disabled");
+    $("input[data-datafield='FinalUser']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractTotalPrice']").attr("disabled", "disabled");
+    $("input[data-datafield='JKTotalAmount']").attr("disabled", "disabled");
+    $("input[data-datafield='ApplyZJAmountRMB']").attr("disabled", "disabled");
+    $("input[data-datafield='ApplyZJAmountWB']").attr("disabled", "disabled");
+    $("input[data-datafield='CurZJAmount']").attr("disabled", "disabled");
+    $("input[data-datafield='ApplyZJPercentRMB']").attr("disabled", "disabled");
+    $("input[data-datafield='ApplyZJPercentWB']").attr("disabled", "disabled");
+    $("input[data-datafield='CurZJPercent']").attr("disabled", "disabled");
+    $("input[data-datafield='CurZJPercentWB']").attr("disabled", "disabled");
+    $("input[data-datafield='Rate']").attr("disabled", "disabled");
+
+    $(".ZFRMB").hide();
+    $(".ZFOperate").hide();
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityConfirm"){
+        if (Currency != "RMB" && Currency != "") {
+            $(".ZFRMB").show();
+        }
+    }
+
+    // 自定义文件格式 支付凭证
+    $("#ZJAttachment").xnfile();
+    var ZJAttachment = $.MvcSheetUI.GetControlValue("ZJAttachment");
+    if (ZJAttachment != "") {
+        var arr = ZJAttachment.split(",");
+        $("#ZJAttachment").xnfile("value", arr);
+    }
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+        setFileWriteable("ZJAttachment");
+    } else {
+        setFileReadOnly("ZJAttachment");
+    }
+}
+
+function GetPayTypeChange() {
+    var PayType = $.MvcSheetUI.GetControlValue("PayType");
+    // 选择的为汇款、支票时
+    if (PayType == "PayType_HK" || PayType == "PayType_ZP") {
+        $.MvcSheetUI.SetControlValue("ZFOperate", "");
+        $(".ZFOperate").hide();
+        $("[data-datafield='Currency']").attr("disabled", false);
+        // 选择的为信用证付款时，显示支付操作
+    } else {
+        $(".ZFOperate").show();
+        var CurrencyWBCode = "";
+        $("[data-datafield='Currency']").find("option").each(function () {
+            if ($(this)[0].value != 'RMB' && $(this)[0].value != '') {
+                CurrencyWBCode = $(this)[0].value;
+            }
+        });
+        $.MvcSheetUI.SetControlValue("Currency", CurrencyWBCode);
+        $("[data-datafield='Currency']").attr("disabled", "disabled");
+    }
+}
+
+function CurrencyChange() {
+    $(".CurrencyCur").text($("select[data-datafield='Currency']").find("option:selected").text());
+    var JSObjectID = $.MvcSheetUI.GetControlValue("JSObjectID");
+    // 如果是结算过来的，那就设为结算
+    if (JSObjectID != null && JSObjectID != "") {
+        //$.MvcSheetUI.SetControlValue("ZKType", "ZKType_JS");
+    } else {
+        $("[data-datafield='ZKType']").find("option").each(function () {
+            if ($(this)[0].value == 'ZKType_JS') {
+                $(this).attr("disabled", "disabled");
+            }
+        });
+    }
+
+}
+
+function ConvertAmountChange() {
+    var ConvertAmount = $.MvcSheetUI.GetControlValue("ConvertAmount");
+    if (ConvertAmount == "" || parseFloat(ConvertAmount) == 0) {
+        $.MvcSheetUI.SetControlValue("Rate", "");
+    } else {
+        var CurZJAmount = $.MvcSheetUI.GetControlValue("CurZJAmount");
+        var Rate = parseFloat(ConvertAmount) / parseFloat(CurZJAmount);
+        $.MvcSheetUI.SetControlValue("Rate", Rate);
+    }
+    
+}
+
+function ZJRMBTypeChange() {
+    if ($("select[data-datafield='ZJRMBType']").find("option:selected").text() == "购汇") {
+        $(".GHDiv").show();
+    } else {
+        $.MvcSheetUI.SetControlValue("ConvertAmount", 0);
+        $.MvcSheetUI.SetControlValue("Rate", "");
+        $(".GHDiv").hide();
+    }
+}
+
+function ZJKXChange(el) {
+    var rowIndex = el.parentElement.parentElement.rowIndex;
+    var ZJKX = $.MvcSheetUI.GetControlValue('FKTbl.ZJKX', rowIndex - 1);
+    var k = 1;
+    $("[data-datafield='FKTbl']").find("tr.rows").each(function () {
+        if (k == rowIndex - 1) {
+            if (ZJKX == "ZJKX_FWK_HT") {
+                $(this).find("[data-datafield='FKTbl.OutTaxAmount']").attr("disabled", false);
+            } else {
+                $.MvcSheetUI.SetControlValue('FKTbl.OutTaxAmount', 0, rowIndex - 1);
+                $(this).find("[data-datafield='FKTbl.OutTaxAmount']").attr("disabled", true);
+            }
+        }
+        k++;
+    });
+}
+
+function compute() {
+    // 只有申请节点才计算
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+        var i = 0;
+        var totalamount = 0.0;
+        $("[data-datafield='FKTbl']").find('tr.rows').each(function () {
+            var amount = $(this).find("input[data-datafield='FKTbl.Amount']")[0].value;
+            totalamount += (parseFloat(amount));
+        });
+        // 本次支付金额
+        $.MvcSheetUI.SetControlValue('CurZJAmount', totalamount.toFixed(2));
+
+        // 本次支付后比例
+        var ApplyZJAmountRMB = $.MvcSheetUI.GetControlValue("ApplyZJAmountRMB");
+        var ApplyZJAmountWB = $.MvcSheetUI.GetControlValue("ApplyZJAmountWB");
+        var ContractTotalPrice = $.MvcSheetUI.GetControlValue("ContractTotalPrice");
+        var JKTotalAmount = $.MvcSheetUI.GetControlValue("JKTotalAmount");
+        var totalamount_RMB = 0.0;
+        var totalamount_WB = 0.0;
+        if ($.MvcSheetUI.GetControlValue("ZKType") == "ZKType_FY") {
+            totalamount_RMB = 0;
+            totalamount_WB = 0;
+        } else {
+            if ($.MvcSheetUI.GetControlValue("Currency") == "RMB") {
+                totalamount_RMB = totalamount;
+            } else {
+                totalamount_WB = totalamount;
+            }
+        }
+        var CurZJPercent = "";
+        var CurZJPercentWB = "";
+        if (parseFloat(ContractTotalPrice) == 0) {
+            CurZJPercent = "0%";
+        } else {
+            CurZJPercent = ((parseFloat(ApplyZJAmountRMB) + totalamount_RMB) / parseFloat(ContractTotalPrice) * 100).toFixed(2) + "%";
+        }
+        if (parseFloat(JKTotalAmount) == 0) {
+            CurZJPercentWB = "0%";
+        } else {
+            CurZJPercentWB = ((parseFloat(ApplyZJAmountWB) + totalamount_WB) / parseFloat(JKTotalAmount) * 100).toFixed(2) + "%";
+        }
+        $.MvcSheetUI.SetControlValue("CurZJPercent", CurZJPercent);
+        $.MvcSheetUI.SetControlValue("CurZJPercentWB", CurZJPercentWB);
+
+    }
+   
+}

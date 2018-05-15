@@ -1,0 +1,139 @@
+﻿// 提交前事件
+$.MvcSheet.SubmitAction.OnActionPreDo = function () {
+    //if (!checkCurrency()) {
+    //    return false;
+    //}
+}
+// 提交后事件
+$.MvcSheet.ActionDone = function (data) {
+    // this.Action; // 获取当前按钮名称
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+        if (this.Action == "Submit" || this.Action == "Save") {
+            var JSObjectIDs = $.MvcSheetUI.GetControlValue("JSObjectIDs");
+            // 设置请付款状态为BatchQK_Start
+            // 获取客户信息数据
+            $.ajax({
+                type: "POST",    //页面请求的类型
+                url: "ContractHandler.ashx?Command=setJS_Status",   //处理页的相对地址
+                data: {
+                    JSObjectIDs: JSObjectIDs,
+                    Status: "BatchQK_Start",
+                },
+                async: false,
+                success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                    console.log("设置请付款状态为BatchQK_Start成功");
+                }
+            });
+        }
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityDKConfirm") {
+        if (this.Action == "Submit") {
+            var JSObjectIDs = $.MvcSheetUI.GetControlValue("JSObjectIDs");
+            // 设置请付款状态为BatchQK_OK
+            // 获取客户信息数据
+            $.ajax({
+                type: "POST",    //页面请求的类型
+                url: "ContractHandler.ashx?Command=setJS_Status",   //处理页的相对地址
+                data: {
+                    JSObjectIDs: JSObjectIDs,
+                    Status: "BatchDK_OK",
+                },
+                async: false,
+                success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                    console.log("设置请付款状态为BatchDK_OK成功");
+                }
+            });
+        }
+    }
+}
+//数据加载后
+$.MvcSheet.Loaded = function () {
+    // 请款对象
+    var Target = getUrlParam("Target");
+    var Amount = getUrlParam("Amount");
+    var JSObjectIDs = getUrlParam("JSObjectIDs");
+    var QK_Target = "";
+    if (Target != null && Target != "") {
+        $.MvcSheetUI.SetControlValue("JSObjectIDs", JSObjectIDs);
+        var JSObjectIDArr = JSObjectIDs.split(",");
+        // 获取客户信息数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getCustomerById",   //处理页的相对地址
+            data: {
+                ObjectID: Target,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                QK_Target = ret.CompanyName + '（' + ret.ModelOrDepartment + '）';
+                
+            }
+        });
+        $.MvcSheetUI.SetControlValue("QK_Target", QK_Target);
+        $.MvcSheetUI.SetControlValue("Amount", Amount);
+
+        
+        // 表格数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getJSLSData",   //处理页的相对地址
+            data: {
+                JS_Target: QK_Target,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                var dtl = $.MvcSheetUI.GetElement("BatchJSTblOfQK").SheetGridView();
+                dtl._Clear();
+                var index = 0;
+                for (var i = 0; i < ret.length; i++) {
+                    // 勾选的数据是否在所有批量数据中
+                    if (IsInArr(JSObjectIDArr, ret[i].JSObjectID)) {
+                        dtl._AddRow();
+                        index++;
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfQK.ContractNo", ret[i].ContractNo, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfQK.ContractNoHidden", ret[i].ContractNoHidden, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfQK.ContractName", ret[i].ContractName, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfQK.PostAB", ret[i].PostAB, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfQK.DKAmount", ret[i].DKAmount, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfQK.FKAmount", ret[i].FKAmount, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfQK.BankFY", ret[i].BankFY, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfQK.AgencyFY", ret[i].AgencyFY, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfQK.OtherFY", ret[i].OtherFY, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfQK.JSResult", ret[i].JSResult, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfQK.WorkItemId", ret[i].WorkItemId, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfQK.Cnt", ret[i].Cnt, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfQK.JSObjectID", ret[i].JSObjectID, index);
+                    }
+                }
+                
+            }
+        });
+    }
+
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+        $(".BatchJSTblOfQK").hide();
+    }
+    
+    $("input[data-datafield='QK_Target']").attr("disabled", "disabled");
+    $("input[data-datafield='Amount']").attr("disabled", "disabled");
+
+    $("input[data-datafield='BatchJSTblOfQK.ContractNo']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfQK.ContractNoHidden']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfQK.ContractName']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfQK.PostAB']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfQK.DKAmount']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfQK.FKAmount']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfQK.BankFY']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfQK.AgencyFY']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfQK.OtherFY']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfQK.JSResult']").attr("disabled", "disabled");
+}
+
+function IsInArr(arr, str) {
+    for (var j = 0; j < arr.length; j++) {
+        if (str == arr[j]) {
+            return true;
+        }
+    }
+    return false;
+}
+

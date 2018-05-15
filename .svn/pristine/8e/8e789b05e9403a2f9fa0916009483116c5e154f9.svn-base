@@ -1,0 +1,137 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="BiddingDocAudit.aspx.cs" Inherits="OThinker.H3.Portal.Sheets.DefaultEngine.BiddingDocAudit" EnableEventValidation="false" MasterPageFile="~/MvcSheet.master" %>
+<%@ OutputCache Duration="999999" VaryByParam="T" VaryByCustom="browser" %>
+<asp:Content ID="head" ContentPlaceHolderID="headContent" runat="Server">
+
+</asp:Content>
+<asp:Content ID="menu" ContentPlaceHolderID="cphMenu" runat="Server">
+</asp:Content>
+<asp:Content ID="master" ContentPlaceHolderID="masterContent" runat="Server">
+<div style="text-align: center;" class="DragContainer">
+	<label id="lblTitle" class="panel-title">招标文件审批</label>
+</div>
+<div class="panel-body sheetContainer">
+	<div class="nav-icon fa fa-chevron-right bannerTitle">
+		<label id="divBasicInfo" data-en_us="Basic information">基本信息</label>
+	</div>
+	<div class="divContent">
+		<div class="row">
+			<div id="divFullNameTitle" class="col-md-2">
+				<label id="lblFullNameTitle" data-type="SheetLabel" data-datafield="Originator.UserName" data-en_us="Originator" data-bindtype="OnlyVisiable" style="">发起人</label>
+			</div>
+			<div id="divFullName" class="col-md-4">
+				<label id="lblFullName" data-type="SheetLabel" data-datafield="Originator.UserName" data-bindtype="OnlyData" style=""></label>
+			</div>
+			<div id="divOriginateDateTitle" class="col-md-2">
+				<label id="lblOriginateDateTitle" data-type="SheetLabel" data-datafield="OriginateTime" data-en_us="Originate Date" data-bindtype="OnlyVisiable" style="">发起时间</label>
+			</div>
+			<div id="divOriginateDate" class="col-md-4">
+				<label id="lblOriginateDate" data-type="SheetLabel" data-datafield="OriginateTime" data-bindtype="OnlyData" style=""></label>
+			</div>
+		</div>
+		<div class="row">
+			<div id="divOriginateOUNameTitle" class="col-md-2">
+				<label id="lblOriginateOUNameTitle" data-type="SheetLabel" data-datafield="Originator.OUName" data-en_us="Originate OUName" data-bindtype="OnlyVisiable" style="">所属组织</label>
+			</div>
+			<div id="divOriginateOUName" class="col-md-4">
+				<!--					<label id="lblOriginateOUName" data-type="SheetLabel" data-datafield="Originator.OUName" data-bindtype="OnlyData">
+<span class="OnlyDesigner">Originator.OUName</span>
+					</label>-->
+					<select data-datafield="Originator.OUName" data-type="SheetOriginatorUnit" id="ctlOriginaotrOUName" class="" style="">
+					</select>
+				</div>
+				<div id="divSequenceNoTitle" class="col-md-2">
+					<label id="lblSequenceNoTitle" data-type="SheetLabel" data-datafield="SequenceNo" data-en_us="SequenceNo" data-bindtype="OnlyVisiable" style="">流水号</label>
+				</div>
+				<div id="divSequenceNo" class="col-md-4">
+					<label id="lblSequenceNo" data-type="SheetLabel" data-datafield="SequenceNo" data-bindtype="OnlyData" style=""></label>
+				</div>
+			</div>
+		</div>
+		<div class="nav-icon fa  fa-chevron-right bannerTitle">
+			<label id="divSheetInfo" data-en_us="Sheet information">表单信息</label>
+		</div>
+		<div class="divContent" id="divSheet">
+			<div class="row">
+				<div id="title1" class="col-md-2">
+					
+				<span id="Label12" data-type="SheetLabel" data-datafield="ProjectName" style="" class="">项目名称</span></div>
+				<div id="control1" class="col-md-4">
+					
+				<input type="text" data-datafield="ProjectName" data-type="SheetTextBox" id="ctl344779" class="" style=""></div>
+				<div id="title2" class="col-md-2">
+					
+				<span id="Label13" data-type="SheetLabel" data-datafield="BiddingCode" style="" class="">招标编号</span></div>
+				<div id="control2" class="col-md-4">
+					
+				<input type="text" data-datafield="BiddingCode" data-type="SheetTextBox" id="ctl138216" class="" style=""></div>
+			</div>
+			<div class="row">
+				<div id="title3" class="col-md-2">
+					
+				<span id="Label14" data-type="SheetLabel" data-datafield="BiddingDoc" style="" class="">招标文件</span></div>
+				<div id="control3" class="col-md-4">
+					<div id="bidding-doc"></div>
+                    <div style="position:absolute;left:-1000px"><input type="text" data-datafield="BiddingDoc" data-type="SheetTextBox" id="ctl194184" class="hidden" style=""></div>
+                </div>
+				<div id="space4" class="col-md-2">
+				<span id="Label15" data-type="SheetLabel" data-datafield="BiddingDocPrice" style="" class="">招标文件售价（元）</span></div>
+				<div id="spaceControl4" class="col-md-4">
+				<input type="text" data-datafield="BiddingDocPrice" data-type="SheetTextBox" id="ctl341323" class="" style=""></div>
+			</div>
+			
+			<div class="row">
+				<div id="title7" class="col-md-2">
+					
+				<span id="Label16" data-type="SheetLabel" data-datafield="AgencyAgreementType" style="" class="">代理协议类型</span></div>
+				<div id="control7" class="col-md-4">
+					
+				<input type="text" data-datafield="AgencyAgreementType" data-type="SheetTextBox" id="ctl81895" class="" style=""></div>
+				<div id="title8" class="col-md-2">
+					
+				</div>
+				<div id="control8" class="col-md-4">
+					
+				</div>
+			</div>
+			<div class="row tableContent">
+				<div id="title9" class="col-md-2">
+					<span id="Label17" data-type="SheetLabel" data-datafield="Remark" style="">备注</span>
+				</div>
+				<div id="control9" class="col-md-10">
+					<textarea id="Control17" data-datafield="Remark" data-type="SheetRichTextBox" style="" class="">					</textarea>
+				</div>
+			</div>
+			<div class="row tableContent">
+				<div id="title11" class="col-md-2">
+					<span id="Label18" data-type="SheetLabel" data-datafield="AuditComment" style="">审批意见</span>
+				</div>
+				<div id="control11" class="col-md-10">
+					<div id="Control18" data-datafield="AuditComment" data-type="SheetComment" style="" class=""></div>
+				</div>
+			</div>
+            <div style="position:absolute;left:-1000px">
+                <div id="div155370" class="col-md-2"></div>
+                <div id="div599828" class="col-md-4">
+                    <input id="Control11" type="text" data-datafield="IssueObjectId" data-type="SheetTextBox" style="" class="hidden">
+                </div>
+                <div id="div67791" class="col-md-2"></div>
+                <div id="div789299" class="col-md-4"></div>
+            </div>
+		</div>
+	</div>
+    <script src="jquery-ui.min.js"></script>
+    <script src="file2.js"></script>
+	<script type="text/javascript">
+    $.MvcSheet.Loaded = function() {
+        $("#ctl344779").attr("readonly", "readonly");
+        $("#ctl138216").attr("readonly", "readonly");
+        $("#ctl194184").attr("readonly", "readonly");
+        $("#ctl341323").attr("readonly", "readonly");
+        $("#ctl81895").attr("readonly", "readonly");
+        var biddingDoc = $.MvcSheetUI.GetControlValue("BiddingDoc");
+        $("#bidding-doc").xnfile();
+        $("#bidding-doc").xnfile("value", biddingDoc);
+        $("#bidding-doc button").hide();
+    }
+    </script>
+</asp:Content>

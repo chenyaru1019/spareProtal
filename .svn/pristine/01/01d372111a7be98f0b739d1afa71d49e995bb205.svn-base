@@ -1,0 +1,113 @@
+﻿(function($) {
+    $.widget("nmk.xnfile", {
+        options: {
+            filename: null,
+            state: "wait",
+            id: "file2"
+        },
+
+        _create: function() {
+            var id = this.element.attr("id");
+            if (id != undefined)
+                this.options.id = id;
+            if (this.options.filename == null) {
+                state = "wait";
+            }
+            else {
+                state = "done";
+            }
+
+            this.element.append(
+                "<div class=\"file2-file\"><form action=\"/Portal/Sheets/bidding/InviteBidsHandler.ashx?Command=UploadFile\" enctype=\"multipart/form-data\" method=\"post\" target=\"file2_iframe"
+                + this.options.id
+                + "\">"
+                + "<input name=\"file\" type=\"file\" />"
+                + "</form>"
+                + "<iframe name=\"file2_iframe"
+                + this.options.id
+                + "\" style=\"display:none\"></iframe></div>"
+                + "<div class=\"file2-upload\">上传中</div>"
+                + "<div class=\"file2-done\"><a></a><button style=\"display:inline\" class=\"btn btn-default\" type=\"button\">删除</button></div>"
+            );
+            this._update();
+
+            this.element.on("change", "input[type=file]", $.proxy(this._onFileChanged, this));
+            this.element.on("click", "button", $.proxy(this._onDelete, this));
+        },
+
+        _onFileChanged: function() {
+            var filename = $("input[type=file]", this.element).val().split("\\").pop();
+            this.options.filename = filename;
+            $("form", this.element).submit();
+            this.options.state = "upload";
+            this._update();
+            setTimeout($.proxy(this._checkState, this), 1000);
+        },
+
+        _checkState: function() {
+            var _this = this;
+            $.getJSON("/Portal/Sheets/bidding/InviteBidsHandler.ashx?Command="
+                + "IsFileExists&file="
+                + this.options.filename, function(data) {
+                    if (data.found === "true") {
+                        _this.options.state = "done";
+                        $("div.file2-done>a", _this.element)
+                            .attr("href", 
+                            "/Portal/Sheets/bidding/InviteBidsHandler.ashx?"
+                            + "Command=DownloadFile&file=" 
+                            + _this.options.filename)
+                            .text(_this.options.filename);
+                        _this._update();
+                    }
+                    else {
+                        setTimeout($.proxy(_this._checkState, _this), 1000);
+                    }
+                });
+        },
+
+        _onDelete: function() {
+            this.options.filename = null;
+            this.options.state = "wait";
+            this._update();
+        },
+
+        _update: function() {
+            if (this.options.state == "wait") {
+                $("div.file2-file", this.element).show();
+                $("div.file2-upload", this.element).hide();
+                $("div.file2-done", this.element).hide();
+            }
+            else if (this.options.state == "upload") {
+                $("div.file2-file", this.element).hide();
+                $("div.file2-upload", this.element).show();
+                $("div.file2-done", this.element).hide();
+            }
+            else {
+                $("div.file2-file", this.element).hide();
+                $("div.file2-upload", this.element).hide();
+                $("div.file2-done>a", this.element)
+                    .attr("href", 
+                    "/Portal/Sheets/bidding/InviteBidsHandler.ashx?"
+                    + "Command=DownloadFile&file=" 
+                    + this.options.filename)
+                    .text(this.options.filename);                
+                $("div.file2-done", this.element).show();
+            }
+        },
+
+        value: function(value) {
+            if (value === undefined) {
+                return this.options.filename;
+            }
+            else {
+                if (value != null && value != "") {
+                    this.options.filename = value;
+                    this.options.state = "done";
+                    this._update();
+                }
+            }
+        }
+
+    });
+}(jQuery));
+

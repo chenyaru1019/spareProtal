@@ -1,0 +1,35 @@
+﻿
+$.MvcSheet.Loaded = function () {
+    // 协议号码
+    var AgreeMent_number = getUrlParam("AgreeMent_number");
+    console.log(23432423);
+    //console.log(AgreeMent_number);
+    // 根据合同号码获取对应合同相关数据
+
+    $.ajax({
+        type: "POST",    //页面请求的类型
+        url: "Agreement_pigeonhole.ashx?Command=getGDCont",   //处理页的相对地址
+        data: {
+            AgreeMent_number: AgreeMent_number,
+        },
+        async: false,
+        success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+            console.log(ret);
+            $.MvcSheetUI.SetControlValue("Agreement_Number", ret.Agreement_Number);
+            $.MvcSheetUI.SetControlValue("Agreement_name", ret.Agreement_name);
+            $.MvcSheetUI.SetControlValue("Project_man", ret.Project_man);
+            $.MvcSheetUI.SetControlValue("Agreement_clint", ret.Agreement_clint);
+            $.MvcSheetUI.SetControlValue("Agency_rate", ret.Agency_rate);
+            $.MvcSheetUI.SetControlValue("Pay_condition", ret.Pay_condition);
+            
+        }
+    });
+
+    $("input[data-datafield='Agreement_Number']").attr("disabled", "disabled");
+    $("input[data-datafield='Agreement_name']").attr("disabled", "disabled");
+    $("input[data-datafield='Project_man']").attr("disabled", "disabled");
+    $("input[data-datafield='Agreement_clint']").attr("disabled", "disabled");
+    $("input[data-datafield='Agency_rate']").attr("disabled", "disabled");
+    $("input[data-datafield='Pay_condition']").attr("disabled", "disabled");
+
+}

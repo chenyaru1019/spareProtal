@@ -1,0 +1,133 @@
+﻿// 提交前事件
+$.MvcSheet.SubmitAction.OnActionPreDo = function () {
+    // 申请修改合同号状态
+    var UpdateNoFlg = $.MvcSheetUI.GetControlValue("UpdateNoFlg");
+    // 审签合同状态
+    var ApproveFlg = $.MvcSheetUI.GetControlValue("ApproveFlg");
+    // 执行合同状态
+    var OperateFlg = $.MvcSheetUI.GetControlValue("OperateFlg");
+    // 合同完成状态
+    var CompleteFlg = $.MvcSheetUI.GetControlValue("CompleteFlg");
+    // 当前节点是合同创建节点
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityCreate") {
+        if (UpdateNoFlg == '2') {
+            alert("当前正在申请修改合同号，不能提交到下一步！");
+            return false;
+        }
+    }
+}
+////初始化
+//$.MvcSheet.PreInit = function () {
+
+
+//}
+//数据加载后
+$.MvcSheet.Loaded = function () {
+    // 当前节点是合同创建节点
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityCreate") {
+        $("input[data-datafield='UpdateNoTbl.Approver']").attr("disabled", "disabled");
+        $("input[data-datafield='UpdateNoTbl.ApproveDate']").attr("disabled", "disabled");
+        $("input[data-datafield='UpdateNoTbl.ContractNoNew']").attr("disabled", "disabled");
+        $("input[data-datafield='UpdateNoTbl.Status']").attr("disabled", "disabled");
+    }
+    // 合同类型
+    //var ContractType = $.MvcSheetUI.GetControlValue("ContractType");
+    //if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityCreate") {
+    //    if (ContractType == "GN") {
+    //        $(".CountrySelect").hide();
+    //    } else {
+    //        $(".CountrySelect").show();
+    //    }
+    //} else {
+    //    $('.CountrySelect').hide();
+    //}
+
+}
+
+
+
+// 生成合同号
+function generateContractNo() {
+    // 合同类型
+    var ContractType = $.MvcSheetUI.GetControlValue("ContractType");
+    // 合同性质
+    var ContractProperty = $.MvcSheetUI.GetControlValue("ContractProperty");
+    // 工程编码
+    var SubProjectCode = $.MvcSheetUI.GetControlValue("SubProjectCode");
+    // 国别编码
+    var Country = $.MvcSheetUI.GetControlValue("Country");
+    //给合同号申请成功标识符赋值
+    $.ajax({
+        type: "POST",    //页面请求的类型
+        url: "ContractHandler.ashx?Command=generateContractNo",   //处理页的相对地址
+        data: {
+            ContractType: ContractType,
+            ContractProperty: ContractProperty,
+            SubProjectCode: SubProjectCode,
+            Country: Country,
+        },
+        async: false,
+        success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+            $.MvcSheetUI.SetControlValue("ContractNo", ret);
+
+        }
+    });
+}
+// 申请修改合同号
+function ApplyContractNo() {
+    var ContractNo = $.MvcSheetUI.GetControlValue("ContractNo");
+    var ContractName = $.MvcSheetUI.GetControlValue("ContractName");
+    var canUpdateFlg = true;
+    //判断当前合同号是否有数据（是否进行保存过）
+    $.ajax({
+        type: "POST",    //页面请求的类型
+        url: "ContractHandler.ashx?Command=getByContractNo",   //处理页的相对地址
+        data: {
+            ContractNo: ContractNo,
+        },
+        async: false,
+        success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+            if (ret.ContractNo == null || ret.ContractNo == '') {
+                alert("合同号还不存在，无法申请修改（请先进行保存）");
+                canUpdateFlg = false;
+            }
+        }
+    });
+    if (canUpdateFlg) {
+        //判断当前合同号是否正在审批中
+        var dtl = $.MvcSheetUI.GetElement("UpdateNoTbl").SheetGridView();
+        var len = dtl.RowCount;
+        if (len > 0 && $.MvcSheetUI.GetControlValue("UpdateNoTbl.Status", 1) == "审批中") {
+            alert("当前有正在审批中的数据，不能进行申请！");
+            return false;
+        }
+        var WorkflowVersion_Update = $.MvcSheetUI.GetControlValue("WorkflowVersion_Update");
+        // window.location.href = "/Portal/StartInstance.html?WorkflowCode=Apply2&ContractNo=" + ContractNo + "&ContractName=" + ContractName;
+        //window.location.href = "/Portal/MvcDefaultSheet.aspx?SheetCode=UpdateContractNoMy&Mode=Originate&WorkflowCode=UpdateContractNo&WorkflowVersion=" + WorkflowVersion_Update + "&ContractNo=" + ContractNo + "&ContractName=" + ContractName;
+        window.location.href = "/Portal/Sheets/Contract/UpdateContractNoMy.aspx?Mode=Originate&WorkflowCode=UpdateContractNo&WorkflowVersion=" + WorkflowVersion_Update + "&ContractNo=" + ContractNo + "&ContractName=" + ContractName;
+
+    }
+ }
+
+function setDataFromHY() {
+    var ContractProperty = $.MvcSheetUI.GetControlValue('ContractProperty');
+    if (ContractProperty == 'ContractProperty_HKMY') {
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getHYData",   //处理页的相对地址
+            data: {
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                if (ret.ObjectID != null && ret.ObjectID != '') {
+                    $.MvcSheetUI.SetControlValue("FinalUser", ret.FinalUser);
+                    $.MvcSheetUI.SetControlValue("PostB", ret.PostB);
+                    $.MvcSheetUI.SetControlValue("BidType", ret.BidType);
+                    $.MvcSheetUI.SetControlValue("ContractType", ret.ContractType);
+                    $.MvcSheetUI.SetControlValue("ContractName", ret.ContractName);
+                    $.MvcSheetUI.SetControlValue("ContractShortName", ret.ContractShortName);
+                }
+            }
+        });
+    }
+}

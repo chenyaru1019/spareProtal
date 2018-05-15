@@ -1,0 +1,29 @@
+//数据加载后
+$.MvcSheet.Loaded = function () {
+    // 协议号码
+    var AgreeMent_number = getUrlParam("AgreeMent_number");
+    if (AgreeMent_number != null && AgreeMent_number != "") {
+        // 根据合同号码获取对应合同相关数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "Update_AgreementNumber.ashx?Command=getByContractNo",   //处理页的相对地址
+            data: {
+                AgreeMent_number: AgreeMent_number,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                console.log(ret);
+                $.MvcSheetUI.SetControlValue("AgreeMent_name", ret.AgreeMent_name);
+                $.MvcSheetUI.SetControlValue("AgreeMent_head", ret.Project_head);
+                $.MvcSheetUI.SetControlValue("AgreenMent_client", ret.Agreement_client);
+                $.MvcSheetUI.SetControlValue("Self_agreeMent_number", ret.Numberid);
+                
+            }
+        });
+    }
+    $("input[data-datafield='AgreeMent_name']").attr("disabled", "disabled");
+    $("input[data-datafield='AgreeMent_head']").attr("disabled", "disabled");
+    $("input[data-datafield='AgreenMent_client']").attr("disabled", "disabled");
+    $("input[data-datafield='Self_agreeMent_number']").attr("disabled", "disabled");
+
+}

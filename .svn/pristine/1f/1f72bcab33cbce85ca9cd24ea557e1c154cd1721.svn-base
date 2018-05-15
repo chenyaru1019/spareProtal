@@ -1,0 +1,313 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Receipt.aspx.cs" Inherits="OThinker.H3.Portal.Sheets.Agreement.Receipt" EnableEventValidation="false" MasterPageFile="~/MvcSheet.master" %>
+<%@ OutputCache Duration="999999" VaryByParam="T" VaryByCustom="browser" %>
+<asp:Content ID="head" ContentPlaceHolderID="headContent" runat="Server">
+    <script src="Receipt.js"></script>
+	<script type="text/javascript">
+
+</script>
+</asp:Content>
+<asp:Content ID="menu" ContentPlaceHolderID="cphMenu" runat="Server">
+</asp:Content>
+<asp:Content ID="master" ContentPlaceHolderID="masterContent" runat="Server">
+    
+<div style="text-align: center;" class="DragContainer">
+	<label id="lblTitle" class="panel-title">收退款流程</label>
+</div>
+<div class="panel-body sheetContainer">
+	
+		<div class="nav-icon fa  fa-chevron-right bannerTitle">
+			<label id="divSheetInfo" data-en_us="Sheet information">表单信息</label>
+		</div>
+		<div class="divContent" id="divSheet">
+			<div class="row">
+				<div id="title1" class="col-md-2">
+					<span id="Label11" data-type="SheetLabel" data-datafield="Agency_number" style="">代理协议号</span>
+				</div>
+				<div id="control1" class="col-md-4">
+					<input id="Control11" type="text" data-datafield="Agency_number" data-type="SheetTextBox" style="" class="">
+				</div>
+				<div id="title2" class="col-md-2">
+					<span id="Label12" data-type="SheetLabel" data-datafield="Agency_name" style="">代理协议名称</span>
+				</div>
+				<div id="control2" class="col-md-4">
+					<input id="Control12" type="text" data-datafield="Agency_name" data-type="SheetTextBox" style="">
+				</div>
+			</div>
+			<div class="row">
+				<div id="title3" class="col-md-2">
+					<span id="Label13" data-type="SheetLabel" data-datafield="Project_head" style="">项目负责人</span>
+				</div>
+				<div id="control3" class="col-md-4">
+					<input id="Control13" type="text" data-datafield="Project_head" data-type="SheetTextBox" style="">
+				</div>
+				<div id="title4" class="col-md-2">
+					<span id="Label14" data-type="SheetLabel" data-datafield="Collection_money" style="">收款金额</span>
+				</div>
+				<div id="control4" class="col-md-4">
+					<input id="Control14" type="text" data-datafield="Collection_money" data-type="SheetTextBox" style="">
+				</div>
+			</div>
+			<div class="row">
+				<div id="title5" class="col-md-2">
+					<span id="Label15" data-type="SheetLabel" data-datafield="Reduced_money" style="">折算金额</span>
+				</div>
+				<div id="control5" class="col-md-4">
+					<input id="Control15" type="text" data-datafield="Reduced_money" data-type="SheetTextBox" style="">
+				</div>
+				<div id="title6" class="col-md-2">
+					<span id="Label16" data-type="SheetLabel" data-datafield="Collection_object" style="">收款对象</span>
+				</div>
+				<div id="control6" class="col-md-4">
+					<input id="Control16" type="text" data-datafield="Collection_object" data-type="SheetTextBox" style="">
+				</div>
+			</div>
+			<div class="row tableContent">
+				<div id="title7" class="col-md-2">
+					<span id="Label17" data-type="SheetLabel" data-datafield="Note" style="">备注</span>
+				</div>
+				<div id="control7" class="col-md-10">
+					<textarea id="Control17" data-datafield="Note" data-type="SheetRichTextBox" style="">					</textarea>
+				</div>
+			</div>
+            <div class="row">
+                <div id="div482450" class="col-md-2">
+                    <label data-datafield="invoice" data-type="SheetLabel" id="ctl251511" class="" style="">发票</label></div>
+                <div id="div631307" class="col-md-10">
+                    <div data-datafield="invoice" data-type="SheetAttachment" id="ctl473792" class="" style=""></div>
+                </div>
+            </div>
+            <div class="row">
+                <div id="div92522" class="col-md-2">
+                    <label data-datafield="st_time" data-type="SheetLabel" id="ctl302773" class="" style="">收款日期</label></div>
+                <div id="div604174" class="col-md-10">
+                    <input type="text" data-datafield="st_time" data-type="SheetTime" id="ctl556706" class="" style=""></div>
+            </div>
+            <div class="row tableContent">
+				<div id="title9" class="col-md-2">
+					<span id="Label18" data-type="SheetLabel" data-datafield="Charge_pro" style="">收款</span>
+				</div>
+				<div id="control9" class="col-md-10">
+					<table id="Control18" data-datafield="Charge_pro"  data-type="SheetGridView" class="SheetGridView" data-displaysequenceno="false" data-displayadd="false" data-displaydelete="false">
+						<tbody>
+							
+							<tr class="header">
+								<td id="Control18_SerialNo" class="rowSerialNo">
+序号								</td>
+								<td id="Control18_Header3" data-datafield="Charge_pro.Pro_type">
+									<label id="Control18_Label3" data-datafield="Charge_pro.Pro_type" data-type="SheetLabel" style="">类型</label>
+								</td>
+								<td id="Control18_Header4" data-datafield="Charge_pro.Project_number">
+									<label id="Control18_Label4" data-datafield="Charge_pro.Project_number" data-type="SheetLabel" style="">项目编号</label>
+								</td>
+								<td id="Control18_Header5" data-datafield="Charge_pro.Project_name">
+									<label id="Control18_Label5" data-datafield="Charge_pro.Project_name" data-type="SheetLabel" style="">项目名称</label>
+								</td>
+								<td id="Control18_Header6" data-datafield="Charge_pro.receivable_agency_fee">
+									<label id="Control18_Label6" data-datafield="Charge_pro.receivable_agency_fee" data-type="SheetLabel" style="">应收代理费</label>
+								</td>
+								<td id="Control18_Header7" data-datafield="Charge_pro.Receive_agency_fee">
+									<label id="Control18_Label7" data-datafield="Charge_pro.Receive_agency_fee" data-type="SheetLabel" style="">已收代理费</label>
+								</td>
+								<td id="Control18_Header8" data-datafield="Charge_pro.agency_balance">
+									<label id="Control18_Label8" data-datafield="Charge_pro.agency_balance" data-type="SheetLabel" style="">代理费余额</label>
+								</td>
+								<td id="Control18_Header9" data-datafield="Charge_pro.this_receipt">
+									<label id="Control18_Label9" data-datafield="Charge_pro.this_receipt" data-type="SheetLabel" style="">本次收款</label>
+								</td>
+								<td id="Control18_Header10" data-datafield="Charge_pro.ys_money" class="" style="display: none;">
+									<label id="Control18_Label10" data-datafield="Charge_pro.ys_money" data-type="SheetLabel" class="hidden" style="">应收钱</label>
+								</td>
+								<td id="Control18_Header11" data-datafield="Charge_pro.yi_money" class="hidden" style="display: none;">
+									<label id="Control18_Label11" data-datafield="Charge_pro.yi_money" data-type="SheetLabel" style="">已收钱</label>
+								</td>
+								<td id="Control18_Header12" data-datafield="Charge_pro.dl_money" style="display: none;">
+									<label id="Control18_Label12" data-datafield="Charge_pro.dl_money" data-type="SheetLabel" class="hidden" style="">没有收的钱</label>
+								</td>
+								<td class="rowOption hidden" style="display: none;">
+删除								</td>
+							</tr>
+							<tr class="template">
+								<td id="Control18_Option" class="rowOption">
+								</td>
+								<td data-datafield="Charge_pro.Pro_type">
+									<input id="Control18_ctl3" type="text" data-datafield="Charge_pro.Pro_type" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="Charge_pro.Project_number">
+									<input id="Control18_ctl4" type="text" data-datafield="Charge_pro.Project_number" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="Charge_pro.Project_name">
+									<input id="Control18_ctl5" type="text" data-datafield="Charge_pro.Project_name" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="Charge_pro.receivable_agency_fee">
+									<input id="Control18_ctl6" type="text" data-datafield="Charge_pro.receivable_agency_fee" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="Charge_pro.Receive_agency_fee">
+									<input id="Control18_ctl7" type="text" data-datafield="Charge_pro.Receive_agency_fee" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="Charge_pro.agency_balance">
+									<input id="Control18_ctl8" type="text" data-datafield="Charge_pro.agency_balance" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="Charge_pro.this_receipt">
+									<input id="Control18_ctl9" type="text" data-datafield="Charge_pro.this_receipt" data-type="SheetTextBox" style=""  onblur="upmoney()">
+								</td>
+								<td data-datafield="Charge_pro.ys_money" style="display: none;">
+									<input id="Control18_ctl10" type="text" data-datafield="Charge_pro.ys_money" data-type="SheetTextBox" class="hidden" style="">
+								</td>
+								<td data-datafield="Charge_pro.yi_money" style="display: none;">
+									<input id="Control18_ctl11" type="text" data-datafield="Charge_pro.yi_money" data-type="SheetTextBox" class="hidden" style="">
+								</td>
+								<td data-datafield="Charge_pro.dl_money" style="display: none;">
+									<input id="Control18_ctl12" type="text" data-datafield="Charge_pro.dl_money" data-type="SheetTextBox" class="hidden" style="">
+								</td>
+								<td class="rowOption" style="display: none;">
+									<a class="delete">
+										<div class="fa fa-minus">
+										</div>
+									</a>
+									<a class="insert">
+										<div class="fa fa-arrow-down">
+										</div>
+									</a>
+								</td>
+							</tr>
+							<tr class="footer">
+								<td class="rowOption">
+								</td>
+								<td data-datafield="Charge_pro.Pro_type">
+								</td>
+								<td data-datafield="Charge_pro.Project_number">
+								</td>
+								<td data-datafield="Charge_pro.Project_name">
+								</td>
+								<td data-datafield="Charge_pro.receivable_agency_fee">
+								</td>
+								<td data-datafield="Charge_pro.Receive_agency_fee">
+								</td>
+								<td data-datafield="Charge_pro.agency_balance">
+								</td>
+								<td data-datafield="Charge_pro.this_receipt">
+								</td>
+								<td data-datafield="Charge_pro.ys_money">
+								</td>
+								<td data-datafield="Charge_pro.yi_money">
+								</td>
+								<td data-datafield="Charge_pro.dl_money">
+								</td>
+								<td class="rowOption">
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>    
+            <%--<div class="row tableContent">
+				<div id="title15" class="col-md-2">
+					<span id="Label21" data-type="SheetLabel" data-datafield="sp_record" style="">审批记录</span>
+				</div>
+				<div id="control15" class="col-md-10">
+					<table id="Control21" data-datafield="sp_record" data-type="SheetGridView" class="SheetGridView"  data-defaultrowcount="0" data-displayadd="false">
+						<tbody>
+							
+							<tr class="header">
+								
+								<td id="Control21_Header3" data-datafield="sp_record.dispose_name">
+									<label id="Control21_Label3" data-datafield="sp_record.dispose_name" data-type="SheetLabel" style="">处理名称</label>
+								</td>
+								<td id="Control21_Header4" data-datafield="sp_record.dispose_peo">
+									<label id="Control21_Label4" data-datafield="sp_record.dispose_peo" data-type="SheetLabel" style="">处理人</label>
+								</td>
+								<td id="Control21_Header5" data-datafield="sp_record.dispose_time">
+									<label id="Control21_Label5" data-datafield="sp_record.dispose_time" data-type="SheetLabel" style="">处理时间</label>
+								</td>
+								<td id="Control21_Header6" data-datafield="sp_record.dispose_result">
+									<label id="Control21_Label6" data-datafield="sp_record.dispose_result" data-type="SheetLabel" style="">处理结果</label>
+								</td>
+								<td id="Control21_Header7" data-datafield="sp_record.dispose_note">
+									<label id="Control21_Label7" data-datafield="sp_record.dispose_note" data-type="SheetLabel" style="">备注</label>
+								</td>
+								
+							</tr>
+							<tr class="template">
+								
+								<td data-datafield="sp_record.dispose_name">
+									<input id="Control21_ctl3" type="text" data-datafield="sp_record.dispose_name" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="sp_record.dispose_peo">
+									<input id="Control21_ctl4" type="text" data-datafield="sp_record.dispose_peo" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="sp_record.dispose_time">
+									<input id="Control21_ctl5" type="text" data-datafield="sp_record.dispose_time" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="sp_record.dispose_result">
+									<input id="Control21_ctl6" type="text" data-datafield="sp_record.dispose_result" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="sp_record.dispose_note">
+									<input id="Control21_ctl7" type="text" data-datafield="sp_record.dispose_note" data-type="SheetTextBox" style="">
+								</td>
+								
+							</tr>
+							<tr class="footer">
+								<td class="rowOption">
+								</td>
+								<td data-datafield="sp_record.dispose_name">
+								</td>
+								<td data-datafield="sp_record.dispose_peo">
+								</td>
+								<td data-datafield="sp_record.dispose_time">
+								</td>
+								<td data-datafield="sp_record.dispose_result">
+								</td>
+								<td data-datafield="sp_record.dispose_note">
+								</td>
+								<td class="rowOption">
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>--%>
+            <div class="row">
+                <div id="div826816" class="col-md-2">
+                    <label data-datafield="approve" data-type="SheetLabel" id="ctl930749" class="" style="">部门经理审批建议</label></div>
+                <div id="div522749" class="col-md-10">
+                    <div data-datafield="approve" data-type="SheetComment" id="ctl49903" class="" style=""></div>
+                </div>
+            </div>
+             <div class="row">
+                <div id="div826826" class="col-md-2">
+                    <label data-datafield="LeadersOpinions" data-type="SheetLabel" id="ctl930759" class="" style="">分管领导审批意见</label></div>
+                <div id="div522759" class="col-md-10">
+                    <div data-datafield="LeadersOpinions" data-type="SheetComment" id="ctl49913" class="" style=""></div>
+                </div>
+            </div>
+             <div class="row">
+                <div id="div826836" class="col-md-2">
+                    <label data-datafield="ExaminationApproval" data-type="SheetLabel" id="ctl930769" class="" style="">财务审批意见</label></div>
+                <div id="div522769" class="col-md-10">
+                    <div data-datafield="ExaminationApproval" data-type="SheetComment" id="ctl49923" class="" style=""></div>
+                </div>
+            </div>
+             <div class="row">
+                <div id="div826846" class="col-md-2">
+                    <label data-datafield="UploadInvoiceApproval" data-type="SheetLabel" id="ctl930779" class="" style="">上传发票审批意见</label></div>
+                <div id="div522799" class="col-md-10">
+                    <div data-datafield="UploadInvoiceApproval" data-type="SheetComment" id="ctl49953" class="" style=""></div>
+                </div>
+            </div>
+            <div class="row">
+                <div id="div826876" class="col-md-2">
+                    <label data-datafield="FinancialConfirmation" data-type="SheetLabel" id="ctl930709" class="" style="">财务确认审批意见</label></div>
+                <div id="div522709" class="col-md-10">
+                    <div data-datafield="FinancialConfirmation" data-type="SheetComment" id="ctl49973" class="" style=""></div>
+                </div>
+            </div>
+            <div class="row hidden">
+				<div id="space18" class="col-md-2 hidden">
+				<label data-datafield="view_shmoney" data-type="SheetLabel" id="ctl169756" class="" style="">显示收款条目标识</label></div>
+				<div id="spaceControl18" class="col-md-10 hidden">
+				<input type="text" data-datafield="view_shmoney" data-type="SheetTextBox" id="ctl553102" class="" style=""></div>
+			</div>
+            
+		</div>
+	</div>
+</asp:Content>

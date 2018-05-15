@@ -1,0 +1,186 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="PaymentMy.aspx.cs" Inherits="OThinker.H3.Portal.Sheets.DefaultEngine.PaymentMy" EnableEventValidation="false" MasterPageFile="~/MvcSheet.master" %>
+
+<%@ OutputCache Duration="999999" VaryByParam="T" VaryByCustom="browser" %>
+<asp:Content ID="head" ContentPlaceHolderID="headContent" runat="Server">
+    <script type="text/javascript">
+
+</script>
+</asp:Content>
+<asp:Content ID="menu" ContentPlaceHolderID="cphMenu" runat="Server">
+</asp:Content>
+<asp:Content ID="master" ContentPlaceHolderID="masterContent" runat="Server">
+        <script src="PaymentMy.js"></script>
+    <div style="text-align: center;" class="DragContainer">
+        <label id="lblTitle" class="panel-title">信用证子流程</label>
+    </div>
+    <div class="panel-body sheetContainer">
+        <div class="ContractContent" style="margin-top: 15px">
+            <div class="nav-icon fa  fa-chevron-right bannerTitle">
+            <label id="divSheetInfo" data-en_us="Sheet information">表单信息</label>
+        </div>
+            <div class="divContent" id="divSheet">
+            <div class="row">
+                <div id="title1" class="col-md-2">
+                    <span id="Label11" data-type="SheetLabel" data-datafield="ContractNo" style="">合同号</span>
+                </div>
+                <div id="control1" class="col-md-4">
+                    <input id="Control11" type="text" data-datafield="ContractNo" data-type="SheetTextBox" style="">
+                </div>
+                <div id="title2" class="col-md-2">
+                    <span id="Label12" data-type="SheetLabel" data-datafield="ContractName" style="">合同名称</span>
+                </div>
+                <div id="control2" class="col-md-4">
+                    <input id="Control12" type="text" data-datafield="ContractName" data-type="SheetTextBox" style="">
+                </div>
+            </div>
+            <div class="row">
+                <div id="title3" class="col-md-2">
+                    <span id="Label13" data-type="SheetLabel" data-datafield="PostAB" style="">项目负责人AB</span>
+                </div>
+                <div id="control3" class="col-md-4">
+                    <input id="Control13" type="text" data-datafield="PostAB" data-type="SheetTextBox" style="">
+                </div>
+                <div id="title4" class="col-md-2">
+                    <span id="Label14" data-type="SheetLabel" data-datafield="PaymentType" style="">信用证申请类型</span>
+                </div>
+                <div id="control4" class="col-md-4">
+                    <input id="Control14" type="text" data-datafield="PaymentType" data-type="SheetTextBox" style="">
+                </div>
+            </div>
+            <div class="row tableContent">
+                <div id="title5" class="col-md-2">
+                    <span id="Label15" data-type="SheetLabel" data-datafield="Remark" class="" style="">申请备注</span>
+                </div>
+                <div id="control5" class="col-md-10">
+                    <textarea id="Control15" data-datafield="Remark" data-type="SheetRichTextBox" style="">					</textarea>
+                </div>
+            </div>
+            <div class="row BankConfirm">
+                <div id="title7" class="col-md-2">
+                    <span id="Label16" data-type="SheetLabel" data-datafield="BankName" style="">开证银行</span>
+                </div>
+                <div id="control7" class="col-md-4">
+                    <input id="Control16" type="text" data-datafield="BankName" data-type="SheetTextBox" style="">
+                </div>
+                <div id="space8" class="col-md-2">
+                </div>
+                <div id="spaceControl8" class="col-md-4">
+                </div>
+            </div>
+            <div class="row BankConfirm">
+                <div id="title9" class="col-md-2">
+                    <span id="Label17" data-type="SheetLabel" data-datafield="BankRemark" style="">开证银行备注</span>
+                </div>
+                <div id="control9" class="col-md-10">
+                    <textarea id="Control17" data-datafield="BankRemark" data-type="SheetRichTextBox" style="">					</textarea>
+                </div>
+            </div>
+            <div class="row PaymentApprove">
+                <div id="div140571" class="col-md-2"><span id="Label18" data-type="SheetLabel" data-datafield="PaymentAmount" style="" class="">信用证金额</span></div>
+                <div id="div327664" class="col-md-2">
+                    <input id="Control18" type="text" data-datafield="PaymentAmount" data-type="SheetTextBox" style="" class=""></div>
+                <div id="div621590" class="col-md-2">
+                    <select data-datafield="Currency" data-type="SheetDropDownList" id="ctl719843" class="" style="" data-schemacode="GetWBCurrency" data-querycode="GetWBCurrency" data-filter="ContractNo:ContractNo" data-datavaluefield="c" data-datatextfield="v" data-queryable="false"></select></div>
+                <div id="div857325" class="col-md-6">
+                    <input type="text" data-datafield="CurrencyChangeFlg" data-type="SheetTextBox" id="ctl297816" class="hidden" style=""></div>
+            </div>
+            <div class="row PaymentApprove">
+                <div id="title13" class="col-md-2">
+                    <span id="Label19" data-type="SheetLabel" data-datafield="Attachment" style="">附件</span>
+                </div>
+                <div id="control13" class="col-md-10">
+                    <div id="Control19" data-datafield="Attachment" data-type="SheetAttachment" style="">
+                    </div>
+                </div>
+            </div>
+            <div class="row tableContent PaymentApprove">
+                <div id="title15" class="col-md-2">
+                    <span id="Label20" data-type="SheetLabel" data-datafield="ApproveRemark" class="" style="">信用证申请备注</span>
+                </div>
+                <div id="control15" class="col-md-10">
+                    <textarea id="Control20" data-datafield="ApproveRemark" data-type="SheetRichTextBox" style="">					</textarea>
+                </div>
+            </div>
+            <div class="row tableContent ManagerApprove">
+                <div id="title17" class="col-md-2">
+                    <span id="Label21" data-type="SheetLabel" data-datafield="ManagerSuggest" class="" style="">部门经理审批意见</span>
+                </div>
+                <div id="control17" class="col-md-10">
+                    <div id="Control21" data-datafield="ManagerSuggest" data-type="SheetComment" style="">
+                    </div>
+                </div>
+            </div>
+            <div class="row tableContent CompanyLeaderApprove">
+                <div id="title19" class="col-md-2">
+                    <span id="Label22" data-type="SheetLabel" data-datafield="ComanyLeadSuggest" class="" style="">公司领导审批意见</span>
+                </div>
+                <div id="control19" class="col-md-10">
+                    <div id="Control22" data-datafield="ComanyLeadSuggest" data-type="SheetComment" style="">
+                    </div>
+                </div>
+            </div>
+            <div class="row PaymentOperate">
+                <div id="title21" class="col-md-2">
+                    <span id="Label23" data-type="SheetLabel" data-datafield="PaymentNo" style="">信用证编号</span>
+                </div>
+                <div id="control21" class="col-md-4">
+                    <input id="Control23" type="text" data-datafield="PaymentNo" data-type="SheetTextBox" style="">
+                </div>
+                <div id="title22" class="col-md-2">
+                    <span id="Label24" data-type="SheetLabel" data-datafield="PaymentDate" style="">开证日期</span>
+                </div>
+                <div id="control22" class="col-md-4">
+                    <input id="Control24" type="text" data-datafield="PaymentDate" data-type="SheetTime" style="">
+                </div>
+            </div>
+            <div class="row PaymentOperate">
+                <div id="title23" class="col-md-2">
+                    <span id="Label25" data-type="SheetLabel" data-datafield="ExpirationDate" style="">信用证到期日</span>
+                </div>
+                <div id="control23" class="col-md-4">
+                    <input id="Control25" type="text" data-datafield="ExpirationDate" data-type="SheetTime" style="" data-onchange=" ExpirationDateChange()">
+                </div>
+                <div id="title24" class="col-md-2">
+                    <span id="Label26" data-type="SheetLabel" data-datafield="RemindDate" style="">何时提醒到期</span>
+                </div>
+                <div id="control24" class="col-md-4">
+                    <input id="Control26" type="text" data-datafield="RemindDate" data-type="SheetTime" style="">
+                </div>
+            </div>
+            <div class="row PaymentOperate">
+                <div id="title25" class="col-md-2">
+                    <span id="Label27" data-type="SheetLabel" data-datafield="PaymentAttachment" style="">信用证副本</span>
+                </div>
+                <div id="control25" class="col-md-10">
+                    <div id="Control27" data-datafield="PaymentAttachment" data-type="SheetAttachment" style="">
+                    </div>
+                </div>
+            </div>
+            <div class="row tableContent PaymentOperate">
+                <div id="title27" class="col-md-2">
+                    <span id="Label28" data-type="SheetLabel" data-datafield="OperateRemark" style="">执行备注</span>
+                </div>
+                <div id="control27" class="col-md-10">
+                    <textarea id="Control28" data-datafield="OperateRemark" data-type="SheetRichTextBox" style="">					</textarea>
+                </div>
+            </div>
+            <div class="row hidden">
+                <div id="div571848" class="col-md-2">
+                    <input type="text" data-datafield="ChangePaymentFlg" data-type="SheetTextBox" id="ctl183594" class="hidden" style=""></div>
+                <div id="div571848" class="col-md-2">
+                    <input type="text" data-datafield="RejectFlg" data-type="SheetTextBox" id="ctl183594" class="hidden" style=""></div>
+                <div id="div460745" class="col-md-2">
+                    <input type="text" data-datafield="CurrencyWBCode" data-type="SheetTextBox" id="ctl183594" class="hidden" style="">
+                </div>
+                <div id="div268304" class="col-md-2">
+                    <input type="text" data-datafield="AfterChangeAmount" data-type="SheetTextBox" id="ctl509433" class="" style="">
+                </div>
+                <div id="div562422" class="col-md-2"></div>
+                <div id="div517757" class="col-md-2">
+                    <select data-datafield="ChangeDemo" data-type="SheetDropDownList" id="ctl781450" class="hidden" style="" data-masterdatacategory="是" data-queryable="false" data-onchange="ChangeDemo()"></select>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+</asp:Content>

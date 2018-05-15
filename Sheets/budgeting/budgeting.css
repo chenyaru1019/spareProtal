@@ -1,0 +1,30 @@
+.xn-table {
+    width: 94.6%;
+    padding-left: 3px;
+    min-height: 30px;
+    display: table;
+    margin-top: 8px;
+}
+.xn-table thead {
+    text-align: center;
+    height: 28px;
+    background-color: #F7F7F7;
+}
+.xn-table td, th {
+    border: 1px solid #C7C7C7 !important;
+    padding: 4px;
+}
+.xn-table th {
+    text-align: center;
+}
+.xn-table .active {
+    background-color: #cae6f5;
+}
+.xn-table .indent {
+    padding-left: 16px;
+}
+
+.xn-notice {
+    padding: 8px;
+    background-color: #fff7ef;
+}

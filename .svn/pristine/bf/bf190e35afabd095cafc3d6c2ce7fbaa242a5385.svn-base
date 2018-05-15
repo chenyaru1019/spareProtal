@@ -1,0 +1,67 @@
+﻿<div>
+    协议号:<input type="text" value="" name="agreement_num" id="agreement_num">
+    委托方:<input type="text" value="" name="entrust" id="entrust">
+    签约时间:<input type="text" value="" name="all">
+   
+</div>
+<div>协议名称:<input type="text" value="" name="Agreement_name" id="Agreement_name">
+    合同/招标编号:<input type="text" name="contract_num" value="" id="contract_num">
+    合同性质:<select name="contract_type" id="contract_type">
+    <option value="aviation">航空煤油</option>
+    <option value="not_aviation">非航空煤油</option>
+    <option value="aviation_all">全部</option>
+</select>
+    
+    <input type="button" value="查找" id="finds">
+ </div>
+<div style='margin-top: 40px;'>
+
+    <table id="table_one" class="display">
+        <thead>
+            
+            <tr>
+                <th>协议名称</th>
+                <th>协议编号</th>
+                <th>委托方</th>
+                <th>收费类型</th>
+                <th>费率/金额</th>
+                <th>签约时间</th>
+                <th>项目负责人</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <input type="hidden" value="" name="versions" id="versions">
+</div>
+<script type="text/javascript">
+    var cottageDom = $('#table_one');
+    window.cottageApp.agreement_num = $('#agreement_num').val();
+    window.cottageApp.entrust = $("#entrust").val();
+    window.cottageApp.Agreement_name = $("#Agreement_name").val();
+    $.MvcSheet.Loaded = function () {
+        var aa = $.MvcSheetUI.SheetInfo.UserID;
+        console.log(aa);
+    }
+    window.cottageApp.dataTableInit(cottageDom);
+    $("#finds").click(
+        function () {
+            window.cottageApp.cottageObj.fnClearTable();
+            window.cottageApp.cottageObj.fnDestroy();
+            cottageDom.DataTable().destroy();
+            window.cottageApp.agreement_num = $('#agreement_num').val();
+            window.cottageApp.entrust = $("#entrust").val();
+            window.cottageApp.Agreement_name = $("#Agreement_name").val();
+            window.cottageApp.dataTableInit(cottageDom);
+            cottageDom.DataTable().ajax.reload();
+
+        }
+    )
+    function execute(Agreement_num) {
+        //获取版本号 
+        var versions = $("#versions").val();
+        //window.location = "/Portal/Sheets/AgreeMent/AgreeMent_change/AgreeMent_change.aspx?Mode=Originate&WorkflowCode=Agreenment_change&WorkflowVersion=17";
+        window.location.href = "/Portal/Sheets/Agreement/Agreement_execute/Agreement_execute.aspx?Mode=Originate&WorkflowCode=Agreen_perform&WorkflowVersion=" + versions + "&AgreeMent_number=" + Agreement_num;
+    }
+
+</script>

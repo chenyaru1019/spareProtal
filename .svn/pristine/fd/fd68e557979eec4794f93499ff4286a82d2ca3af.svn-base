@@ -1,0 +1,69 @@
+﻿$.MvcSheet.Loaded = function () {   
+    var AgreeMent_number = $.MvcSheetUI.GetControlValue("AgreeMent_number");
+    console.log(AgreeMent_number);
+    $("input[data-datafield='apply_peo']").attr("disabled", "disabled");
+    $("input[data-datafield='apply_time']").attr("disabled", "disabled");
+    // 根据合同号码获取对应合同相关数据
+    $.ajax({
+        type: "POST",    //页面请求的类型
+        url: "Agreement_sign.ashx?Command=Agreementcont",   //处理页的相对地址
+        data: {
+            AgreeMent_number: AgreeMent_number,
+        },
+        async: false,
+        success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+            console.log(ret);
+            $.MvcSheetUI.SetControlValue("Project_head_A", ret.a.Project_head_A);
+            $.MvcSheetUI.SetControlValue("Project_head_B", ret.a.Project_head_B);
+            $.MvcSheetUI.SetControlValue("Agreement_client", ret.a.Agreement_client);
+            $.MvcSheetUI.SetControlValue("AgreeMent_name", ret.a.AgreeMent_name);
+            $.MvcSheetUI.SetControlValue("agency_rate", ret.a.agency_rate);
+            $.MvcSheetUI.SetControlValue("apply_peo", ret.a.apply_peo);
+            $.MvcSheetUI.SetControlValue("apply_time", ret.a.CreatedTime);
+            $.MvcSheetUI.SetControlValue("Pay_conditions", ret.a.Pay_conditions);
+            $.MvcSheetUI.SetControlValue("AgreeMent_number", ret.a.AgreeMent_number);
+         
+        }
+    });
+    //根据合同号查询记录
+    $.ajax({
+        type: "POST",    //页面请求的类型
+        url: "Agreement_sign.ashx?Command=getrecord",   //处理页的相对地址
+        data: {
+            AgreeMent_number: AgreeMent_number,
+        },
+        async: false,
+        success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+            console.log(ret);
+            var dtl = $.MvcSheetUI.GetElement("approval_record").SheetGridView();
+            dtl._Clear();
+            for (var i = 0; i < ret.length; i++) {
+                //console.log(ret[i].old_agency_money);
+                dtl._AddRow();
+                $.MvcSheetUI.SetControlValue("approval_record.dispose_name", ret[i].DisplayName, i + 1);
+                $.MvcSheetUI.SetControlValue("approval_record.dispose_peo", ret[i].UserName, i + 1);
+                $.MvcSheetUI.SetControlValue("approval_record.dispose_time", ret[i].CreatedTime, i + 1);
+                $.MvcSheetUI.SetControlValue("approval_record.dispose_result", ret[i].State, i + 1);
+                $.MvcSheetUI.SetControlValue("approval_record.remark", ret[i].btext, i + 1);
+            }
+
+        }
+    });
+    
+   //创建协议不可编辑的字段
+    $("input[data-datafield='Project_head_A']").attr("disabled", "disabled");
+    $("input[data-datafield='Project_head_B']").attr("disabled", "disabled");
+    $("input[data-datafield='Agreement_client']").attr("disabled", "disabled");
+    $("input[data-datafield='AgreeMent_name']").attr("disabled", "disabled");
+    $("input[data-datafield='Pay_conditions']").attr("disabled", "disabled");
+    $("input[data-datafield='agency_rate']").attr("disabled", "disabled");
+    $("input[data-datafield='AgreeMent_number']").attr("disabled", "disabled");
+    //协议审签不可以编辑的字段
+    $("input[data-datafield='approval_record.dispose_name']").attr("disabled", "disabled");
+    $("input[data-datafield='approval_record.dispose_peo']").attr("disabled", "disabled");
+    $("input[data-datafield='approval_record.dispose_time']").attr("disabled", "disabled");
+    $("input[data-datafield='approval_record.dispose_result']").attr("disabled", "disabled");
+    $("input[data-datafield='approval_record.remark']").attr("disabled", "disabled");
+
+
+}

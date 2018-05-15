@@ -1,0 +1,166 @@
+﻿var rowPreRemoved = function (row) {
+    var rownum = row.attr("data-row");
+    var CompanyName = $.MvcSheetUI.GetControlValue("SalerTblOfHY.CompanyName", rownum);
+    var Salers = $.MvcSheetUI.GetControlValue('Salers');
+    $.MvcSheetUI.SetControlValue('Salers', Salers.replace(CompanyName + ",", ''))
+}
+
+function EmailSalerChange() {
+    var dtl = $.MvcSheetUI.GetElement('SalerTblOfHY').SheetGridView();
+    var len = dtl.RowCount;
+    var CompanyNameSaler = $.MvcSheetUI.GetControlValue('CompanyNameSaler');
+    var ContactNameSaler = $.MvcSheetUI.GetControlValue('ContactNameSaler');
+    var TelephoneSaler = $.MvcSheetUI.GetControlValue('TelephoneSaler');
+    var MobileSaler = $.MvcSheetUI.GetControlValue('MobileSaler');
+    var FaxSaler = $.MvcSheetUI.GetControlValue('FaxSaler');
+    var EmailSaler = $.MvcSheetUI.GetControlValue('EmailSaler');
+    // check 是否选择的联系人为同一个卖方
+    if (len > 0) {
+        for (var i = 0; i < len; i++) {
+            var CompanyName = $.MvcSheetUI.GetControlValue("SalerTblOfHY.CompanyName", i + 1);
+            if (CompanyNameSaler == CompanyName) {
+                layer.alert('同一个卖方只能选择一个联系人！', { icon: 2 });
+                //return false; 不能用return false，会触发两次onchange事件
+                return;
+            }
+        }
+    }
+    dtl._AddRow();
+
+    $.MvcSheetUI.SetControlValue("SalerTblOfHY.CompanyName", CompanyNameSaler, len + 1);
+    $.MvcSheetUI.SetControlValue("SalerTblOfHY.ContactName", ContactNameSaler, len + 1);
+    $.MvcSheetUI.SetControlValue("SalerTblOfHY.Telephone", TelephoneSaler, len + 1);
+    $.MvcSheetUI.SetControlValue("SalerTblOfHY.Mobile", MobileSaler, len + 1);
+    $.MvcSheetUI.SetControlValue("SalerTblOfHY.Fax", FaxSaler, len + 1);
+    $.MvcSheetUI.SetControlValue("SalerTblOfHY.Email", EmailSaler, len + 1);
+    $("input[data-datafield='SalerTblOfHY.CompanyName']").attr("disabled", "disabled");
+    $("input[data-datafield='SalerTblOfHY.ContactName']").attr("disabled", "disabled");
+    $("input[data-datafield='SalerTblOfHY.Telephone']").attr("disabled", "disabled");
+    $("input[data-datafield='SalerTblOfHY.Mobile']").attr("disabled", "disabled");
+    $("input[data-datafield='SalerTblOfHY.Fax']").attr("disabled", "disabled");
+    $("input[data-datafield='SalerTblOfHY.Email']").attr("disabled", "disabled");
+    $.MvcSheetUI.SetControlValue('Salers', $.MvcSheetUI.GetControlValue('Salers') + CompanyNameSaler + ';')
+
+}
+
+// 航油合同预设数据
+function setDataFromHY() {
+
+    $.ajax({
+        type: "POST",    //页面请求的类型
+        url: "ContractHandler.ashx?Command=getHYData",   //处理页的相对地址
+        data: {
+        },
+        async: false,
+        success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+            if (ret.ObjectID != null && ret.ObjectID != '') {
+                $.MvcSheetUI.SetControlValue("FinalUser", ret.FinalUser);
+                $.MvcSheetUI.SetControlValue("PostB", ret.PostB);
+                $.MvcSheetUI.SetControlValue("BidType", ret.BidType);
+                BidTypeChange();
+                $.MvcSheetUI.SetControlValue("BidNo", ret.BidNo);
+                $.MvcSheetUI.SetControlValue("ContractName", ret.ContractName);
+                $.MvcSheetUI.SetControlValue("ContractShortName", ret.ContractShortName);
+                $.MvcSheetUI.SetControlValue("ProjectName", ret.ProjectName);
+                $.MvcSheetUI.SetControlValue("SubProjectName", ret.SubProjectName);
+                $.MvcSheetUI.SetControlValue("SubProjectCode", ret.SubProjectCode);
+                $.MvcSheetUI.SetControlValue("TradeMethod", ret.TradeMethod);
+                $.MvcSheetUI.SetControlValue("Country", ret.Country);
+                $.MvcSheetUI.SetControlValue("ContractRemark", ret.ContractRemark);
+
+                $.ajax({
+                    type: "POST",    //页面请求的类型
+                    url: "ContractHandler.ashx?Command=getSalesHYData",   //处理页的相对地址
+                    data: {
+                        ObjectID: ret.ObjectID
+                    },
+                    async: false,
+                    success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                        var dtl = $.MvcSheetUI.GetElement("SalerTblOfHY").SheetGridView();
+                        dtl._Clear();
+                        for (var i = 0; i < ret.length; i++) {
+                            dtl._AddRow();
+                            $.MvcSheetUI.SetControlValue("SalerTblOfHY.CompanyName", ret[i].CompanyName, i + 1);
+                            $.MvcSheetUI.SetControlValue("SalerTblOfHY.ContactName", ret[i].ContactName, i + 1);
+                            $.MvcSheetUI.SetControlValue("SalerTblOfHY.Telephone", ret[i].Telephone, i + 1);
+                            $.MvcSheetUI.SetControlValue("SalerTblOfHY.Mobile", ret[i].Mobile, i + 1);
+                            $.MvcSheetUI.SetControlValue("SalerTblOfHY.Fax", ret[i].Fax, i + 1);
+                            $.MvcSheetUI.SetControlValue("SalerTblOfHY.Email", ret[i].Email, i + 1);
+                        }
+
+                    }
+                });
+                $("input[data-datafield='SalerTblOfHY.CompanyName']").attr("disabled", "disabled");
+                $("input[data-datafield='SalerTblOfHY.ContactName']").attr("disabled", "disabled");
+                $("input[data-datafield='SalerTblOfHY.Telephone']").attr("disabled", "disabled");
+                $("input[data-datafield='SalerTblOfHY.Mobile']").attr("disabled", "disabled");
+                $("input[data-datafield='SalerTblOfHY.Fax']").attr("disabled", "disabled");
+                $("input[data-datafield='SalerTblOfHY.Email']").attr("disabled", "disabled");
+
+                $.MvcSheetUI.SetControlValue("Salers", ret.Salers);
+
+                $.ajax({
+                    type: "POST",    //页面请求的类型
+                    url: "ContractHandler.ashx?Command=getBidsHYData",   //处理页的相对地址
+                    data: {
+                        ObjectID: ret.ObjectID
+                    },
+                    async: false,
+                    success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                        var dtl = $.MvcSheetUI.GetElement("BidTblOfHY").SheetGridView();
+                        dtl._Clear();
+                        for (var i = 0; i < ret.length; i++) {
+                            dtl._AddRow();
+                            $.MvcSheetUI.SetControlValue("BidTblOfHY.ProjectShortName", ret[i].ProjectShortName, i + 1);
+                            $.MvcSheetUI.SetControlValue("BidTblOfHY.BidPrice", ret[i].BidPrice, i + 1);
+                        }
+
+                    }
+                });
+                $("input[data-datafield='BidTblOfHY.ProjectShortName']").attr("disabled", "disabled");
+                $("input[data-datafield='BidTblOfHY.BidPrice']").attr("disabled", "disabled");
+            }
+        }
+    });
+}
+
+function BidTypeChange() {
+    var BidType = $.MvcSheetUI.GetControlValue('BidType');
+    if (BidType == '0') {
+        $.MvcSheetUI.SetControlValue('BidNo', '');
+        $('.BidNo').hide();
+        var dtl = $.MvcSheetUI.GetElement("BidTblOfHY").SheetGridView();
+        dtl._Clear();
+    } else {
+        $('.BidNo').show();
+    }
+}
+
+//数据加载后
+$.MvcSheet.Loaded = function () {
+
+    var InstanceId = $.MvcSheetUI.SheetInfo.InstanceId;
+    var InstanceName = "";
+    $.ajax({
+        type: "POST",    //页面请求的类型
+        url: "ContractHandler.ashx?Command=getInstanceById",   //处理页的相对地址
+        data: {
+            InstanceId: InstanceId,
+        },
+        async: false,
+        success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+            if (ret.InstanceName != undefined) {
+                InstanceName = ret.InstanceName;
+            }
+        }
+    });
+    if (InstanceName == "") {
+        setDataFromHY();
+    }
+
+    // 只显示提交按钮
+    $("li[data-action='Save']").hide();
+    $("li[data-action='Print']").hide();
+    $("li[data-action='Forward']").hide();
+    $("li[data-action='ViewInstance']").hide();
+}

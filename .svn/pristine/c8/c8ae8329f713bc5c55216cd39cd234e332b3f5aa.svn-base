@@ -1,0 +1,19 @@
+﻿body {
+   
+}
+
+.btn.btn-outline.btn-lg {
+    width: 100%;
+    border: 1px dashed rgb(221, 221, 221);
+    display: none;
+}
+
+.fa.fa-minus {
+    display: none;
+}
+.navbar-toggle {
+    display: none;
+}
+#main-navbar-collapse li:first-child {
+    display:none;
+}

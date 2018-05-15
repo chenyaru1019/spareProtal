@@ -1,0 +1,2030 @@
+﻿var ibs = {
+    // =====================================================================
+    // 
+    // 招标项目模块
+    // Bruce Tang
+    // 1.0 2017/10/28
+    //
+    // =====================================================================
+
+    // 表单信息
+    _sheetInfo: null,
+
+    // 查询到的专家数组
+    _experts: null,
+
+    // 当下选中的专家索引值
+    _expertIndex: 0,
+
+    // 国别
+    _countries: null,
+
+    // 币种
+    _cashTypies: null,
+
+    _workflowVersion: {},
+
+    // =======================================================================
+    //
+    // 工具方法
+    //
+    // =======================================================================
+
+    debug: function(msg) {
+        console.log(msg);
+    },
+
+    // 初始化元数据
+    initMetaData: function() {
+        var _this = this;
+        $.getJSON("/Portal/Sheets/bidding/InviteBidsHandler.ashx?command=LoadMetaData&category=国别", function(data) {
+            _this._countries = data;
+            _this.initSelect($("#TenderCountry"), data);
+            _this.initSelect($("#SupplierCountry"), data);
+        });
+        $.getJSON("/Portal/Sheets/bidding/InviteBidsHandler.ashx?command=LoadMetaData&category=币种", function(data) {
+            _this._cashTypies = data;
+            _this.initSelect($("#BiddingRecordForm #BidPrice1Unit"), data);
+            _this.initSelect($("#BiddingRecordForm #BidPrice2Unit"), data);
+        });
+        $.getJSON("/Portal/Sheets/bidding/InviteBidsHandler.ashx?command=LoadWorkflowVersion", function(data) {
+            for (var i = 0; i < data.length; i++) {
+                ibs._workflowVersion[data[i].code] = data[i].version;
+            }
+        });
+    },
+
+    // 使用元数据更新select
+    initSelect: function(select, metaData) {
+        if (metaData != null) {
+            select.empty();
+            for (var i = 0; i < metaData.length; i++) {
+                select.append("<option value=\""
+                    + metaData[i].value
+                    + "\">"
+                    + metaData[i].name);
+            }
+        }
+    },
+
+    // 取字典中的唯一字段值
+    firstOfDict: function(d) {
+        for (var i in d) {
+            return i;
+        }
+    },
+
+    parseInt: function(v) {
+        var i = parseInt(v);
+        if (i == NaN)
+            i = 0;
+        return i;
+    },
+
+    parseFloat: function(v) {
+        var f = parseFloat(v);
+        if (f == NaN)
+            f = 0;
+        return f;
+    },
+
+    // =======================================================================
+    //
+    // 表单框架
+    //
+    // =======================================================================
+
+    // 初始化表单框架
+    init: function(sheetInfo) {
+        this.debug("init ibs instance");
+        this._sheetInfo = sheetInfo;
+        $("#pseudo-input").select(this.delayInit);
+        $("#pseudo-input").trigger("select");
+    },
+    delayInit: function() {
+        ibs.debug(ibs._sheetInfo);
+        $("#pseudo-input").unbind();
+        ibs.initMetaData();
+        ibs.initMainForm();
+        ibs.initQueryExpertsForm();
+        ibs.initSelectExpertForm();
+        ibs.initBiddingRecrodForm();
+    },
+
+    // 初始化主表单
+    initMainForm: function() {
+        if (ibs._sheetInfo.ActivityCode == "CreateActivity") {
+            ibs.initCreateForm();
+        }
+        else if (ibs._sheetInfo.ActivityCode == "PrepareActivity") {
+            ibs.initPrepareForm();
+        }
+        else if (ibs._sheetInfo.ActivityCode == "OpeningActivity") {
+            ibs.initOpeningForm();
+        }
+        else if (ibs._sheetInfo.ActivityCode == "EvaluationActivity") {
+            ibs.initEvaluationForm();
+        }
+        else if (ibs._sheetInfo.ActivityCode == "RefundActivity") {
+            ibs.initRefundForm();
+        }
+        else if (ibs._sheetInfo.ActivityCode == "FileActivity") {
+            ibs.initFileForm();
+        }
+
+        // 抽取专家表单
+        $("#QueryExpertButton").click(function() {
+            ibs.updateExpertsSelectionForm();
+        });
+        $("#RequeryExpertsButton").click(function() {
+            $("#SelectExpertForm").modal("hide");
+            $("#QueryExpertsForm").modal("show");
+            $("#QueryExpertsForm div.row").removeAttr("style", "display:none");
+        });
+        $("#OpenQueryExpertsButton").click(function() {
+            $("#SelectExpertForm").modal("hide");
+            $("#QueryExpertsForm").modal("show");
+            $("#QueryExpertsForm div.row").removeAttr("style", "display:none");
+        });
+        $("#ExportExpertsButton").click(ibs.exportExperts);
+        $("CloseSelectExpertFormButton").click(function() {
+            $("#SelectExpertForm").modal("hide");
+        });
+        $("#SaveExpertsButton").click(ibs.saveSelectedExperts);
+
+       // 关联专家-项目表单
+        $("#SetRelatedProjectButton").click(ibs.onRelatedProjectSet);
+        $("#CloseSelectProjectFormButton").click(function() {
+            $("#SelectProjectForm").modal("hide");
+            $("#SelectExpertForm").modal("show");
+            ("#SelectExpertForm  div.row").removeAttr("style", "display:none");
+        });
+
+        // 废弃专家理由表单
+        $("#SetDropReasonButton").click(ibs.onDropReasonSet);
+        $("#CloseDropReasonFormButton").click(function() {
+            $("#SetDropReasonForm").modal("hide");
+            $("#SelectExpertForm").modal("show");
+            $("#SelectExpertForm  div.row").removeAttr("style", "display:none");
+        });
+
+        // 招投标记录
+        $("#SaveBiddingRecordButton").click(ibs.onSaveBiddingRecord);
+        $("#UpdateBiddingRecordButton").click(ibs.onUpdateBiddingRecord);
+    },
+
+    // 初始化招投标记录
+    initBiddingRecrodForm: function() {
+        $("#BiddingRecordForm #AddTenderButton").click(ibs.onAddTender);
+    },
+
+    // 表单输入检验
+    validate: function() {
+        if (ibs._sheetInfo.ActivityCode == "CreateActivity") {
+            return ibs.validateCreateForm();
+        }
+        else if (ibs._sheetInfo.ActivityCode == "PrepareActivity") {
+            return ibs.validatePrepareForm();
+        }
+        else if (ibs._sheetInfo.ActivityCode == "OpeningActivity") {
+            return ibs.validateBidOpeningForm();
+        }
+        else if (ibs._sheetInfo.ActivityCode == "EvaluationActivity") {
+            return ibs.validateEvaluationForm();
+        }
+        else if (ibs._sheetInfo.ActivityCode == "RefundActivity") {
+            return ibs.validateRefundForm();
+        }
+        else if (ibs._sheetInfo.ActivityCode == "FileActivity") {
+            return ibs.validateFileForm();
+        }
+
+        return true;
+    },
+
+    // 表单保存前事件
+    onBeforeSave: function() {
+    },
+    
+    
+    // =======================================================================
+    //
+    // 选取专家
+    //
+    // =======================================================================
+
+    _expertTarget: "招标",
+
+    // 初始化专家查询表单
+    initQueryExpertsForm: function() {
+        $.getJSON("/Portal/Sheets/bidding/InviteBidsHandler.ashx?command=LoadMetaData&category=专家的专业领域", function(data) {
+            if (data.length > 0) {
+                for (var i = 0; i < data.length; i++) {
+                    $("#ExpertDomainInput").append(
+                        "<option value='" + data[i].name + "'>"
+                        + data[i].name + "</option>"
+                    );
+                }
+            }
+        });
+        $.getJSON("/Portal/Sheets/bidding/InviteBidsHandler.ashx?command=LoadMetaData&category=地区", function(data) {
+            if (data.length > 0) {
+                for (var i = 0; i < data.length; i++) {
+                    $("#ExpertAreaInput").append(
+                        "<option value='" + data[i].name + "'>"
+                        + data[i].name + "</option>"
+                    );
+                }
+            }
+        });
+    },
+
+    // 初始化关联项目表单
+    initSelectExpertForm: function() {
+        $.getJSON("/Portal/Sheets/bidding/InviteBidsHandler.ashx?command=LoadProjects", function(data) {
+            if (data.length > 0) {
+                for (var i = 0; i < data.length; i++) {
+                    $("#ProjectsInput").append("<option value='"
+                        + data[i].name + "'>" + data[i].name + "</option>");
+                }
+            }
+        });
+    },
+
+    // 更新专家抽取表单
+    updateExpertsSelectionForm: function() {
+        var expertsCount = $("#ExpertCountInput").val();
+        if (expertsCount <= 0) {
+            alert("人数必须大于1人。");
+            return ;
+        }
+        var url = "/Portal/Sheets/bidding/InviteBidsHandler.ashx?command=LoadExperts&"
+            + "area=" + $("#ExpertAreaInput").val()
+            + "&domain=" + $("#ExpertDomainInput").val()
+            + "&count=" + expertsCount;
+        $.getJSON(url, function(data) {
+            if (data.length == 0) {
+                alert("未找到符合条件的专家，请重试。");
+            }
+            else {
+                ibs._experts = data;
+                $("#QueryExpertsForm").modal("hide");
+                $("#SelectExpertForm").modal("show");
+                $("#SelectExpertForm div.row").removeAttr("style", "display:none");
+                for (var i = 0; i < data.length; i++) {
+                    data[i].selected = false;
+                    data[i].dropReason = "未选择";
+                    data[i].relatedProject = "";
+                    data[i].projectStage = "";
+                }
+                ibs.updateExpertsTable(data);
+            }
+        });
+    },
+
+    // 更新抽取专家表格
+    updateExpertsTable: function(data) {
+        var table = $("#ExpertsTable>tbody");
+        table.empty();
+        for (var i = 0; i < data.length; i++) {
+            table.append(
+                "<tr><td>" + (i + 1)
+                + "</td><td>" + data[i].time
+                + "</td><td>" + data[i].name
+                + "</td><td>" + data[i].area
+                + "</td><td>" + data[i].company
+                + "</td><td>" + data[i].domain
+                + "</td><td>" + data[i].birthday
+                + "</td><td>" + data[i].mobilePhone
+                + "</td><td>" + data[i].email
+                + "</td><td>" + (data[i].relatedProject == "" ? "" : data[i].relatedProject 
+                    + "-" + data[i].projectStage)
+                + "</td><td>" + (data[i].selected ? "选中" : "废弃：" + data[i].dropReason)
+                + "</td><td>" + (data[i].selected ? 
+                    "<button type='button' class='btn' onclick='ibs.onDropExpert("
+                    + i + ")'>废弃</button>" :
+                    "<button type='button' class='btn' onclick='ibs.onExpertSelected("
+                    + i + ")'>选取</button>")     
+                + "</td></tr>"
+            );
+        }
+    },
+
+    // 选中专家
+    onExpertSelected: function(index) {
+        this._expertIndex = index;
+        $("#SelectExpertForm").modal("hide");
+        $("#SelectProjectForm").modal("show");
+        $("#SelectProjectForm div.row").removeAttr("style", "display:none");
+    },
+
+    // 选好关联项目
+    onRelatedProjectSet: function() {
+        var projectName = $("#ProjectsInput").val();
+        if (projectName == "") {
+            alert("请选择关联项目。");
+            return ;
+        }
+        var stage = $("#StageInput").val();
+        ibs._experts[ibs._expertIndex].relatedProject = projectName;
+        ibs._experts[ibs._expertIndex].projectStage = stage;
+        ibs._experts[ibs._expertIndex].selected = true;
+        $("#SelectProjectForm").modal("hide");
+        $("#SelectExpertForm").modal("show");
+        $("#SelectExpertForm div.row").removeAttr("style", "display:none");
+        ibs.updateExpertsTable(ibs._experts);
+    },
+
+    // 废弃专家
+    onDropExpert: function(index) {
+        this._expertIndex = index;
+        $("#SelectExpertForm").modal("hide");
+        $("#SetDropReasonForm").modal("show");
+        $("#SetDropReasonForm div.row").removeAttr("style", "display:none");
+        $("#DropReasonInput").val("");
+    },
+
+    // 设置废弃专家原因
+    onDropReasonSet: function() {
+        var reason = $("#DropReasonInput").val();
+        if (reason == "") {
+            alert("请输入废弃专家原因。");
+        }
+        ibs._experts[ibs._expertIndex].dropReason = reason;
+        ibs._experts[ibs._expertIndex].projectStage = "";
+        ibs._experts[ibs._expertIndex].projectName = "";
+        ibs._experts[ibs._expertIndex].selected = false;
+        $("#SelectExpertForm").modal("show");
+        $("#SetDropReasonForm").modal("hide");
+        $("#SetDropReasonForm div.row").removeAttr("style", "display:none");
+        ibs.updateExpertsTable(ibs._experts);
+    }, 
+
+    // 导出专家
+    exportExperts: function() {
+        if (ibs._experts != null && ibs._experts.length > 0) {
+            var cnt = "";
+            for (var i = 0; i < ibs._experts.length; i++) {
+                var data = ibs._experts[i];
+                cnt += data.time
+                    + "," + data.name
+                    + "," + data.area
+                    + "," + data.company
+                    + "," + data.domain
+                    + "," + data.birthday
+                    + "," + data.mobilePhone
+                    + "," + data.email
+                    + "\n";
+                var a = document.createElement("a");
+                a.href = "data:attachment/csv;charset=utf-8,"
+                    + encodeURIComponent(cnt);
+                a.download = 'experts.csv';
+                a.target = '_blank';
+                document.body.appendChild(a);
+                a.click();
+            }   
+        }
+    },
+
+    // 保存选取专家
+    saveSelectedExperts: function() {
+        if (ibs._experts.length == 0) {
+            alert("请抽取至少一位专家。");
+            return ;
+        }
+
+        var selection = [];
+        for (var i = 0; i < ibs._experts.length; i++) {
+            var item = {
+                name: ibs._experts[i].name,
+                company: ibs._experts[i].company,
+                name: ibs._experts[i].name,
+                mobilePhone: ibs._experts[i].mobilePhone,
+                selected: ibs._experts[i].selected,
+                dropReason: ibs._experts[i].dropReason,
+                relatedProject: ibs._experts[i].relatedProject,
+                projectStage: ibs._experts[i].projectStage
+            };
+            selection.push(item);
+        }
+
+        if (ibs._expertTarget == "招标") {
+            var table = $("#Control28").SheetUIManager();
+            table._Clear();
+            var idx = 1;
+            for (var i = 0; i < ibs._experts.length; i++) {
+                if (ibs._experts[i].selected) {
+                    table._AddRow();
+                    $.MvcSheetUI.SetControlValue("BiddingDocAuditExperts.ExpertName",
+                        ibs._experts[i].name, idx);
+                    $.MvcSheetUI.SetControlValue("BiddingDocAuditExperts.Company",
+                        ibs._experts[i].company, idx);
+                    $.MvcSheetUI.SetControlValue("BiddingDocAuditExperts.Phone",
+                        ibs._experts[i].mobilePhone, idx);
+                    idx++;
+                }
+            }
+            $("#Control28 input").attr("readonly", "readonly");
+        }
+        else {
+            var panel = $("#be-wrap>div.tab-content>div.active");
+            var table = $("#evaluation-expert-table", panel);
+            $("tr.data", table).remove();
+            for (var i = 0; i < ibs._experts.length; i++) {
+                if (ibs._experts[i].selected) {
+                    var tr = $("tr.template", table).clone();
+                    tr.removeClass("template").addClass("data");
+                    $(".name", tr).text(ibs._experts[i].name);
+                    $(".company", tr).text(ibs._experts[i].company);
+                    $(".mobile-phone", tr).text(ibs._experts[i].mobilePhone);
+                    $("tbody", table).append(tr);
+                }
+            }            
+        }
+
+        $("#SelectExpertForm").modal("hide");
+        $.post(
+            "/Portal/Sheets/bidding/InviteBidsHandler.ashx",
+            {
+                Command: "SaveExpertSelection",
+                object_id: ibs._sheetInfo.BizObjectID,
+                activity_code: ibs._sheetInfo.ActivityCode,
+                selection: JSON.stringify(selection)
+            },
+            function() {}
+        );
+    },
+
+    // =======================================================================
+    // 
+    // 创建项目
+    //
+    // =======================================================================
+
+    initCreateForm: function() {
+        var biddingCode = $.MvcSheetUI.GetControlValue("BiddingCode");
+        var autoBiddingCode = $("#AutoBiddingCode").val();
+        var managerA = $.MvcSheetUI.GetControlValue("ManagerA");
+        if (managerA == null || managerA == "") {
+            $.MvcSheetUI.SetControlValue("ManagerA", ibs._sheetInfo.UserID);
+        }
+        $("a[id^=Add_Budget]").text("预算分包");
+        ibs.initBiddingCodeHistory();
+        $("#Control19").attr("readonly", "readonly");
+        $("#CreateBiddingCodeButton").click(ibs.createBiddingCode);        
+        $("#RequestBiddingCodeButton").click(ibs.requestBiddingCode);
+        $("#prepare-project").hide();
+        $("#bid-opening").hide();
+        $("#bid-evaluation").hide();
+        $("#refund").hide();
+        $("#file").hide();
+},
+ 
+    // 创建招标编号
+    createBiddingCode: function() {
+        var scope = $.MvcSheetUI.GetControlValue("BiddingScope");
+        var method = $.MvcSheetUI.GetControlValue("BiddingMethod");
+        var url = "InviteBidsHandler.ashx?command=GenerateBiddingCode&scope="
+            + scope + "&method=" + method;
+        ibs.debug("get bidding code: " + url);
+        $.getJSON(url, function(result) {
+            $.MvcSheetUI.SetControlValue("BiddingCode", result.code);
+            $("#AutoBiddingCode").val(result.code);
+        });
+    },
+
+    // 发起招标编号审批流程
+    requestBiddingCode: function() {
+        $.getJSON("InviteBidsHandler.ashx?command=GetBiddingCode&object_id="
+            + ibs._sheetInfo.BizObjectID,
+            function(data) {
+                if (data.code == "") {
+                    alert("请保存后再发起招标编号审批申请。");
+                }
+                else {
+                    var biddingCode = $.MvcSheetUI.GetControlValue("BiddingCode");
+                    var projectName = $.MvcSheetUI.GetControlValue("ProjectName");
+                    if (projectName.length == 0) {
+                        alert("请输入项目名称。");
+                        return ;
+                    }
+                    var biddingScope = $.MvcSheetUI.GetControlValue("BiddingScope");
+                    var biddingMethod = $.MvcSheetUI.GetControlValue("BiddingMethod");
+                    var url = "/Portal/MvcDefaultSheet.aspx?SheetCode=SBiddingNumberAuditFlow"
+                        + "&Mode=Originate&WorkflowCode=BiddingNumberAuditFlow"
+                        + "&WorkflowVersion=" + ibs._workflowVersion["BiddingNumberAuditFlow"]
+                        + "&ProjectName=" + projectName 
+                        + "&BiddingScope=" + biddingScope 
+                        + "&BiddingMethod=" + biddingMethod 
+                        + "&AutoGenerateNumber=" + biddingCode 
+                        + "&IssueObjectId=" + ibs._sheetInfo.BizObjectID;
+                    window.location.href = url;
+                }
+            }
+        );
+    },
+
+    // 初始化招标编号审批历史记录
+    initBiddingCodeHistory: function() {
+        var url = "/Portal/Sheets/bidding/InviteBidsHandler.ashx?command=GetBiddingCodeAudits"
+            + "&object_id=" + ibs._sheetInfo.BizObjectID;
+        $.getJSON(url, function(data) {
+            if (data.length > 0) {
+                var canSubmit = true;
+                var table = $("#bidding-number-audit-state");
+                for (var i = 0; i < data.length; i++) {
+                    var tr = $("tr.template", table).clone();
+                    tr.removeClass("template").removeAttr("style", "display:none");
+                    $("#originator", tr).text(data[i].originatorName);
+                    $("#request-time", tr).text(data[i].startTime);
+                    $("#state", tr).text(data[i].state);
+                    $("tbody", table).append(tr);
+                    if (data[i].state == "审批") {
+                        canSubmit = false;
+                    }
+                    else {
+                        $.getJSON("/Portal/Sheets/bidding/InviteBidsHandler.ashx?command=GetApprovedBiddingCode&object_id=" + ibs._sheetInfo.BizObjectID, function(data) {
+                            $.MvcSheetUI.SetControlValue("BiddingCode", data.code);
+                        });
+                    }
+                }
+                $("#CreateBiddingCodeButton").hide();
+                if (!canSubmit) {
+                    $("li[data-action='Submit']").hide();
+                }
+            }
+        });
+    },
+
+    // 更新项目及子工程简称
+    updateProjectShortName: function() {
+        var table = $("#Control13").SheetUIManager();
+        if (table.RowCount > 0) {
+            var values = table.GetValue();
+            var projectName = "";
+            var taskName = "";
+            for (var i = 0; i < values.length; i++) {
+                projectName += values[i].ProjectShortName;
+                taskName += values[i].TaskName;
+                if (i < values.length - 1) {
+                    projectName += "、";
+                    taskName += "、";
+                }
+            }
+            $.MvcSheetUI.SetControlValue("ProjectShortName", projectName);
+            $.MvcSheetUI.SetControlValue("TaskShortName", taskName);
+        }
+        ibs.debug(values);
+    },
+
+    // 检验创建项目表单
+    validateCreateForm: function() {
+        var managerA = $.MvcSheetUI.GetControlValue("ManagerA");
+        var managerB = $.MvcSheetUI.GetControlValue("ManagerB");
+        if (managerA != ibs._sheetInfo.Originator && managerB != ibs._sheetInfo.Originator) {
+            alert("A角或B角必须是流程创建人。");
+            return false;
+        }
+        var taxRate = parseInt($.MvcSheetUI.GetControlValue("TaxRate"));
+        if (taxRate == NaN || taxRate < 0 || taxRate > 100) {
+            alert("税率必须是0-100的整数。");
+            return false;
+        }
+        ibs.updateProjectShortName();
+        return true;
+    },
+
+    // =====================================================================
+    // 
+    // 招标准备
+    //
+    // =====================================================================
+
+    initPrepareForm: function() {
+        $("#RequestBiddingCodeButton").hide();
+        $("#bid-opening").hide();
+        $("#bid-evaluation").hide();
+        $("#refund").hide();
+        $("#file").hide();
+        $("#BiddingDoc").xnfile();
+        var biddingDoc = $.MvcSheetUI.GetControlValue("BiddingDoc");
+        if (biddingDoc != "") {
+            $("#BiddingDoc").xnfile("value", biddingDoc);
+        }
+        if (ibs._sheetInfo.ActivityCode == "PrepareActivity") {
+            $("#SelectBiddingDocAuditExpertsButton").show();
+            $("#RequestBiddingDocAuditButton").show();
+            ibs.initBiddingDocHistory();
+        }
+        else {
+            $("label[for=ctl571791]").hide();
+            $("#BiddingDoc button").prop("disabled", true);
+        }
+        $("#SelectBiddingDocAuditExpertsButton").click(function() {
+            $("#QueryExpertsForm").modal("show");
+            $("#QueryExpertsForm div.row").removeAttr("style", "display:none");
+        });
+        $("#RequestBiddingDocAuditButton").click(ibs.onRequestBiddingDocAudit);
+    },
+
+    // 校验项目准备表单
+    validatePrepareForm: function() {
+        var agencyAgreementType = $.MvcSheetUI.GetControlValue("AgencyAgreementType");
+        if (agencyAgreementType == "后审") {
+            var comment = $.MvcSheetUI.GetControlValue("PostAuditComment");
+            if (comment == "") {
+                alert("请输入后审说明。");
+                return false;
+            }
+        }
+        var table = $("#Control23").SheetUIManager();
+        if (table.RowCount == 0 && agencyAgreementType == "已审") {
+            alert("请至少选择一个代理协议。");
+            return false;
+        }
+        var biddingDoc = $("#BiddingDoc").xnfile("value");
+        if (biddingDoc == "") {
+            alert("请上传招标文件。");
+            return false;
+        }
+        else {
+            $.MvcSheetUI.SetControlValue("BiddingDoc", biddingDoc);
+        }
+        if ($.MvcSheetUI.GetControlValue("HasOwnerComment")) {
+            var v = $.MvcSheetUI.GetControlValue("OwnerComment");
+            if (v.AttachmentIds.length == 0) {
+                alert("请上传业主批复文件。");
+                return false;
+            }
+        }
+        return true;
+    },
+
+    // 初始化招标文件审批历史记录
+    initBiddingDocHistory: function() {
+        var url = "/Portal/Sheets/bidding/InviteBidsHandler.ashx?command=GetBiddingDocAudits"
+            + "&object_id=" + ibs._sheetInfo.BizObjectID;
+        $.getJSON(url, function(data) {
+            if (data.length > 0) {
+                var canSubmit = true;
+                var table = $("#bidding-doc-audit-state");
+                for (var i = 0; i < data.length; i++) {
+                    var tr = $("tr.template", table).clone();
+                    tr.removeClass("template").removeAttr("style", "display:none");
+                    $("#originator", tr).text(data[i].originatorName);
+                    $("#request-time", tr).text(data[i].startTime);
+                    $("#state", tr).text(data[i].state);
+                    $("tbody", table).append(tr);
+                    if (data[i].state == "审批") {
+                        canSubmit = false;
+                    }
+                }
+                $("#RequestBiddingDocAuditButton").hide();
+                if (!canSubmit) {
+                    $("li[data-action='Submit']").hide();
+                }
+            }
+        });
+    },
+    
+    // 发起招标文件审批流程
+    onRequestBiddingDocAudit: function() {
+        var v = $.MvcSheetUI.GetControlValue("BiddingDoc");
+        if (v.AttachmentIds == "") {
+            alert("请上传招标文件。如已上传，请先保存表单。");
+            return ;
+        }
+        if ($.MvcSheetUI.GetControlValue("AgencyAgreementType") != "已审") {
+            alert("只有已审招标文件才能提交审批。");
+            return ;
+        }
+        var url = "/Portal/Sheets/bidding/BiddingDocAudit.aspx?Mode=Originate"
+            + "&WorkflowCode=BiddingDocAudit&WorkflowVersion="
+            + ibs._workflowVersion["BiddingDocAudit"]
+            + "&IssueObjectId=" 
+            + ibs._sheetInfo.BizObjectID
+            + "&ProjectName=" + $.MvcSheetUI.GetControlValue("ProjectName")
+            + "&BiddingCode=" + $.MvcSheetUI.GetControlValue("BiddingCode")
+            + "&BiddingDocPrice=" + $.MvcSheetUI.GetControlValue("BiddingDocPrice")
+            + "&AgencyAgreementType=" + $.MvcSheetUI.GetControlValue("AgencyAgreementType")
+            + "&BiddingDoc=" + v;
+        window.location.href = url;
+    },
+
+    // ======================================================================
+    //
+    // 开标发标
+    // 
+    // ======================================================================
+
+    // 开标包数量
+    _bidPackageCount: 0,
+    
+    // 开标包
+    _bidPackages: [],
+
+    // 招投标记录
+    _biddingRecords: [],
+    
+    // 正在修改的投标记录下标
+    _editBiddingRecordIndex: 0,
+        
+    initOpeningForm: function() {
+        $("#RequestBiddingCodeButton").hide();
+        $("#bid-evaluation").hide();
+        $("#refund").hide();
+        $("#file").hide();
+        $("#AddBidPackageButton").click(ibs.onAddBidPackage);
+        $("#RemoveActiveBidPackageButton").click(ibs.onRemoveActiveBidPackage);
+        $.getJSON("/Portal/Sheets/bidding/InviteBidsHandler.ashx?command=LoadBidPackages&object_id=" + ibs._sheetInfo.BizObjectID, function(data) {
+            if (data.length > 0) {
+                ibs._bidPackages = data;
+                ibs._bidPackageCount = data.length;
+                ibs.updateBidPackages();
+
+                // 评标表单初始化
+                var table = $("#ctl358014").SheetUIManager();
+                if (table.RowCount == ibs._bidPackages.length) {
+                    ibs.buildBidEvaluationForm();
+                }
+                else {
+                    ibs.createBidEvaluationForm();
+                }
+            }
+        });
+    },
+
+    // 校验开标发标表单
+    validateBidOpeningForm: function() {
+        ibs.updateBidPackageValues();
+        if (ibs._bidPackages == null || ibs._bidPackages.length == 0) {
+            alert("至少要有一个招投标记录。");
+            return false;
+        }
+        for (var i = 0; i < ibs._bidPackages.length; i++) {
+            var bp = ibs._bidPackages[i];
+            if (bp.issueDate == "") {
+                alert("请输入" + bp.name + "的发标日期。");
+                return false;
+            }
+            if (bp.openingDate == "") {
+                alert("请输入" + bp.name + "的开标日期。");
+                return false;
+            }
+             if (bp.timeAndPlace == "") {
+                alert("请输入" + bp.name + "的评标时间地点。");
+                return false;
+            }
+             if (bp.finalBiddingDoc == null) {
+                alert("请上传" + bp.name + "的招标文件最终版。");
+                return false;
+            }
+             if (bp.biddingNotice == null) {
+                alert("请上传" + bp.name + "的发标公告。");
+                return false;
+            }
+             if (bp.biddingFaq == null) {
+                alert("请上传" + bp.name + "的招标答疑。");
+                return false;
+            }
+             if (bp.overviewSheet == null) {
+                alert("请上传" + bp.name + "的开标一览表。");
+                return false;
+            }
+            if (bp.tenders.length == 0) {
+                alert("请输入" + bp.name + "的招投标记录。");
+                return false;
+            }
+        }
+        ibs.updateBidOpeningTable();
+        ibs.saveBidPackages();
+
+        return true;
+    },
+
+    // 保存招投标子表
+    saveBidPackages: function() {
+        $.post(
+            "/Portal/Sheets/bidding/InviteBidsHandler.ashx",
+            {
+                Command: "SaveBidPackages",
+                parent_object_id: ibs._sheetInfo.BizObjectID,
+                jvalue: JSON.stringify(ibs._bidPackages)
+            },
+            function(data) {
+            }
+        );
+    },
+
+    // 更新招投标记录子表
+    updateBidOpeningTable: function() {
+        var tbl = $("#Control31").SheetUIManager();
+        tbl._Clear();
+        for (var i = 0; i < ibs._bidPackages.length; i++) {
+            var bp = ibs._bidPackages[i];
+            tbl._AddRow();
+            $.MvcSheetUI.SetControlValue("BidOpening.IssueDate", bp.issueDate, i + 1);
+            $.MvcSheetUI.SetControlValue("BidOpening.OpeningDate", bp.openingDate, i + 1);
+            $.MvcSheetUI.SetControlValue("BidOpening.TimeAndPlace", bp.timeAndPlace, i + 1);
+            $.MvcSheetUI.SetControlValue("BidOpening.FinalBiddingDoc", bp.finalBiddingDoc, i + 1);
+            $.MvcSheetUI.SetControlValue("BidOpening.BiddingNotice", bp.biddingNotice, i + 1);
+            $.MvcSheetUI.SetControlValue("BidOpening.BiddingFaq", bp.biddingFaq, i + 1);
+            $.MvcSheetUI.SetControlValue("BidOpening.OverviewSheet", bp.overviewSheet, i + 1);
+            $.MvcSheetUI.SetControlValue("BidOpening.PackageName", bp.name, i + 1);
+        }
+    },
+
+    // 更新开投标表单值
+    updateBidPackageValues: function() {
+        $("#BOWrap>div.tab-content>div.data").each(function() {
+            var idx = $(this).attr("id").substring(5) - 1;
+            var bp = ibs._bidPackages[idx];
+            bp.issueDate = $("#Control35", this).val();
+            bp.openingDate = $("#Control36", this).val();
+            bp.timeAndPlace = $("#Control37", this).val();
+            bp.finalBiddingDoc = $("#FinalBiddingDoc", this).xnfile("value");
+            bp.biddingNotice = $("#BiddingNotice", this).xnfile("value");
+            bp.biddingFaq = $("#BiddingFaq", this).xnfile("value");
+            bp.overviewSheet = $("#BidOpeningOverviewSheet", this).xnfile("value");
+            bp.name = "包" + (idx + 1);
+        });
+    },
+
+    // 选中开标包下标
+    getActiveBidPackageIndex: function() {
+        var tab = $("#BOWrap>div.tab-content>div.active");
+        if (tab != undefined) {
+            return tab.attr("id").substring(5) - 1;
+        }
+        return -1;
+    },
+
+    // 增加开标包
+    onAddBidPackage: function() {
+        ibs._bidPackageCount++;
+        ibs._bidPackages.push({
+            issueDate: "",
+            tenders: [],
+            openingDate: "",
+            timeAndPlace: "",
+            finalBiddingDoc: null,
+            biddingNotice: null,
+            biddingFaq: null,
+            overviewSheet: null,
+            name: ""
+        });
+        var tp = $("#BOWrap>div.template").clone();
+        tp.attr("id", "BPTab" + ibs._bidPackageCount)
+            .removeClass("template")
+            .addClass("data");
+        $("div", tp).removeAttr("style", "display:none");
+        $("#BOWrap>div.tab-content").append(tp);
+        $("#FinalBiddingDoc", tp).xnfile();
+        $("#BiddingNotice", tp).xnfile();
+        $("#IssueBiddingNoticeButton", tp).click(ibs.requestBiddingNoticeAudit);
+        $("#BiddingFaq", tp).xnfile();
+        $("#BidOpeningOverviewSheet", tp).xnfile();
+        $("#AddBiddingRecordButton", tp).click(function() {
+            $("#BiddingRecordForm").modal("toggle");
+            $("#BiddingRecordForm div").removeAttr("style", "display:none");
+            $("#BiddingRecordForm #BiddingDocPurchaseRecord").xnfile();
+            $("#BiddingRecordForm #TenderDoc").xnfile();
+            $("#BiddingRecordForm #Receipts").xnfile();
+        });
+        $("#PrintBiddingRecordsButton", tp).click(ibs.onPrintBiddingRecords);
+
+        $("#BOWrap>ul").prepend("<li role=\"presentation\"><a href=\"#BPTab"
+            + ibs._bidPackageCount
+            + "\" role=\"tab\" aria-controls=\"BPTab"
+            + ibs._bidPackageCount
+            + "\" data-toggle=\"tab\">包"
+            + ibs._bidPackageCount
+            + "</a></li>");
+        if (ibs._bidPackageCount == 1) {
+            $("#BOWrap>ul>li:first").addClass("active");
+            $("#BOWrap>div.tab-content>div.tab-pane").addClass("active");
+        }
+    },
+
+    onPrintBiddingRecords: function() {
+        var idx = ibs.getActiveBidPackageIndex();
+        var jsonValue = JSON.stringify(ibs._bidPackages[idx].tenders);
+        var url = "/Portal/MvcDefaultSheet.aspx?SheetCode=SPrintBiddingRecords"
+            + "&Mode=Originate&WorkflowCode=PrintBiddingRecords"
+            + "&WorkflowVersion=" + ibs._workflowVersion["PrintBiddingRecords"]
+            + "&JsonValue=" + jsonValue;
+        window.location.href = url;
+        window.event.returnValue = false;
+    },
+
+    // 删除当前开标包
+    onRemoveActiveBidPackage: function() {
+        var li = $("#BOWrap>ul>li.active");
+        if (li != undefined) {
+            var idx = ibs.getActiveBidPackageIndex();
+            $("#BOWrap>ul>li").each(function() {
+                if ($(this).attr("role") == "presentation" && $(this).hasClass("active")) {
+                    $(this).remove();
+                } 
+            });
+            $("#BOWrap>div.tab-content>div.active").remove();
+            ibs._bidPackages.splice(idx, 1);
+            ibs._bidPackageCount--;
+        }
+        ibs.renameBidPackageTabs();
+    },
+
+    renameBidPackageTabs: function() {
+        var idx = 1;
+        $("#BOWrap>ul>li").each(function() {
+            if ($(this).attr("role") == "presentation") {
+                $("a", this).attr("href", "#BPTab" + idx);
+                $("a", this).text("包" + idx);
+                if (idx == 1) {
+                    $(this).addClass("active");
+                }
+                idx++;
+            }
+        })
+        idx = 1;
+        $("#BOWrap>div.tab-content>div").each(function() {
+            $(this).attr("id", "BPTab" + idx);
+            if (idx == 1) 
+                $(this).addClass("active");
+            idx++;
+        })
+    },
+
+    // 招投标记录/增加投标人
+    onAddTender: function() {
+        var tr = $("#BiddingRecordForm #Tender tr.template").clone(true);
+        tr.removeClass("template").removeAttr("style", "display:none").addClass("data");
+        $("#BiddingRecordForm #Tender>tbody").append(tr);
+        ibs.initSelect($("#Country", tr), ibs._countries);
+        if ($.MvcSheetUI.GetControlValue("BiddingScope") == "国内") {
+            $("#Country", tr).val("CN");
+        }
+        ibs.initSelect($("#CashUnit", tr), ibs._cashTypies);
+        $("#DeleteMe", tr).click(function() {
+            $(this).closest("tr").remove();
+        });
+    },
+
+    // 招投标记录/保存投标人
+    onSaveBiddingRecord: function() {
+        var rec = ibs.createBiddingRecord();
+        if (ibs.validateBiddingRecord(rec)) {
+            var idx = ibs.getActiveBidPackageIndex();
+            ibs._bidPackages[idx].tenders.push(rec);
+            $("#BiddingRecordForm").modal("hide");
+            ibs.updateBiddingRecords();
+        }
+    },
+
+    // 招投标记录/更新投标人
+    onUpdateBiddingRecord: function() {
+        var rec = ibs.createBiddingRecord();
+        if (ibs.validateBiddingRecord(rec)) {
+            var idx = ibs.getActiveBidPackageIndex();
+            ibs._bidPackages[idx].tenders[ibs._editBiddingRecordIndex] = rec;
+            ibs.updateBiddingRecords();
+            $("#BiddingRecordForm").modal("hide");
+        }
+    },
+
+    // 创建招投标记录对象
+    createBiddingRecord: function() {
+        var tenders = [];
+        $("#BiddingRecordForm #Tender tr.data").each(function() {
+            var tender = {
+                name: $("#Name", this).val(),
+                country: $("#Country", this).val(),
+                cashType: $("#CashType", this).val(),
+                cash: $("#Cash", this).val(),
+                cashUnit: $("#CashUnit", this).val()
+            };
+            tenders.push(tender);
+        });
+        var record = {
+            address: $("#BiddingRecordForm #Address").val(),
+            contact: $("#BiddingRecordForm #Contact").val(),
+            telephone: $("#BiddingRecordForm #Telephone").val(),
+            mobilePhone: $("#BiddingRecordForm #MobilePhone").val(),
+            fax: $("#BiddingRecordForm #Fax").val(),
+            email: $("#BiddingRecordForm #Email").val(),
+            bidPrice1: $("#BiddingRecordForm #BidPrice1").val(),
+            bidPrice1Unit: $("#BiddingRecordForm #BidPrice1Unit").val(),
+            bidPrice2: $("#BiddingRecordForm #BidPrice2").val(),
+            bidPrice2Unit: $("#BiddingRecordForm #BidPrice2Unit").val(),
+            supplier: $("#BiddingRecordForm #Supplier").val(),
+            supplierCountry: $("#BiddingRecordForm #SupplierCountry").val(),
+            biddingDocPurchaseRecord: $("#BiddingRecordForm #BiddingDocPurchaseRecord").xnfile("value"),
+            tenderDoc: $("#BiddingRecordForm #TenderDoc").xnfile("value"),
+            receipts: $("#BiddingRecordForm #Receipts").xnfile("value"),
+            remark: $("#BiddingRecordForm #Remark").val(),
+            tenders: tenders
+         };
+         return record;
+    },
+
+    // 校验招投标记录格式
+    validateBiddingRecord: function(rec) {
+        if (rec.tenders.length == 0) {
+            alert("缺少投标人。");
+            return false;
+        }
+        for (var i = 0; i < rec.tenders.length; i++) {
+            if (rec.tenders[i].name === "") {
+                alert("投标人名称不能为空。");
+                return false;
+            }
+        }
+        if (rec.address === "") {
+            alert("地址不能为空。");
+            return false;
+        }
+        if (rec.contact === "") {
+            alert("联系人不能为空。");
+            return false;
+        }
+         if (rec.supplier === "") {
+            alert("供应商不能为空。");
+            return false;
+        }
+         if (rec.biddingDocPurchaseRecord == null) {
+            alert("招标文件购买记录表未上传。");
+            return false;
+        }
+         if (rec.tenderDoc == null) {
+            alert("投标文件未上传。");
+            return false;
+        }
+         if (rec.receipts == null) {
+            alert("单据文件未上传。");
+            return false;
+        }
+        return true;
+    },
+
+    // 发标开标/更新招投标记录
+    updateBiddingRecords: function() {
+        var pane = $("#BOWrap>div.tab-content>div.active");
+        $("#BiddingRecords>tbody", pane).empty();
+        var idx = ibs.getActiveBidPackageIndex();
+        for (var i = 0; i < ibs._bidPackages[idx].tenders.length; i++) {
+            var br = ibs._bidPackages[idx].tenders[i];
+            var html = "<table><tbody>";
+            for (var j = 0; j < br.tenders.length; j++) {
+                html += "<tr><td>"
+                    + br.tenders[j].name
+                    + "</td><td>"
+                    + br.tenders[j].cashType
+                    + br.tenders[j].cash
+                    + br.tenders[j].cashUnit
+                    + "</td></tr>";
+            }
+            html += "</tbody></table>";
+            $("#BiddingRecords>tbody", pane).append(
+                "<tr><td>"
+                + (i + 1)
+                + "</td><td>"
+                + html
+                + "</td><td>"
+                + br.bidPrice1 + br.bidPrice1Unit + "<br>"
+                + br.bidPrice2 + br.bidPrice2Unit
+                + "</td><td>"
+                + "<button type=\"button\" class=\"btn btn-default\" onclick=\"ibs.onEditBiddingRecord(" + j + ")\">编辑</button>"
+                + "<button type=\"button\" class=\"btn btn-default\" onclick=\"ibs.onDeleteBiddingRecord(this, "
+                    + j + ")\">删除</button>"
+                + "</td></tr>"
+            );
+        }
+    },
+
+    // 编辑招投标记录
+    onEditBiddingRecord: function(idx) {
+        ibs._editBiddingRecordIndex = idx;
+        var i = ibs.getActiveBidPackageIndex();
+        ibs.showBiddingRecord(ibs._bidPackages[i].tenders[idx]);
+    },
+
+    // 初始化并弹出招投标记录对话框
+    showBiddingRecord: function(rec) {
+         $("#BiddingRecordForm").modal("show");
+         $("#BiddingRecordForm div.row").removeAttr("style", "display:none");
+         $("#BiddingRecordForm #Tender>tbody>tr.data").remove();
+         for (var i = 0; i < rec.tenders.length; i++) {
+             var tr = $("#BiddingRecordForm #Tender tr.template").clone(true);
+             tr.removeClass("template").removeAttr("style", "display:none").addClass("data");
+             $("#BiddingRecordForm #Tender>tbody").append(tr);
+             ibs.initSelect($("#Country", tr), ibs._countries);
+             ibs.initSelect($("#CashUnit", tr), ibs._cashTypies);
+             $("#Name", tr).val(rec.tenders[i].name);
+             $("#Country", tr).val(rec.tenders[i].country);
+             $("#CashType", tr).val(rec.tenders[i].cashType);
+             $("#Cash", tr).val(rec.tenders[i].cash);
+             $("#CashUnit", tr).val(rec.tenders[i].cashUnit);
+             $("#DeleteMe", tr).click(function() {
+                 $(this).closest("tr").remove();
+             });
+         }
+         $("#BiddingRecordForm #Address").val(rec.address);
+         $("#BiddingRecordForm #Contact").val(rec.contact);
+         $("#BiddingRecordForm #Telephone").val(rec.telephone);
+         $("#BiddingRecordForm #MobilePhone").val(rec.mobilePhone);
+         $("#BiddingRecordForm #Fax").val(rec.fax);
+         $("#BiddingRecordForm #Email").val(rec.email);
+         $("#BiddingRecordForm #BidPrice1").val(rec.bidPrice1);
+         $("#BiddingRecordForm #BidPrice1Unit").val(rec.bidPrice1Unit);
+         $("#BiddingRecordForm #BidPrice2").val(rec.bidPrice2);
+         $("#BiddingRecordForm #BidPrice2Unit").val(rec.bidPrice2Unit);
+         $("#BiddingRecordForm #Supplier").val(rec.supplier);
+         $("#BiddingRecordForm #SupplierCountry").val(rec.supplierCountry);
+         $("#BiddingRecordForm #BiddingDocPurchaseRecord").xnfile();
+         $("#BiddingRecordForm #BiddingDocPurchaseRecord").xnfile("value", rec.biddingDocPurchaseRecord);
+         $("#BiddingRecordForm #TenderDoc").xnfile();
+         $("#BiddingRecordForm #TenderDoc").xnfile("value", rec.tenderDoc);
+         $("#BiddingRecordForm #Receipts").xnfile();
+         $("#BiddingRecordForm #Receipts").xnfile("value", rec.receipts);
+         $("#BiddingRecordForm #Remark").val(rec.remark);
+         $("#BiddingRecordForm #SaveBiddingRecordButton").hide();
+         $("#BiddingRecordForm #UpdateBiddingRecordButton").show();
+    },
+
+     // 删除招投标记录
+    onDeleteBiddingRecord: function(src, idx) {
+        $(src).closest("tr").remove();
+        var i = ibs.getActiveBidPackageIndex();
+        ibs._bidPackages[i].tenders.splice(idx, 1);
+    },
+
+    // 更新开标投标表单
+    updateBidPackages: function() {
+        for (var i = 0; i < ibs._bidPackages.length; i++) {
+            var bp = ibs._bidPackages[i];
+            var tp = $("#BOWrap>div.template").clone();
+            tp.attr("id", "BPTab" + (i + 1))
+                .removeAttr("style", "display:none")
+                .removeClass("bo")
+                .addClass("data");
+            $("div", tp).removeAttr("style", "display:none");
+            $("#BOWrap>div.tab-content").append(tp);
+            $("#Control35", tp).val(bp.issueDate);
+            $("#Control36", tp).val(bp.openingDate);
+            $("#Control37", tp).val(bp.timeAndPlace);
+            $("#FinalBiddingDoc", tp).xnfile();
+            $("#FinalBiddingDoc", tp).xnfile("value", bp.finalBiddingDoc);
+            $("#BiddingNotice", tp).xnfile();
+            $("#BiddingNotice", tp).xnfile("value", bp.biddingNotice);
+            $("#IssueBiddingNoticeButton", tp).click(ibs.requestBiddingNoticeAudit);
+            $.getJSON("/Portal/Sheets/bidding/InviteBidsHandler.ashx?command=GetBiddingNoticeAudits&object_id=" 
+                + ibs._sheetInfo.BizObjectID 
+                + "&package_name=包" + (i + 1), 
+                function(data) {
+                    if (data.length > 0) {
+                        var canSubmit = true;
+                        var table = $("#bidding-notice-audit-state");
+                        for (var i = 0; i < data.length; i++) {
+                            var tr = $("tr.template", table).clone();
+                            tr.removeClass("template").removeAttr("style", "display:none");
+                            $("#originator", tr).text(data[i].originatorName);
+                            $("#request-time", tr).text(data[i].startTime);
+                            $("#state", tr).text(data[i].state);
+                            $("tbody", table).append(tr);
+                            if (data[i].state == "审批") {
+                                canSubmit = false;
+                            }
+                        }
+                        $("#IssueBiddingNoticeButton").hide();
+                        if (!canSubmit) {
+                            $("li[data-action='Submit']").hide();
+                        }
+                    }
+                }
+            );
+
+            $("#BiddingFaq", tp).xnfile();
+            $("#BiddingFaq", tp).xnfile("value", bp.biddingFaq);
+            $("#BidOpeningOverviewSheet", tp).xnfile();
+            $("#BidOpeningOverviewSheet", tp).xnfile("value", bp.overviewSheet);
+            $("#AddBiddingRecordButton", tp).click(function() {
+                $("#BiddingRecordForm").modal("show");
+                $("#BiddingRecordForm div").removeAttr("style", "display:none");
+                $("#BiddingRecordForm #SaveBiddingRecordButton").show();
+                $("#BiddingRecordForm #UpdateBiddingRecordButton").hide();
+                $("#BiddingRecordForm #BiddingDocPurchaseRecord").xnfile();
+                $("#BiddingRecordForm #TenderDoc").xnfile();
+                $("#BiddingRecordForm #Receipts").xnfile();
+                $("#BiddingRecordForm #SaveBiddingRecordButton").show();
+                $("#BiddingRecordForm #UpdateBiddingRecordButton").hide();
+            });
+            $("#BOWrap>ul").prepend("<li role=\"presentation\"><a href=\"#BPTab"
+                + (i + 1)
+                + "\" role=\"tab\" aria-controls=\"BPTab"
+                + (i + 1)
+                + "\" data-toggle=\"tab\">包"
+                + (i + 1)
+                + "</a></li>");
+            if (i == 0) {
+                $("#BOWrap>ul>li:first").addClass("active");
+                $("#BOWrap>div.tab-content>div.tab-pane").addClass("active");
+            }
+
+            for (var j = 0; j < bp.tenders.length; j++) {
+                var br = bp.tenders[j];
+                var html = "<table><tbody>";
+                for (var k = 0; k < br.tenders.length; k++) {
+                    html += "<tr><td>"
+                        + br.tenders[k].name
+                        + "</td><td>"
+                        + br.tenders[k].cashType
+                        + br.tenders[k].cash
+                        + br.tenders[k].cashUnit
+                        + "</td></tr>";
+                }
+                html += "</tbody></table>";
+                $("#BiddingRecords>tbody", tp).append(
+                    "<tr><td>"
+                    + (j + 1)
+                    + "</td><td>"
+                    + html
+                    + "</td><td>"
+                    + br.bidPrice1 + br.bidPrice1Unit + "<br>"
+                    + br.bidPrice2 + br.bidPrice2Unit
+                    + "</td><td>"
+                    + "<button type=\"button\" class=\"btn btn-default\" onclick=\"ibs.onEditBiddingRecord(" + i + ")\">编辑</button>"
+                    + "<button type=\"button\" class=\"btn btn-default\" onclick=\"ibs.onDeleteBiddingRecord(this, "
+                        + j + ")\">删除</button>"
+                    + "</td></tr>"
+                );
+            }
+            $("#PrintBiddingRecordsButton", tp).click(ibs.onPrintBiddingRecords);
+        }
+    },
+
+    // 发起招标公告审批流程
+    requestBiddingNoticeAudit: function() {
+        var file = $("#BiddingNotice").xnfile("value");
+        if (file == null) {
+            alert("请上传招标公告。如已上传，请先保存表单。");
+            return ;
+        }
+        var managerA = $.MvcSheetUI.GetControlValue("ManagerA");
+        var managerB = $.MvcSheetUI.GetControlValue("ManagerB");
+        var packageName = $("#BOWrap>ul>li.active>a").text();
+        var projectName = $.MvcSheetUI.GetControlValue("ProjectName");
+        var url = "/Portal/Sheets/bidding/BiddingNoticeAudit.aspx?Mode=Originate"
+            + "&WorkflowCode=BiddingNotice"
+            + "&WorkflowVersion=" + ibs._workflowVersion["BiddingNotice"] 
+            + "&IssueObjectId=" 
+            + ibs._sheetInfo.BizObjectID
+            + "&ManagerA=" + managerA
+            + "&ManagerB=" + managerB
+            + "&ProjectName=" + projectName
+            + "&PackageName=" + packageName
+            + "&BiddingNotice=" + file
+            + "&T=" + Math.random();
+        window.location.href = url;
+        window.event.returnValue = false;
+    },
+
+    // =======================================================================
+    // 
+    // 评标
+    //
+    // =======================================================================
+
+    _evaluationData: null,
+
+    initEvaluationForm: function() {
+        $("#RequestBiddingCodeButton").hide();
+        ibs.initOpeningForm();
+        $("#bid-evaluation").show();
+        $("#refund").hide();
+        $("#file").hide();
+        ibs._expertTarget = "评标";
+    },
+
+    setOpeningFormReadlyonly: function() {
+        if (ibs._sheetInfo.ActivityCode == "OpeningActivity")
+            return ;
+        $("#BOWrap>ul>li.add").hide();
+        $("#BOWrap>ul>li.remove").hide();
+        $("#BOWrap input").attr("readonly", "readonly").removeAttr("style", "display:none");
+        $("#BOWrap button").each(function() {
+            if ($(this).text() == "删除" || $(this).text() == "增加" || $(this).text() == "发起公告") {
+                $(this).hide();
+            }
+        });
+        $("#BOWrap span").removeAttr("style", "display:none");
+        if (ibs._sheetInfo.ActivityCode != "EvaluationActivity")
+            ibs.setEvaluationReadonly();
+    },
+
+    setEvaluationReadonly: function() {
+        $("#bid-evaluation input").attr('readonly', "readonly").removeAttr("style", "display:none");
+        $("#bid-evaluation select").attr('disabled', "disabled");
+        $("#bid-evaluation span").removeAttr("style", "display:none");
+        setTimeout(function() {
+            $("#bid-evaluation button").each(function() {
+                if ($(this).text() == "选择" || $(this).text() == "删除" || $(this).text() == "增加中标价" || $(this).text() == "-") {
+                    $(this).hide();
+                }
+            });
+        }, 3000);
+    },
+
+    // 根据子表创建评标表单
+    buildBidEvaluationForm: function() {
+        ibs.setOpeningFormReadlyonly();
+        var table = $("#ctl358014").SheetUIManager();
+        if (table.RowCount > 0) {
+            var v = table.GetValue();
+            for (var i = 0; i < v.length; i++) {
+                $("#be-wrap>ul").prepend("<li role=\"presentation\"><a href=\"#be-tab"
+                + (i + 1)
+                + "\" role=\"tab\" aria-controls=\"be-tab"
+                + (i + 1)
+                + "\" data-toggle=\"tab\">包"
+                + (i + 1)
+                + "</a></li>");
+    
+                var tp = $("#be-wrap>div.template").clone();
+                tp.attr("id", "be-tab" + (i + 1))
+                    .removeAttr("style", "display:none")
+                    .removeClass("template")
+                    .addClass("data");
+                $("div", tp).removeAttr("style", "display:none");
+                $("#be-wrap>div.tab-content").append(tp);
+                $("#add-to-db", tp).click(ibs.onAddWinnerToDB);
+                $("#evaluation-report", tp).xnfile();
+                $("#evaluation-report", tp).xnfile("value", v[i].EvaluationReport);
+                $("#clarification", tp).xnfile();
+                $("#clarification", tp).xnfile("value", v[i].Clarification);
+                $("#notice-screenshot", tp).xnfile();
+                $("#notice-screenshot", tp).xnfile("value", v[i].PublicityScreenShot);
+                $("#Control46", tp).val(v[i].PublicityDate);
+                $("#owner-comment", tp).xnfile();
+                $("#owner-comment", tp).xnfile("value", v[i].OwnerComment);
+                $("#AddTenderPriceButton", tp).click(ibs.onAddTenderPrice);
+                ibs.loadTenderPrices(ibs._sheetInfo.BizObjectID, "包" + (i + 1), tp);
+                $("#select-expert-btn", tp).click(function() {
+                    $("#QueryExpertsForm").modal("show");
+                    $("#QueryExpertsForm div.row").removeAttr("style", "display:none");
+                });
+                (function(winner, panel) {
+                    $.getJSON(
+                        "/Portal/Sheets/bidding/InviteBidsHandler.ashx",
+                        {
+                            Command: "LoadTenders2",
+                            objectId: ibs._sheetInfo.BizObjectID,
+                            packageName: "包" + (i + 1), 
+                        },
+                        function(data) {
+                            $("#winner", panel).each(function() {
+                                ibs.initSelect($(this), data);
+                                $(this).val(winner);
+                            });
+                        }
+                    );
+                })(v[i].BidWinner, tp);
+                (function(panel) {
+                    $.getJSON(
+                        "/Portal/Sheets/bidding/InviteBidsHandler.ashx",
+                        {
+                            Command: "LoadAuditExpert",
+                            ParentObjectId: ibs._sheetInfo.BizObjectID,
+                            PackageName: "包" + (i + 1), 
+                        },
+                        function(data) {
+                            var table = $("#evaluation-expert-table", panel);
+                            if (data.length > 0) {
+                                for (var i = 0; i < data.length; i++) {
+                                    var tr = $("tr.template", table).clone();
+                                    tr.removeClass("template").addClass("data");
+                                    $(".name", tr).text(data[i].name);
+                                    $(".company", tr).text(data[i].company);
+                                    $(".mobile-phone", tr).text(data[i].mobilePhone);
+                                    $("tbody", table).append(tr);
+                                }
+                            }
+                       }
+                    );
+                })(tp);
+                    
+                if (i == 0) {
+                    $("#be-wrap>ul>li:first").addClass("active");
+                    $("#be-wrap>div.tab-content>div.tab-pane").addClass("active");
+                }                   
+            }
+        }
+    },
+
+    // 根据开标发标数据创建评标表单
+    createBidEvaluationForm: function() {
+        ibs.setOpeningFormReadlyonly();
+        for (var i = 0; i < ibs._bidPackages.length; i++) {
+            $("#be-wrap>ul").prepend("<li role=\"presentation\"><a href=\"#be-tab"
+            + (i + 1)
+            + "\" role=\"tab\" aria-controls=\"be-tab"
+            + (i + 1)
+            + "\" data-toggle=\"tab\">包"
+            + (i + 1)
+            + "</a></li>");
+
+            var tp = $("#be-wrap>div.template").clone();
+            tp.attr("id", "be-tab" + (i + 1))
+                .removeAttr("style", "display:none")
+                .removeClass("template")
+                .addClass("data");
+            $("div", tp).removeAttr("style", "display:none");
+            $("#be-wrap>div.tab-content").append(tp);
+            $("#add-to-db", tp).click(ibs.onAddWinnerToDB);
+            $("#evaluation-report", tp).xnfile();
+            $("#clarification", tp).xnfile();
+            $("#notice-screenshot", tp).xnfile();
+            $("#owner-comment", tp).xnfile();
+            $("#AddTenderPriceButton", tp).click(ibs.onAddTenderPrice);
+            $("#select-expert-btn", tp).click(function() {
+                $("#QueryExpertsForm").modal("show");
+                $("#QueryExpertsForm div.row").removeAttr("style", "display:none");
+            });
+            $.getJSON(
+                "/Portal/Sheets/bidding/InviteBidsHandler.ashx",
+                {
+                    Command: "LoadTenders2",
+                    objectId: ibs._sheetInfo.BizObjectID,
+                    packageName: "包" + (i + 1), 
+                },
+                function(data) {
+                    $("#be-wrap>div.tab-content #winner").each(function() {
+                        ibs.initSelect($(this), data);
+                    });
+                }
+            );
+        
+            if (i == 0) {
+                $("#be-wrap>ul>li:first").addClass("active");
+                $("#be-wrap>div.tab-content>div.tab-pane").addClass("active");
+            }
+        }
+    },
+
+    onAddWinnerToDB: function() {
+        var idx = ibs.getActiveEvaluationIndex();
+        var packageName = "包" + idx;
+        var tenderName = $(this).prev().val();
+        alert(packageName + ", " + tenderName);
+    },
+
+    onAddTenderPrice: function() {
+        var table = $("#be-wrap>div.tab-content>div.active #tender-price");
+        $("tr.template", table).each(function() {
+            var tr = $(this).clone();
+            $(tr).removeClass("template").addClass("data");
+            $("tbody", table).append(tr);
+            $(".remove-me", tr).click(function() {
+                var tr = $(this).closest("tr");
+                tr.next().remove();
+                tr.remove();
+                ibs.onBiddingPriceChanged();
+            });
+            ibs.initSelect($("#price1-unit", tr), ibs._cashTypies);
+            ibs.initSelect($("#price2-unit", tr), ibs._cashTypies);
+            $.getJSON(
+                "/Portal/Sheets/bidding/InviteBidsHandler.ashx",
+                {
+                    Command: "LoadAgencyAgreement"
+                },
+                function(data) {
+                    ibs.initSelect($("#associated-agreement", tr), data);
+                }
+            );
+        });
+        ibs.bindBiddingPriceChangeEvent();
+    },
+
+    onBiddingPriceChanged: function() {
+        var total = idx = 0;
+        $("#be-wrap>div.tab-content>div #tender-price>tbody>tr.data").each(function() {
+            if (idx % 2 == 0) {
+                total += ibs.parseInt($("#price1", this).val()) * ibs.parseFloat($("#exchange-rate1", this).val());
+            }
+            else {
+                total += ibs.parseInt($("#price2", this).val()) * ibs.parseFloat($("#exchange-rate2", this).val());
+            }
+            idx++;
+        });
+        $("#total-bidding-price").text(total);
+    },
+
+    bindBiddingPriceChangeEvent: function() {
+        $("#be-wrap>div.tab-content>div #tender-price>tbody>tr.data").each(function() {
+            $("#price1", this).unbind().change(ibs.onBiddingPriceChanged);
+            $("#price2", this).unbind().change(ibs.onBiddingPriceChanged);
+            $("#exchange-rate1", this).unbind().change(ibs.onBiddingPriceChanged);
+            $("#exchange-rate2", this).unbind().change(ibs.onBiddingPriceChanged);
+        });
+    },
+
+    getActiveEvaluationIndex: function() {
+        return $("#be-wrap>ul>li.active>a").text().substring(1);
+    },
+
+    validateEvaluationForm: function() {
+        var v = ibs.createEvaluationData();
+        for (var i = 0; i < v.length; i++) {
+            if (v[i].evaluationReport == "") {
+                alert("请上传评标报告。");
+                return false;
+            }
+            if (v[i].clarification == "") {
+                alert("请上传澄清。");
+                return false;
+            }
+            if (v[i].ownerComment == "") {
+                alert("请上传评标结果业主批复。");
+                return false;
+            }
+            if (v[i].publicityDate == "") {
+                alert("请选择公示日期。");
+                return false;
+            }
+            if (v[i].noticeScreenshot == "") {
+                alert("请上传公示截屏。");
+                return false;
+            }
+            if (v[i].tenderPrices.length == 0) {
+                alert("中标价至少要有一条。");
+                return false;
+            }
+        }
+
+        ibs._evaluationData = v;
+        ibs.updateBiddingEvaluationValue();
+        ibs.saveTenderPrices();
+        
+        return true;
+    },
+
+    createEvaluationData: function() {
+        var data = [];
+        $("#be-wrap>div.tab-content>div.data").each(function() {
+            var ev = {
+                evaluationReport: $("#evaluation-report", this).xnfile("value"),
+                bidWinner: $("#winner", this).val(),
+                clarification: $("#clarification", this).xnfile("value"),
+                ownerComment: $("#owner-comment", this).xnfile("value"),
+                publicityDate: $("#Control46", this).val(),
+                noticeScreenshot: $("#notice-screenshot", this).xnfile("value"),
+                packageName: "包" + $(this).attr("id").substring(6),
+                tenderPrices: [],
+                auditExperts: []
+            };
+            var idx = 0;
+            var priceClass = {
+                price1: 0,
+                price1Unit: "",
+                exchangeRate1: 1,
+                associatedAgreement: "",
+                price2: 0,
+                price2Unit: "",
+                exchangeRate2: 0,
+                agencyFeeType: 0,
+            };
+            $("#tender-price>tbody>tr.data", this).each(function() {
+                if (idx % 2 == 0) {
+                    price = Object.assign({}, priceClass);
+                    price.price1 = $("#price1", this).val();
+                    price.price1Unit = $("#price1-unit", this).val();
+                    price.exchangeRate1 = $("#exchange-rate1", this).val();
+                    price.associatedAgreement = $("#associated-agreement", this).val();
+                }
+                else {
+                    price.price2 = $("#price2", this).val();
+                    price.price2Unit = $("#price2-unit", this).val();
+                    price.exchangeRate2 = $("#exchange-rate2", this).val();
+                    price.agencyFeeType = $("select[name=agency-fee-type]", this).val();
+                    ev.tenderPrices.push(price);
+                }
+                idx++;
+            });
+            $("#evaluation-expert-table>tbody>tr.data", this).each(function() {
+                var expert = {
+                    name: $(".name", this).text(),
+                    company: $(".company", this).text(),
+                    mobilePhone: $(".mobile-phone", this).text()
+                };
+                ev.auditExperts.push(expert);
+            });
+            data.push(ev);
+        });
+
+        return data;
+    },
+
+    updateBiddingEvaluationValue: function() {
+        var table = $("#ctl358014").SheetUIManager();
+        table._Clear();
+        for (var i = 0; i < ibs._evaluationData.length; i++) {
+            var v = ibs._evaluationData[i];
+            table._AddRow();
+            $.MvcSheetUI.SetControlValue("BiddingEvaluation.EvaluationReport", v.evaluationReport, i + 1);
+            $.MvcSheetUI.SetControlValue("BiddingEvaluation.BidWinner", v.bidWinner, i + 1);
+            $.MvcSheetUI.SetControlValue("BiddingEvaluation.Clarification", v.clarification, i + 1);
+            $.MvcSheetUI.SetControlValue("BiddingEvaluation.PublicityDate", v.publicityDate, i + 1);
+            $.MvcSheetUI.SetControlValue("BiddingEvaluation.PublicityScreenShot", v.noticeScreenshot, i + 1);
+            $.MvcSheetUI.SetControlValue("BiddingEvaluation.PackageName", v.packageName, i + 1);
+            $.MvcSheetUI.SetControlValue("BiddingEvaluation.OwnerComment", v.ownerComment, i + 1);
+        }
+    },
+
+    saveTenderPrices: function() {
+        for (var i = 0; i < ibs._evaluationData.length; i++) {
+            var ev = ibs._evaluationData[i];
+            $.post(
+                "/Portal/Sheets/bidding/InviteBidsHandler.ashx",
+                {
+                    Command: "SaveTenderPrice",
+                    object_id: ibs._sheetInfo.BizObjectID,
+                    package_name: ev.packageName,
+                    data: JSON.stringify(ev.tenderPrices)
+                },
+                function() {}
+            );
+            $.post(
+                "/Portal/Sheets/bidding/InviteBidsHandler.ashx",
+                {
+                    Command: "SaveAuditExpert",
+                    ParentObjectId: ibs._sheetInfo.BizObjectID,
+                    PackageName: ev.packageName,
+                    Data: JSON.stringify(ev.auditExperts)
+                },
+                function() {}
+            );
+        }
+    },
+
+    loadTenderPrices: function(parentObjectId, packageName, panel) {
+        var _panel = panel;
+        $.getJSON(
+            "/Portal/Sheets/bidding/InviteBidsHandler.ashx",
+            {
+                Command: "LoadTenderPrice",
+                ParentObjectId: parentObjectId,
+                PackageName: packageName
+            },
+            function(data) {
+                var table = $("#tender-price", _panel);
+                var idx = 0;
+                if (data.length > 0) {
+                    for (var i = 0; i < data.length; i++) {
+                        $("tr.template", table).each(function() {
+                            var tr = $(this).clone();
+                            $(tr).removeClass("template").addClass("data");
+                            $("tbody", table).append(tr);
+                            if (idx % 2 == 0) {
+                                $("#price1", tr).val(data[i].price1);
+                                ibs.initSelect($("#price1-unit", tr), ibs._cashTypies);
+                                $("#price1-unit", tr).val(data[i].price1Unit);
+                                $("#exchange-rate1", this).val(data[i].exchangeRate1);
+                                $("#associated-agreement").val();
+                                (function(agreement) {
+                                    $.getJSON(
+                                        "/Portal/Sheets/bidding/InviteBidsHandler.ashx",
+                                        {
+                                            Command: "LoadAgencyAgreement"
+                                        },
+                                        function(data) {
+                                            ibs.initSelect($("#associated-agreement", tr), data);
+                                            $("#associated-agreement", tr).val(agreement);
+                                        }
+                                    );
+                                })(data[i].associatedAgreement);
+                            }
+                            else {
+                                $("#price2", tr).val(data[i].price2);
+                                ibs.initSelect($("#price2-unit", tr), ibs._cashTypies);
+                                $("#price2-unit", tr).val(data[i].price2Unit);
+                                $("#exchange-rate2", tr).val(data[i].exchangeRate2);
+                                $("select[name=agency-fee-type]", tr).val(data[i].agencyFeeType);
+                            }
+                            idx++;
+                        });
+                    }
+                }
+                ibs.bindBiddingPriceChangeEvent();
+            }
+        );
+    },
+
+    // =======================================================================
+    // 
+    // 中标退保
+    // 
+    // =======================================================================
+
+    _refundState: null,
+
+    initRefundForm: function() {
+        ibs.initEvaluationForm();
+        $("#refund").show();
+        $("#file").hide();
+         $.getJSON(
+            "/Portal/Sheets/bidding/InviteBidsHandler.ashx",
+            {
+                Command: "LoadTenders",
+                ParentObjectId: ibs._sheetInfo.BizObjectID
+            },
+            function(data) {
+                ibs._refundState = data;            
+                ibs.updateRefundTable();
+            }
+        );        
+    },
+
+    updateRefundTable: function() {
+        var canSubmit = true;
+        if (ibs._refundState.length > 0) {
+            var tbl = $("#refund #refund-table");
+            for (var i = 0; i < ibs._refundState.length; i++) {
+                tr = $("tbody>tr.template", tbl).clone();
+                tr.removeClass("template").addClass("data");
+                $(".tender", tr).text(ibs._refundState[i].name);
+                $(".state", tr).text(ibs._refundState[i].bidResult);
+                $(".cash-deposit-type", tr).text(ibs._refundState[i].cashType);
+                $(".cash-deposit", tr).text(ibs._refundState[i].cash);
+                $(".refund-state", tr).text(ibs._refundState[i].refundState);
+                if (ibs._refundState[i].refundState == "未退") {
+                    canSubmit = false;
+                    $(".operate", tr).text("退款");
+                    $(".operate", tr).on("click", {idx: i}, ibs.onRefund);
+                }
+                else {
+                    $(".operate", tr).text("查看");
+                    $(".operate", tr).on("click", {idx: i}, ibs.onRefund);
+                }
+                $("tbody", tbl).append(tr);
+            }
+        }
+        if (!canSubmit) {
+            $("li[data-action='Submit']").hide();
+        }
+    },
+
+    onRefund(evt) {
+        $("#refund-state-form").modal("show");
+        $("#refund-state-form div.row").show();
+        var data = ibs._refundState[evt.data.idx];
+        $("#refund-state-form #name").val(data.name);
+        $("#refund-state-form #country").val(data.country);
+        $("#refund-state-form #cash-type").val(data.cashType);
+        $("#refund-state-form #cash").val(data.cash);
+        $("#refund-state-form #cash-type").val(data.cashType);
+        $("#refund-state-form #address").val(data.address);
+        $("#refund-state-form #contact").val(data.contact);
+        $("#refund-state-form #telephone").val(data.telephone);
+        $("#refund-state-form #mobile-phone").val(data.mobilePhone);
+        $("#refund-state-form #fax").val(data.fax);
+        $("#refund-state-form #email").val(data.email);
+        $("#refund-state-form #bid-price1").val(data.price1);
+        $("#refund-state-form #bid-price1-unit").val(data.price1Unit);
+        $("#refund-state-form #bid-price2").val(data.price2);
+        $("#refund-state-form #bid-price2-unit").val(data.price2Unit);
+        $("#refund-state-form #supplier").val(data.supplier);
+        $("#refund-state-form #supplier-country").val(data.supplierCountry);
+        $("#refund-state-form #bidding-doc-purchase-record").xnfile();
+        $("#refund-state-form #bidding-doc-purchase-record").xnfile("value", data.purchaseBiddingDocForm);
+        $("#refund-state-form #bidding-doc-purchase-record button").prop("disabled", "disabled");
+        $("#refund-state-form #tender-doc").xnfile();
+        $("#refund-state-form #tender-doc").xnfile("value", data.tenderDoc);
+        $("#refund-state-form #tender-doc button").prop("disabled", "disabled");
+        $("#refund-state-form #receipts").xnfile();
+        $("#refund-state-form #receipts").xnfile("value", data.receipts);
+        $("#refund-state-form #receipts button").prop("disabled", "disabled");
+        $("#refund-state-form #remark").val(data.remark);
+        $("#refund-state-form #bidding-result").val(data.bidResult);
+        $("#refund-state-form #notice-of-bidding").xnfile();
+        $("#refund-state-form #notice-of-bidding").xnfile("value", data.noticeOfBidding);
+
+        $.getJSON(
+            "/Portal/Sheets/bidding/InviteBidsHandler.ashx",
+            {
+                Command: "LoadRefundAudit",
+                ParentObjectId: ibs._sheetInfo.BizObjectID,
+                TenderName: $("#refund-state-form #name").val()
+            },
+            function(data) {
+                if (data.length > 0) {
+                    $("#refund-state-form #request-refund-btn").hide();
+                    for (var i = 0; i < data.length; i++) {
+                        var tr = $("#refund-state-form #refund-table>tbody>tr.template").clone();
+                        tr.removeClass("template").addClass("data");
+                        $(".applicant", tr).text(data[i].originator);
+                        $(".time", tr).text(data[i].time);
+                        $(".type", tr).text(data[i].cashType);
+                        $(".amount", tr).text(data[i].cash);
+                        $(".state", tr).text(data[i].state);
+                        if (data[i].state == "通过") {
+                            $("#refund-state-form #request-refund-btn").show().unbind().click(ibs.onRequestRefund);
+                        }
+                        else {
+                            $("#refund-state-form #request-refund-btn").hide();
+                        }
+                        $("#refund-state-form #refund-table>tbody").append(tr);
+                    }
+                }
+                else {
+                    $("#refund-state-form #request-refund-btn").show().unbind().click(ibs.onRequestRefund);
+                }
+            }
+        )
+
+        $("#refund-state-form #save-bidding-result-btn").unbind().click(ibs.onSaveRefundState);
+    },
+
+    onSaveRefundState: function() {
+        var noticeOfBidding = $("#refund-state-form #notice-of-bidding").xnfile("value");
+        if (noticeOfBidding == null || noticeOfBidding == "") {
+            alert("请上传中标/落标通知书。");
+            return ;
+        }
+        $.post(
+            "/Portal/Sheets/bidding/InviteBidsHandler.ashx",
+            {
+                Command: "SaveRefundState",
+                ParentObjectId: ibs._sheetInfo.BizObjectID,
+                TenderName: $("#refund-state-form #name").val(),
+                NoticeOfBidding: noticeOfBidding
+            },
+            function(data) {
+                $("#refund-state-form").modal("hide");
+            }
+        );
+    },
+
+    onRequestRefund: function() {
+        var url = "/Portal/MvcDefaultSheet.aspx?SheetCode=SRefundCashDeposit&Mode=Originate"
+            + "&WorkflowCode=RefundCashDeposit&WorkflowVersion="
+            + ibs._workflowVersion["RefundCashDeposit"]
+            + "&ProjectName=" + $.MvcSheetUI.GetControlValue("ProjectName")
+            + "&BiddingCode=" + $.MvcSheetUI.GetControlValue("BiddingCode")
+            + "&Tender=" + $("#refund-state-form #name").val()
+            + "&WinnerOrLoser=" + $("#refund-state-form #bidding-result").val()
+            + "&CashDepositType=" + $("#refund-state-form #cash-type").val()
+            + "&CashDeposit=" + $("#refund-state-form #cash").val()
+            + "&DepositType=退保"
+            + "&IssueObjectId=" + ibs._sheetInfo.BizObjectID;
+        window.location.href = url;
+        window.event.returnValue = false;
+    },
+
+    validateRefundForm: function() {
+        if ($.MvcSheetUI.GetControlValue("WinnerNoticeDate") == "") {
+            alert("请选择发中标通知日期。");
+            return false;
+        }
+        return true;
+    },
+
+    // ======================================================================
+    //
+    // 归档归尾
+    //
+    // ======================================================================
+
+    initFileForm: function() {
+        ibs.initRefundForm();
+        setTimeout(function() {
+            $("#refund").show();
+        }, 1500);
+        $("#file").show();
+        $.getJSON(
+            "/Portal/Sheets/bidding/InviteBidsHandler.ashx",
+            {
+                Command: "LoadFileAudit",
+                ParentObjectId: ibs._sheetInfo.BizObjectID
+            },
+            function(data) {
+                var canSubmit = true;
+                if (data.length > 0) {
+                    $("#file #request-file-btn").hide();
+                    for (var i = 0; i < data.length; i++) {
+                        var tr = $("#file #file-audit-table>tbody>tr.template").clone();
+                        tr.removeClass("template").addClass("data");
+                        $(".applicant", tr).text(data[i].originator);
+                        $(".time", tr).text(data[i].time);
+                        $(".state", tr).text(data[i].state);
+                        if (data[i].state == "通过") {
+                            $("#file #request-file-btn").show().unbind().click(ibs.onRequestFile);
+                        }
+                        else {
+                            $("#file #request-file-btn").hide();
+                            canSubmit = false;
+                        }
+                        $("#file #file-audit-table>tbody").append(tr);
+                    }
+                }
+                else {
+                    $("#file #request-file-btn").show().unbind().click(ibs.onRequestFile);
+                }
+
+                if (!canSubmit) {
+                    $("li[data-action='Submit']").hide();
+                }
+            }
+        );
+    },
+
+    validateFileForm: function() {
+        if ($.MvcSheetUI.GetControlValue("CapitalSavingRate") == "") {
+            alert("请输入节资率。");
+            return false;
+        }
+        return true;
+    },
+    
+    onRequestFile: function() {
+        $("#BiddingDoc").xnfile();
+        var url = "/Portal/MvcDefaultSheet.aspx?SheetCode=SFileBidding&Mode=Originate"
+            + "&WorkflowCode=FileBidding&WorkflowVersion="
+            + ibs._workflowVersion["FileBidding"]
+            + "&IssueObjectId=" + ibs._sheetInfo.BizObjectID
+            + "&ProjectName=" + $.MvcSheetUI.GetControlValue("ProjectName")
+            + "&BiddingCode=" + $.MvcSheetUI.GetControlValue("BiddingCode")
+            + "&BiddingDocLink=" + $("#BiddingDoc").xnfile("value");
+        window.location.href = url;
+        window.event.returnValue = false;
+    },
+
+    // ======================================================================
+    //
+    // 取回
+    // 
+    // ======================================================================
+
+    initGoBackForm: function() {
+        $("#go-back-btn").click(ibs.onRequestGoBack);
+        $.MvcSheet.AddAction({
+            Action: "GoBack",
+            Icon: "fa-sign-in",
+            Text: "取回",
+            Datas: [],
+            OnAction: function () {
+                var activities = [
+                    {code: "CreateActivity", name: "创建项目"},
+                    {code: "PrepareActivity", name: "招标准备"},
+                    {code: "OpeningActivity", name: "招标发标"},
+                    {code: "EvaluationActivity", name: "评标"},
+                    {code: "RefundActivity", name: "中标退保"},
+                    {code: "FileActivity", name: "资料归档"}
+                ];
+                if (ibs._sheetInfo.ActivityCode == activities[0].code) {
+                    alert("创建项目时不需要取回。");
+                }
+                else {
+                    $("#select-go-back-activity").empty();
+                    for (var i = 0; i < activities.length; i++) {
+                        if (activities[i].code == ibs._sheetInfo.ActivityCode)
+                            break;
+                        $("#select-go-back-activity").append("<option value='"
+                            + activities[i].code + "' "
+                            + (i == 0 ? "selected" : "")
+                            + ">" + activities[i].name
+                            + "</option>"
+                        );
+                    }
+                    $("#go-back-form").modal("show");
+                    $("#go-back-form div.row").removeAttr("style", "display:none");
+                }
+            }
+        });
+    },
+
+    onRequestGoBack: function() {
+        var url = "/Portal/MvcDefaultSheet.aspx?SheetCode=SGoBackBiddingWorkflow"
+            + "&Mode=Originate&WorkflowCode=GoBackBiddingWorkflow&WorkflowVersion="
+            + ibs._workflowVersion["GoBackBiddingWorkflow"]
+            + "&ProjectName=" + $.MvcSheetUI.GetControlValue("ProjectName")
+            + "&BiddingCode=" + $.MvcSheetUI.GetControlValue("BiddingCode")
+            + "&TheActivityCode=" + $("#select-go-back-activity").val()
+            + "&TheInstanceId=" + ibs._sheetInfo.InstanceId;
+        window.location.href = url;
+        window.event.returnValue = false;
+    }
+};
+
+ibs.initGoBackForm();
+
+$.MvcSheet.Loaded = function(sheetInfo) {
+    ibs.init(sheetInfo);
+}
+
+$.MvcSheet.Validate = function () {
+    return ibs.validate();
+}
+
+$.MvcSheet.SaveAction.OnActionPreDo = function () {
+    ibs.onBeforeSave();
+}
+

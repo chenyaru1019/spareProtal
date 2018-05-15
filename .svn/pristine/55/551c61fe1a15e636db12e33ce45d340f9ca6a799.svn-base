@@ -1,0 +1,154 @@
+﻿// 提交前事件
+$.MvcSheet.SubmitAction.OnActionPreDo = function () {
+    //if (!checkCurrency()) {
+    //    return false;
+    //}
+}
+// 表单验证接口
+$.MvcSheet.Validate = function () {
+
+    // 填写申请单环节，设置  必填
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityConfirm") {
+        if (this.Action == "Submit") {
+
+            var IsOperateFK = $.MvcSheetUI.GetControlValue("IsOperateFK");
+            if (IsOperateFK != "是;") {
+                alert("请勾选执行付款！");
+                return false;
+            }
+        }
+    }
+    return true;
+}
+// 提交后事件
+$.MvcSheet.ActionDone = function (data) {
+    // this.Action; // 获取当前按钮名称
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+        if (this.Action == "Submit" || this.Action == "Save") {
+            var JSObjectIDs = $.MvcSheetUI.GetControlValue("JSObjectIDs");
+            // 设置请付款状态为BatchQK_Start
+            // 获取客户信息数据
+            $.ajax({
+                type: "POST",    //页面请求的类型
+                url: "ContractHandler.ashx?Command=setJS_Status",   //处理页的相对地址
+                data: {
+                    JSObjectIDs: JSObjectIDs,
+                    Status: "BatchFK_Start",
+                },
+                async: false,
+                success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                    console.log("设置请付款状态为BatchFK_Start成功");
+                }
+            });
+        }
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityConfirm") {
+       if (this.Action == "Submit") {
+            var JSObjectIDs = $.MvcSheetUI.GetControlValue("JSObjectIDs");
+            // 设置请付款状态为BatchQK_OK
+            // 获取客户信息数据
+            $.ajax({
+                type: "POST",    //页面请求的类型
+                url: "ContractHandler.ashx?Command=setJS_Status",   //处理页的相对地址
+                data: {
+                    JSObjectIDs: JSObjectIDs,
+                    Status: "BatchFK_OK",
+                },
+                async: false,
+                success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                    console.log("设置请付款状态为BatchFK_OK成功");
+                }
+            });
+        }
+    }
+}
+//数据加载后
+$.MvcSheet.Loaded = function () {
+    // 请款对象
+    var Target = getUrlParam("Target");
+    var Amount = getUrlParam("Amount");
+    var JSObjectIDs = getUrlParam("JSObjectIDs");
+    var Receiver = "";
+    if (Target != null && Target != "") {
+        $.MvcSheetUI.SetControlValue("JSObjectIDs", JSObjectIDs);
+        var JSObjectIDArr = JSObjectIDs.split(",");
+        // 获取客户信息数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getCustomerById",   //处理页的相对地址
+            data: {
+                ObjectID: Target,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                Receiver = ret.CompanyName + '（' + ret.ModelOrDepartment + '）';
+                
+            }
+        });
+        $.MvcSheetUI.SetControlValue("Receiver", Receiver);
+        $.MvcSheetUI.SetControlValue("Amount", Amount);
+
+        
+        // 表格数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getJSLSData",   //处理页的相对地址
+            data: {
+                JS_Target: Receiver,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                var dtl = $.MvcSheetUI.GetElement("BatchJSTblOfFK").SheetGridView();
+                dtl._Clear();
+                var index = 0;
+                for (var i = 0; i < ret.length; i++) {
+                    // 勾选的数据是否在所有批量数据中
+                    if (IsInArr(JSObjectIDArr, ret[i].JSObjectID)) {
+                        dtl._AddRow();
+                        index++;
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfFK.ContractNo", ret[i].ContractNo, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfFK.ContractNoHidden", ret[i].ContractNoHidden, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfFK.ContractName", ret[i].ContractName, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfFK.PostAB", ret[i].PostAB, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfFK.DKAmount", ret[i].DKAmount, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfFK.FKAmount", ret[i].FKAmount, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfFK.BankFY", ret[i].BankFY, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfFK.AgencyFY", ret[i].AgencyFY, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfFK.OtherFY", ret[i].OtherFY, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfFK.JSResult", ret[i].JSResult, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfFK.WorkItemId", ret[i].WorkItemId, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfFK.Cnt", ret[i].Cnt, index);
+                        $.MvcSheetUI.SetControlValue("BatchJSTblOfFK.JSObjectID", ret[i].JSObjectID, index);
+                    }
+                }
+            }
+        });
+    }
+
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+        $(".BatchJSTblOfFK").hide();
+    }
+    
+    $("input[data-datafield='Receiver']").attr("disabled", "disabled");
+    $("input[data-datafield='Amount']").attr("disabled", "disabled");
+
+    $("input[data-datafield='BatchJSTblOfFK.ContractNo']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfFK.ContractNoHidden']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfFK.ContractName']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfFK.PostAB']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfFK.DKAmount']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfFK.FKAmount']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfFK.BankFY']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfFK.AgencyFY']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfFK.OtherFY']").attr("disabled", "disabled");
+    $("input[data-datafield='BatchJSTblOfFK.JSResult']").attr("disabled", "disabled");
+}
+
+function IsInArr(arr, str) {
+    for (var j = 0; j < arr.length; j++) {
+        if (str == arr[j]) {
+            return true;
+        }
+    }
+    return false;
+}
+

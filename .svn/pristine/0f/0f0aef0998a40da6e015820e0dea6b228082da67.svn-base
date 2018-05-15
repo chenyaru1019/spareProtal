@@ -1,0 +1,180 @@
+﻿//数据加载后
+$.MvcSheet.Loaded = function () {
+
+
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+        $(".ManagerApprove").hide();
+        $(".CompanyLeaderApprove").hide();
+        $(".PaymentOperate").hide();
+
+        // 合同号码
+        var ContractNo = getUrlParam("ContractNo");
+        if (ContractNo != null && ContractNo != "") {
+
+            // 根据合同号码获取对应合同相关数据
+            $.ajax({
+                type: "POST",    //页面请求的类型
+                url: "ContractHandler.ashx?Command=getByContractNo",   //处理页的相对地址
+                data: {
+                    ContractNo: ContractNo,
+                },
+                async: false,
+                success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                    $.MvcSheetUI.SetControlValue("ContractNo", ret.ContractNo);
+                    $.MvcSheetUI.SetControlValue("ContractName", ret.ContractName);
+                    $.MvcSheetUI.SetControlValue("PostAB", ret.PostA + "," + ret.PostB);
+                    $.MvcSheetUI.SetControlValue("PaymentType", "改证");
+
+                }
+            });
+        }
+
+        $("input[data-datafield='ContractNo']").attr("disabled", "disabled");
+        $("input[data-datafield='ContractName']").attr("disabled", "disabled");
+        $("input[data-datafield='PostAB']").attr("disabled", "disabled");
+        $("input[data-datafield='PaymentType']").attr("disabled", "disabled");
+        // 信用证编号
+        var PaymentObjectID = getUrlParam("PaymentId");
+        if (PaymentObjectID != null && PaymentObjectID != "") {
+            $.MvcSheetUI.SetControlValue("PaymentObjectID", PaymentObjectID);
+            $.ajax({
+                type: "POST",    //页面请求的类型
+                url: "ContractHandler.ashx?Command=getPaymentByID",   //处理页的相对地址
+                data: {
+                    PaymentObjectID: PaymentObjectID,
+                },
+                async: false,
+                success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                    if (ret != null && ret != "") {
+                        $.MvcSheetUI.SetControlValue("PaymentNo", ret.PaymentNo);
+                        $.MvcSheetUI.SetControlValue("PaymentAmount", ret.PaymentAmount);
+                    }
+                }
+            });
+        }
+        $("input[data-datafield='PaymentNo']").attr("disabled", "disabled");
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityManager") {
+        $(".ManagerApprove").show();
+        $(".CompanyLeaderApprove").hide();
+        $(".PaymentOperate").hide();
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityCompanyLeader") {
+        $(".ManagerApprove").show();
+        $(".CompanyLeaderApprove").show();
+        $(".PaymentOperate").hide();
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOperate") {
+        $(".ManagerApprove").show();
+        $(".CompanyLeaderApprove").show();
+        $(".PaymentOperate").show();
+        // 根据信用证编号获取对应信用证相关数据
+        var PaymentObjectID = $.MvcSheetUI.GetControlValue("PaymentObjectID");
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getPaymentByID",   //处理页的相对地址
+            data: {
+                PaymentObjectID: PaymentObjectID,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                if (ret != null && ret != "") {
+                    var PaymentUpdateDate = $.MvcSheetUI.GetControlValue("PaymentUpdateDate");
+                    var ExpirationDate = $.MvcSheetUI.GetControlValue("ExpirationDate");
+                    var RemindDate = $.MvcSheetUI.GetControlValue("RemindDate");
+                    var OperateRemark = $.MvcSheetUI.GetControlValue("OperateRemark");
+                    if (PaymentUpdateDate == null || PaymentUpdateDate == "") {
+                        $.MvcSheetUI.SetControlValue("PaymentUpdateDate", ret.PaymentDate);
+                    }
+                    if (ExpirationDate == null || ExpirationDate == "") {
+                        $.MvcSheetUI.SetControlValue("ExpirationDate", ret.ExpirationDate);
+                    }
+                    if (RemindDate == null || RemindDate == "") {
+                        $.MvcSheetUI.SetControlValue("RemindDate", ret.RemindDate);
+                    }
+                    if (OperateRemark == null || OperateRemark == "") {
+                        $.MvcSheetUI.SetControlValue("OperateRemark", ret.OperateRemark);
+                    }
+                }
+                
+            }
+        });
+    } 
+    $("input[data-datafield='CurrencyChangeFlg']").next().hide();
+}
+
+$.MvcSheet.ActionDone = function (data) {
+    // this.Action; // 获取当前按钮名称
+    if (this.Action == "Submit") {
+        if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+            var PaymentObjectID = $.MvcSheetUI.GetControlValue("PaymentObjectID");
+            // 设置表单的已改证标识为“改证中”
+            $.ajax({
+                type: "POST",    //页面请求的类型
+                url: "ContractHandler.ashx?Command=setChangePayment",   //处理页的相对地址
+                data: {
+                    PaymentObjectID: PaymentObjectID,
+                    Status: 2,
+                },
+                //async: false,
+                success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+
+                }
+            });
+        }
+
+        if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOperate") {
+            var PaymentObjectID = $.MvcSheetUI.GetControlValue("PaymentObjectID");
+            // 设置表单的已改证标识为“改证中”
+            $.ajax({
+                type: "POST",    //页面请求的类型
+                url: "ContractHandler.ashx?Command=setChangePayment",   //处理页的相对地址
+                data: {
+                    PaymentObjectID: PaymentObjectID,
+                    Status: 4,
+                },
+                //async: false,
+                success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+
+                }
+            });
+        }
+    }
+}
+
+function CurrencyChange() {
+    var CurrencyChangeFlg = $.MvcSheetUI.GetControlValue("CurrencyChangeFlg");
+    if (CurrencyChangeFlg == "true") {
+        return;
+    } else {
+        $.MvcSheetUI.SetControlValue("CurrencyChangeFlg", "true");
+        var ContractNo = $.MvcSheetUI.GetControlValue("ContractNo");
+        if (ContractNo != null && ContractNo != "") {
+            // 根据合同号码获取对应合同相关数据
+            $.ajax({
+                type: "POST",    //页面请求的类型
+                url: "ContractHandler.ashx?Command=getByContractNo",   //处理页的相对地址
+                data: {
+                    ContractNo: ContractNo,
+                },
+                async: false,
+                success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                    $.MvcSheetUI.SetControlValue("Currency", ret.Currency);
+                }
+            });
+        }
+    }
+}
+
+function ExpirationDateChange() {
+    var ExpirationDate = $("input[data-datafield='ExpirationDate']").val();
+    var RemindDate = lastMonthDate(ExpirationDate) ;
+    $("input[data-datafield='RemindDate']").val(RemindDate);
+}
+
+
+// 提交前事件
+$.MvcSheet.SubmitAction.OnActionPreDo = function () {
+    // 当前节点是节点
+    //if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+    //    $.MvcSheetUI.SetControlValue("RejectFlg", "0");
+    //}
+}
+

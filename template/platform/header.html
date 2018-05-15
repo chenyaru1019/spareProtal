@@ -1,0 +1,201 @@
+﻿<!-- navbar header -->
+<div class="navbar-header {{app.settings.navbarHeaderColor}}" style="height:53px;">
+    <button class="pull-right visible-xs dk" ui-toggle-class="show" data-target=".navbar-collapse">
+        <i class="glyphicon glyphicon-cog"></i>
+    </button>
+    <button class="pull-right visible-xs" ui-toggle-class="off-screen" data-target=".app-aside" ui-scroll="app">
+        <i class="glyphicon glyphicon-align-justify"></i>
+    </button>
+    <!-- brand -->
+    <!--<a href="#/app/default" class="navbar-brand text-lt">-->
+    <a ui-sref="home" class="navbar-brand text-lt">
+        <div style="margin-top:0px;bottom:0px;padding-top:0px;">
+            <img class="m-1-xs" ng-src="{{app.logoSimple}}" style="width:30px;height:30px;" ng-if="app.settings.asideFolded" />
+            <img class="hidden-folded m-1-xs" ng-src="{{app.logoFull}}" ng-if="!app.settings.asideFolded" />
+        </div>
+
+    </a>
+    <!-- / brand -->
+</div>
+<!-- / navbar header -->
+<!-- navbar collapse -->
+<div class="collapse pos-rlt navbar-collapse box-shadow {{app.settings.navbarCollapseColor}}">
+    <!-- buttons -->
+    <!--<div class="nav navbar-nav hidden-xs">-->
+        <!--<a href class="btn no-shadow navbar-btn asideFolded" ng-click="app.settings.asideFolded = !app.settings.asideFolded">-->
+            <!--<i class="fa {{app.settings.asideFolded ? 'fa-indent' : 'fa-dedent'}} fa-fw"></i>-->
+        <!--</a>-->
+        <!--&lt;!&ndash;<a href class="btn no-shadow navbar-btn" ui-toggle-class="show" target="#aside-user">-->
+            <!--<i class="icon-user fa-fw"></i>-->
+        <!--</a>&ndash;&gt;-->
+    <!--</div>-->
+    <!-- / buttons -->
+    <!-- link and dropdown -->
+    <ul id="ulHeadApps" class="nav navbar-nav hidden-sm" style="font-size: 13px;width:50%;">
+        <li class="dropdown pos-stc"
+            ng-repeat="list in user.FunctionViewModels"
+            ng-show="list.DockOnHomePage" ng-class="{nav_class:$index == focus}" ng-click='li_click($index)'>
+            <a class="dropdown-toggle" id="nav_a"
+               ng-if="(list.Children[0].Url?list.Children[0].Url:list.Children[0].Children[0].Url).indexOf('http')==-1"
+               ui-sref="{{list.Children[0].Url?list.Children[0].Url:list.Children[0].Children[0].Url}}">
+                <span translate="HomePage.{{list.Code}}" translate-default="{{list.DisplayName}}">{{list.DisplayName}}</span>
+            </a>
+            <a class="dropdown-toggle"
+               ng-if="(list.Children[0].Url?list.Children[0].Url:list.Children[0].Children[0].Url).indexOf('http')!=-1"
+               ng-href="{{list.Children[0].Url?list.Children[0].Url:list.Children[0].Children[0].Url}}" target="_blank">
+                <span translate="HomePage.{{list.Code}}" translate-default="{{list.DisplayName}}">{{list.DisplayName}}</span>
+            </a>
+        </li>
+    </ul>
+    <!-- / link and dropdown -->
+    <!-- nabar right -->
+    <!--<ul class="nav navbar-nav navbar-right" >-->
+    <ul id="ulHomeApps" class="nav navbar-nav right-navbar-nav navbar-right" style="width:50%;line-height: 50px; color:#363f44;">
+        <li class="dropdown hidden-sm" is-open="lang.isopen" style="width: 12%;margin-right: 10px;">
+            <select id="fatherSelect" style="width: 100%;height:  24px;" onchange="getSonData()">
+                <option value="">请选择</option>
+                <option value="ContractMain">合同</option>
+                <option value="InviteBids">招标项目</option>
+                <option value="Agreement_mains">协议</option>
+            </select>
+        </li>
+        <li class="dropdown hidden-sm" is-open="lang.isopen" dropdown="" style="width: 15%;margin-right: 10px;">
+            <select id="sonSelect" style="width: 100%;height:  24px;">
+                <option value="">请选择</option>
+            </select>
+        </li>
+        <li class="dropdown hidden-sm" is-open="lang.isopen" style="width: 30%">
+            <input id="FullTextSearch" type="text" class="search"  style="width: 100%;margin-top: 0">
+            
+        </li>
+        <li class="dropdown" dropdown style="float: right">
+            <a class="dropdown-toggle clear" dropdown-toggle style="text-align: center">
+                <span class="thumb-sm avatar pull-right m-t-n-sm m-b-n-sm m-l-sm">
+                    <img ng-src="{{user.ImageUrl}}" alt="..." style="width: 40px; height: 40px;" />
+                </span>
+                <span class="hidden-sm hidden-md">{{user.Name}}</span> <b class="caret"></b>
+            </a>
+            <!-- 下拉菜单Start -->
+            <ul class="dropdown-menu animated fadeInRight w">
+                <li ng-show="user.IsAdministrator&&ShowDesignMode">
+                    <a ui-sref="home" ng-click="StartEdit()">
+                        <i class="marginRight5 fa fa-building-o"></i>
+                        <span ng-show="!OT_EditorModel" translate="HomePage.DesignMode"></span>
+                        <span ng-hide="!OT_EditorModel" translate="HomePage.ViewMode"></span>
+                    </a>
+                </li>
+                <li ng-show="user.IsAdministrator">
+                    <a ui-sref="appTemplate.PortalTemplates">
+                        <i class="marginRight5 icon-home"></i>
+                        <span translate="PortalTemplates.PortalManager">门户管理</span>
+                    </a>
+                </li>
+
+
+                <li ng-show="user.IsAdministrator||user.IsConsoleUser">
+                    <a href="admin/index.html">
+                        <i class="marginRight5 icon-notebook"></i>
+                        <span translate="HomePage.AdminManage"></span>
+                    </a>
+                </li>
+                <li>
+                    <a ng-click="showUserMyCommets(user.ObjectID);">
+                        <i class="marginRight5 icon-heart"></i>
+                        <span translate="HomePage.PersonalSetting_MyCommets"></span>
+                    </a>
+                </li>
+
+                <li>
+                    <a ng-click="showUserInfoModal(user.ObjectID);">
+                        <i class="marginRight5 icon-user"></i>
+                        <span translate="HomePage.PersonalMsg"></span>
+                    </a>
+                </li>
+
+                <li>
+                    <a ng-click="showUserPasswordModal();">
+                        <i class="marginRight5 icon-key"></i>
+                        <span translate="HomePage.PasswordSetting"></span>
+                    </a>
+                </li>
+                <li class="divider"></li>
+                <li>
+                    <!--ui-sref="lock"-->
+                    <a ng-click="doLock();">
+                        <i class="marginRight5 icon-lock"></i>
+                        <span translate="HomePage.DoLock"></span>
+                    </a>
+                </li>
+                <li>
+                    <a ng-click="loginOut();">
+                        <i class="marginRight5 icon-logout"></i>
+                        <span translate="HomePage.LoginOut"></span>
+                    </a>
+                </li>
+            </ul>
+            <!-- 下拉菜单End -->
+        </li>
+    </ul>
+    <!-- / navbar right -->
+</div>
+<!-- / navbar collapse -->
+<script type="text/javascript">
+    $('#ulHeadApps').on('click',"li",function () {
+        $(this).addClass('nav_class').siblings('li').removeClass('nav_class');
+
+    })
+</script>
+
+<script type="text/javascript">
+    var FullTextSearch = document.getElementById("FullTextSearch");
+    FullTextSearch.onkeydown = function () {
+        if (event.which == "13") {
+            var fatherSelect = $("#fatherSelect").val();
+            var sonSelect = $("#sonSelect").val();
+            var FullTextSearch = $("#FullTextSearch").val();
+            //window.location.href = '/Portal/index.html#/app/YWGL/EditBizObject/FullTextSearch/MyFullTextSearch/Originate/MyFullTextSearch?&FullText=' + $val;
+            //window.location.href = "/Portal/Sheets/Common/MyFullTextSearch.aspx?Mode=Originate&WorkflowCode=FullTextSearch&WorkflowVersion=4&FullText=" + encodeURI($val);
+            var target = ".app-aside-right";
+            // 20171026 菜单修改
+            //var url = data.Message;
+            var url = "/Portal/Sheets/Common/MyFullTextSearch.aspx?Mode=Originate&WorkflowCode=FullTextSearch&WorkflowVersion=4&PFullText=" + encodeURI(FullTextSearch) + "&PModuleName=" + fatherSelect + "&PSubInstanceName=" + sonSelect;
+            if ($(target).length == 0) {
+                window.location.href = url;
+            } else {
+                //$(target).toggleClass("show");
+                $(target).find("iframe").attr("src", url);
+                //if ($(target).hasClass("show")) {
+                //    $("body").addClass("noscroll");
+                //}
+                //else {
+                //    $("body").removeClass("noscroll");
+                //}
+            }
+        }
+    }
+
+    function getSonData() {
+        var ModuleName = $("#fatherSelect").val();
+        if (ModuleName != "") {
+            //关联查询
+            $.ajax({
+                type: "POST",    //页面请求的类型
+                url: "/Portal/Sheets/Contract/ContractHandler.ashx?Command=getSubInstanceName",   //处理页的相对地址
+                data: {
+                    ModuleName: ModuleName,
+                },
+                async: false,
+                success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                    $("#sonSelect").empty();
+                    var str = "<option value=''>请选择</option>";
+                    for (var i = 0; i < ret.length; i++) {
+                        str += "<option value='" + ret[i].key + "'>" + ret[i].attr1 + "</option>";
+                    }
+                    $("#sonSelect").append(str);
+
+                }
+            });
+        }
+
+    }
+</script>

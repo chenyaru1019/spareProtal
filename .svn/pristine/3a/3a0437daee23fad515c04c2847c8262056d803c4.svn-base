@@ -1,0 +1,214 @@
+﻿// 提交前事件
+$.MvcSheet.SubmitAction.OnActionPreDo = function () {
+    //if (!checkCurrency()) {
+    //    return false;
+    //}
+}
+////初始化
+//$.MvcSheet.PreInit = function () {
+
+
+//}
+//数据加载后
+$.MvcSheet.Loaded = function () {
+    // 合同号码
+    var ContractNo = getUrlParam("ContractNo");
+    var QKType = getUrlParam("QKType");
+    var JSObjectID = getUrlParam("JSObjectID");
+    var JSResultNum = getUrlParam("JSResultNum");
+    if (ContractNo != null && ContractNo != "") {
+        // 根据合同号码获取对应合同相关数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getByContractNo",   //处理页的相对地址
+            data: {
+                ContractNo: ContractNo,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                $.MvcSheetUI.SetControlValue("ContractNo", ret.ContractNo);
+                $.MvcSheetUI.SetControlValue("ContractName", ret.ContractName);
+                $.MvcSheetUI.SetControlValue("ContractType", ret.ContractType);
+                $.MvcSheetUI.SetControlValue("Country", ret.Country);
+                $.MvcSheetUI.SetControlValue("ContractProperty", ret.ContractProperty);
+                $.MvcSheetUI.SetControlValue("PostAB", ret.PostA + "," + ret.PostB);
+                $.MvcSheetUI.SetControlValue("QKRMBCurrency", "人民币");
+                $.MvcSheetUI.SetControlValue("QKWBCurrency", ret.CurrencyName);
+            }
+        });
+        // 根据合同号码获取请款批次
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getMaxQKSeqByContractNo",   //处理页的相对地址
+            data: {
+                ContractNo: ContractNo,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                // 设置请款批次
+                if (ret != null && ret != "") {
+                    $.MvcSheetUI.SetControlValue("QKSeq", parseInt(ret)+1);
+                } else {
+                    $.MvcSheetUI.SetControlValue("QKSeq", 1);
+                }
+            }
+        });
+    }
+
+    if (JSObjectID != null && JSObjectID != "") {
+        $.MvcSheetUI.SetControlValue("JSObjectID", JSObjectID);
+        $("[data-datafield='QKSubTbl.QKType']").attr("disabled", "disabled");
+        $("[data-datafield='QKSubTbl.Currency']").attr("disabled", "disabled");
+        compute();
+    } else {
+        JSObjectID = $.MvcSheetUI.GetControlValue("JSObjectID");
+        if (JSObjectID != null && JSObjectID != "") {
+            $("[data-datafield='QKSubTbl.QKType']").attr("disabled", "disabled");
+            $("[data-datafield='QKSubTbl.Currency']").attr("disabled", "disabled");
+            compute();
+        } else {
+            $("[data-datafield='QKSubTbl.QKType']").find("option").each(function () {
+                if ($(this)[0].value == 'JS') {
+                    $(this).attr("disabled", "disabled");
+                }
+            });
+        }
+    }
+
+    $("input[data-datafield='ContractNo']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractName']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractType']").attr("disabled", "disabled");
+    $("input[data-datafield='Country']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractProperty']").attr("disabled", "disabled");
+    $("input[data-datafield='PostAB']").attr("disabled", "disabled");
+    $("input[data-datafield='QKSeq']").attr("disabled", "disabled");
+    $("input[data-datafield='QKTotalAmoutRMB']").attr("disabled", "disabled");
+    $("input[data-datafield='QKTotalAmoutWB']").attr("disabled", "disabled");
+    $("input[data-datafield='QKRMBCurrency']").attr("disabled", "disabled");
+    $("input[data-datafield='QKWBCurrency']").attr("disabled", "disabled");
+
+}
+
+
+function CurrencyChange(el) {
+    var rowIndex = el.parentElement.parentElement.rowIndex;
+
+    if ($.MvcSheetUI.GetControlValue('QKSubTbl.Currency', rowIndex - 1) == "RMB") {
+        var k = 1;
+        $("[data-datafield='QKSubTbl']").find("tr.rows").each(function () {
+            if (k == rowIndex - 1) {
+                $(this).find("input[data-datafield='QKSubTbl.Rate']").attr("disabled", "disabled");
+            }
+            k++;
+        });
+        $.MvcSheetUI.SetControlValue('QKSubTbl.Rate', 1, rowIndex - 1);
+    } else {
+        var k = 1;
+        $("[data-datafield='QKSubTbl']").find("tr.rows").each(function () {
+            if (k == rowIndex - 1) {
+                $(this).find("input[data-datafield='QKSubTbl.Rate']").attr("disabled", false);
+            }
+            k++;
+        });
+    }
+
+    var JSObjectID = $.MvcSheetUI.GetControlValue("JSObjectID");
+    // 如果是结算过来的，那就设为结算
+    if (JSObjectID != null && JSObjectID != "") {
+        $.MvcSheetUI.SetControlValue('QKSubTbl.QKType', rowIndex - 1, "JS")
+    }
+
+}
+
+function ZJKXChange(el) {
+    var rowIndex = el.parentElement.parentElement.rowIndex;
+    var QKType = $.MvcSheetUI.GetControlValue('QKSubTbl.QKType', rowIndex - 1);
+    var ZJMS = "";
+    var k = 1;
+    $("[data-datafield='QKSubTbl']").find("tr.rows").each(function () {
+        if (k == rowIndex - 1) {
+            ZJMS = $(this).find("[data-datafield='QKSubTbl.ZJKX']").find("option:selected").text();
+        }
+        k++;
+    });
+    if (QKType == "FY") {
+        $.MvcSheetUI.SetControlValue('QKSubTbl.ZJMS', ZJMS, rowIndex - 1);
+    } else {
+        $.MvcSheetUI.SetControlValue('QKSubTbl.ZJMS', "", rowIndex - 1);
+    }
+}
+
+function compute() {
+    var i = 0;
+    var totalamount_rmb = 0.0;
+    var totalamount_wb = 0.0;
+    var count = $("[data-datafield='QKSubTbl']").find('tr.rows').length;
+    $("[data-datafield='QKSubTbl']").find('tr.rows').each(function () {
+        if ($(this).find("[data-datafield='QKSubTbl.Currency']")[0].value == "RMB") {
+            var amount = $(this).find("input[data-datafield='QKSubTbl.Amount']")[0].value;
+            var rate = $(this).find("input[data-datafield='QKSubTbl.Rate']")[0].value;
+            totalamount_rmb += (parseFloat(amount) * parseFloat(rate));
+        } else {
+            var amount = $(this).find("input[data-datafield='QKSubTbl.Amount']")[0].value;
+            var rate = $(this).find("input[data-datafield='QKSubTbl.Rate']")[0].value;
+            totalamount_wb += (parseFloat(amount) * parseFloat(rate));
+        }
+        
+    });
+    $.MvcSheetUI.SetControlValue('QKTotalAmoutRMB', totalamount_rmb.toFixed(2));
+    $.MvcSheetUI.SetControlValue('QKTotalAmoutWB', totalamount_wb.toFixed(2));
+}
+
+function checkCurrency() {
+    var curVar = new Array();
+    var count = $("[data-datafield='QKSubTbl']").find('tr.rows').length;
+    $("[data-datafield='QKSubTbl']").find('tr.rows').each(function () {
+        if (!containArra(curVar,
+            $(this).find("[data-datafield='QKSubTbl.Currency']")[0].value)) {
+            curVar.push($(this).find("[data-datafield='QKSubTbl.Currency']")[0].value);
+        }
+    });
+    if (curVar.length > 2) {
+        alert("除了人民币，外币不能选择多种！");
+        return false;
+    }
+    return true;
+}
+
+function containArra(curVar,value) {
+    for (var i = 0; i < curVar.length; i++) {
+        if (curVar[i] == value) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// 给添加后的行进行处理（把请款类型中的结算给disabled掉）
+function AddedRender() {
+    $("[data-datafield='QKSubTbl.QKType']").find("option").each(function () {
+        if ($(this)[0].value == 'JS') {
+            $(this).attr("disabled", "disabled");
+        }
+    });
+}
+
+// 表单验证接口
+$.MvcSheet.Validate = function () {
+
+    // 填写申请单环节，设置  必填
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+        if (this.Action == "Save" || this.Action == "Submit") {
+            var dtl = $.MvcSheetUI.GetElement("QKSubTbl").SheetGridView();
+            for (var i = 0; i < dtl.RowCount; i++) {
+                var Amount = $.MvcSheetUI.GetControlValue("QKSubTbl.Amount", i + 1);
+                // Amount < 0 check
+                if (parseFloat(Amount) < 0) {
+                    alert("输入的金额不能小于0！");
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}

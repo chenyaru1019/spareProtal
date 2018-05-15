@@ -1,0 +1,349 @@
+﻿<%@ WebHandler Language="C#" Class="AgreeMent_main" %>
+
+using System;
+using System.Web;
+using System.Web.Script.Serialization;
+using OThinker.H3;
+using System.Data;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+using System.Runtime.Serialization;
+
+
+public class AgreeMent_main : IHttpHandler {
+    JavaScriptSerializer jsSerializer = new JavaScriptSerializer();
+    public void ProcessRequest (HttpContext context) {
+
+        string command = context.Request["Command"];
+        switch (command)
+        {
+            case "AgreementNo": AgreementNo(context); break;
+            case "getSalesHYData": getSalesHYData(context); break;
+            case "getAgreementrecord":getAgreementrecord(context);break;
+            case "getpjcon":getpjcon(context);break;//获取项目和合同关联
+            case "getAgreementNumber":getAgreementNumber(context);break;//查询协议号审批记录
+            case "getGDrecord":getGDrecord(context);break;//获取归档记录
+            case "getProjecsk":getProjecsk(context);break;//获取关联项目收款查询
+            case "sel_sk":sel_sk(context);break;
+            case "AgreeMent_number":AgreeMent_number(context);break;//判断协议号是否存在
+            case "Sh_money":Sh_money(context);break;
+        }
+    }
+        //查询收款记录
+         public void Sh_money(HttpContext context){
+        string AgreeMent_number = context.Request["AgreeMent_number"];
+        List<Dictionary<string,string>> ls = new List<Dictionary<string,string>>();
+        String Agreement_record = "SELECT ObjectID,CreatedTime,Reduced_money FROM I_Charge_back " +
+            " WHERE Agency_number='"+AgreeMent_number+"'";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(Agreement_record);
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                Dictionary<string,string> dic = new Dictionary<string,string>();
+                dic.Add("ObjectID",dr["ObjectID"].ToString());
+                dic.Add("Application_Date", dr["CreatedTime"].ToString());
+                dic.Add("Receivable_money", dr["Reduced_money"].ToString());
+                dic.Add("Account_time", dr["CreatedTime"].ToString());
+                dic.Add("Receipt_State", "2");
+                ls.Add(dic);
+            }
+
+        }
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+
+    }
+
+    //判断协议号是否存在
+    public void AgreeMent_number(HttpContext context) {
+        string AgreeMent_number = context.Request["AgreeMent_number"];
+        String Agreement_one = "select AgreeMent_name from  I_Agreement_mains where AgreeMent_number='"+AgreeMent_number+"'";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(Agreement_one);
+        var bz = "";
+        if (dt.Rows.Count > 0)
+        {
+            bz = "1";
+        }
+        else {
+            bz = "2";
+        }
+        object JSONObj = JsonConvert.SerializeObject(bz);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+    // 获取关联项目收款查询
+    public void getProjecsk(HttpContext context){
+        string AgreeMent_number = context.Request["AgreeMent_number"];
+        List<Dictionary<string,string>> ls = new List<Dictionary<string,string>>();
+
+        String Agreement_record = "SELECT cm.ObjectID,cm.ContractType,cm.ContractNo,cm.ContractName,am.agency_rate,em.EnumValue,am.ys_agency,am.agency_ye FROM I_Agreement_mains am " +
+            "LEFT JOIN I_ContractMain cm ON am.AgreeMent_number=cm.AgencySelect LEFT JOIN OT_EnumerableMetadata em ON am.Rate_type=em.Code" +
+            " WHERE am.AgreeMent_number='"+AgreeMent_number+"'";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(Agreement_record);
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                Dictionary<string,string> dic = new Dictionary<string,string>();
+                dic.Add("ObjectID",dr["ObjectID"].ToString());
+                dic.Add("ContractType", dr["ContractType"].ToString());
+                dic.Add("ContractNo", dr["ContractNo"].ToString());
+                dic.Add("ContractName", dr["ContractName"].ToString());
+                dic.Add("agency_rate", dr["agency_rate"].ToString()+""+dt.Rows[0]["EnumValue"].ToString());
+                dic.Add("ys_money", dr["ys_agency"].ToString()+""+dt.Rows[0]["EnumValue"].ToString());
+                dic.Add("ye_money",(int)Convert.ToSingle(dr["agency_rate"])-(int)Convert.ToSingle(dr["ys_agency"])+dr["EnumValue"].ToString());
+                ls.Add(dic);
+            }
+
+        }
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+
+    }
+    //收款记录查询
+    public void sel_sk(HttpContext context) {
+
+    }
+    //获取归档记录
+    public void getGDrecord(HttpContext context) {
+        string AgreeMent_number = context.Request["AgreeMent_number"];
+        List<Dictionary<string,string>> ls = new List<Dictionary<string,string>>();
+
+        String Agreement_record = "SELECT af.OwnerId,CONVERT(varchar(12),af.CreatedTime,111) CreatedTime," +
+           "case ic.State when '2' then '审批中' when '4' then  '审批完了' end DisplayName,wf.ObjectID  FROM I_Agreement_file af " +
+           "LEFT JOIN OT_InstanceContext ic ON af.ObjectID = ic.BizObjectId LEFT JOIN OT_WorkItemFinished wf ON wf.InstanceId=ic.ObjectID " +
+           " WHERE af.Agreement_Number='"+AgreeMent_number+"'";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(Agreement_record);
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                Dictionary<string,string> dic = new Dictionary<string,string>();
+                dic.Add("Application_people", OThinker.H3.Controllers.AppUtility.Engine.Organization.GetName(dt.Rows[0]["OwnerId"].ToString()));
+                dic.Add("Application_time", dt.Rows[0]["CreatedTime"].ToString());
+                dic.Add("file_state", dt.Rows[0]["DisplayName"].ToString());
+                dic.Add("workItemId", dt.Rows[0]["ObjectID"].ToString());
+                ls.Add(dic);
+            }
+
+        }
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+    //查询协议号审批记录
+    public void getAgreementNumber(HttpContext context) {
+        string AgreeMent_number = context.Request["AgreeMent_number"];
+        List<Dictionary<string,string>> ls = new List<Dictionary<string,string>>();
+        String Agreement_record = "SELECT wf.FinisherName,wf.StartTime,wf.State FROM I_Update_agreement_number ua " +
+            "LEFT JOIN OT_InstanceContext ic ON ua.ObjectID = ic.BizObjectId " +
+            "LEFT JOIN OT_WorkItemFinished wf ON ic.ObjectID=wf.InstanceId WHERE ua.Update_agreeMent_number='"+AgreeMent_number+"'";
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(Agreement_record);
+
+
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+
+                Dictionary<string, string> dic_two = new Dictionary<string, string>();
+                dic_two.Add("FinisherName", dr["FinisherName"].ToString());
+                dic_two.Add("StartTime", dr["StartTime"].ToString());
+                dic_two.Add("State", dr["State"].ToString());
+                ls.Add(dic_two);
+            }
+        }
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+    //获取合同项目关联
+    public void getpjcon(HttpContext context) {
+        string AgreeMent_number = context.Request["AgreeMent_number"];
+        List<Dictionary<string,string>> ls = new List<Dictionary<string,string>>();
+        String Agreement_record = "SELECT ib.ProjectName,ib.BiddingCode,ct.ContractNo,ct.ContractName,ct.ContractType FROM I_Agreement_mains am " +
+            "LEFT JOIN I_ContractMain ct ON am.AgreeMent_number = ct.AgencyCode LEFT JOIN I_AgencyAgreements ay ON ay.AgreementCode=am.AgreeMent_number " +
+            "LEFT JOIN I_InviteBids ib ON ib.ObjectID=ay.ParentObjectID WHERE am.AgreeMent_number='"+AgreeMent_number+"'";
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(Agreement_record);
+
+
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+
+                Dictionary<string, string> dic_two = new Dictionary<string, string>();
+                dic_two.Add("ProjectName", dr["ProjectName"].ToString());
+                dic_two.Add("BiddingCode", dr["BiddingCode"].ToString());
+                dic_two.Add("ContractNo", dr["ContractNo"].ToString());
+                dic_two.Add("ContractName", dr["ContractName"].ToString());
+                dic_two.Add("ContractType", dr["ContractType"].ToString());
+
+                //dic_two.Add("State",re_state.Rows[0]["DisplayName"].ToString() !=""?"审批中":"审批完成");
+                ls.Add(dic_two);
+            }
+        }
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+
+    }
+    //生成协议号
+    public void AgreementNo (HttpContext context) {
+        Dictionary<string,string> dic = new Dictionary<string,string>();
+        string year = DateTime.Now.Year.ToString().Substring(2, 2);
+        String numberid = "SELECT MAX(Numberid) as num FROM I_AgreeMent_mains";
+        string AgreementNo = "";
+        string Number = "";
+        string Numbers = "";
+        string ntype = "";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+       numberid);
+        if (dt.Rows.Count > 0)
+        {
+
+            Numbers = dt.Rows[0]["num"].ToString();
+            if (Numbers != "") {
+
+                int Numbers_conut = (int)Convert.ToSingle(Numbers) + 1;
+                // Numbers_conut.ToString();
+
+                if (Numbers_conut.ToString().Length>0 && Numbers_conut.ToString().Length < 2)
+                {
+                    ntype = "00";
+                }
+                else if (2 <= Numbers_conut.ToString().Length && Numbers_conut.ToString().Length < 3)
+                {
+                    ntype = "0";
+                }
+
+                Number = ntype + Numbers_conut;
+                Numbers= Numbers_conut.ToString();
+            }
+            else
+            {
+                Numbers = "1";
+                Number = "001";
+            }
+
+        }
+
+
+        AgreementNo = "SPIAIE-XY-" + year + "-" + Number;
+        dic.Add("AgreementNo", AgreementNo);
+        dic.Add("Numberid", Numbers);
+
+        object JSONObj = JsonConvert.SerializeObject(dic);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+    //协议变更查询
+    public void getAgreementrecord(HttpContext context) {
+        string AgreeMent_number = context.Request["AgreeMent_number"];
+        List<Dictionary<string,string>> ls = new List<Dictionary<string,string>>();
+        String Agreement_record = "SELECT ObjectID, Old_agency_fee,New_money,Old_pay_condition,New_pay_condition,Change_pay_content,agrency_type  " +
+            "FROM I_Agreenment_change WHERE Agreenment_number='"+AgreeMent_number+"'";
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+  Agreement_record);
+        //判断当前协议变更审批的状态
+        //        String states = "SELECT wt.DisplayName FROM I_Agreenment_change ac LEFT JOIN OT_InstanceContext ic ON ac.ObjectID = ic.BizObjectId " +
+        //            "LEFT JOIN OT_WorkItem wt ON ic.ObjectID=wt.InstanceId where ac.Agreenment_number='"+AgreeMent_number+"'";
+        //        System.Data.DataTable re_state = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+        //states);
+
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+
+                Dictionary<string, string> dic_two = new Dictionary<string, string>();
+                dic_two.Add("Old_agency_fee", dr["Old_agency_fee"].ToString());
+                dic_two.Add("New_money", dr["New_money"].ToString()+dr["agrency_type"].ToString());
+                dic_two.Add("Old_pay_condition", dr["Old_pay_condition"].ToString());
+                dic_two.Add("New_pay_condition", dr["Change_pay_content"].ToString());
+                String states = "SELECT wt.DisplayName FROM I_Agreenment_change ac LEFT JOIN OT_InstanceContext ic ON ac.ObjectID = ic.BizObjectId " +
+           "LEFT JOIN OT_WorkItem wt ON ic.ObjectID=wt.InstanceId where ac.ObjectID='"+dr["ObjectID"].ToString()+"'";
+                System.Data.DataTable re_state = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+        states);
+
+                dic_two.Add("State",re_state.Rows[0]["DisplayName"].ToString() !=""?"审批中":"审批完成");
+                //dic_two.Add("btext", dr["btext"].ToString());
+                ls.Add(dic_two);
+            }
+        }
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+
+    }
+
+
+    public void getSalesHYData (HttpContext context) {
+        // 
+        string ObjectID = context.Request["ObjectID"];
+        List<Dictionary<string,string>> ls = new List<Dictionary<string,string>>();
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT shy.* FROM I_SalerTblOfHY shy, I_HYContractSet hy where shy.ParentObjectID = hy.ObjectID and hy.ObjectID = '"+ObjectID+"'");
+        if (dt.Rows.Count > 0) {
+            foreach (DataRow dr in dt.Rows)
+            {
+                Dictionary<string,string> dic = new Dictionary<string,string>();
+                dic.Add("ObjectID",dr["ObjectID"].ToString());
+                dic.Add("CompanyName",dt.Rows[0]["CompanyName"].ToString());
+                dic.Add("ContactName",dt.Rows[0]["ContactName"].ToString());
+                dic.Add("Telephone",dt.Rows[0]["Telephone"].ToString());
+                dic.Add("Mobile",dt.Rows[0]["Mobile"].ToString());
+                dic.Add("Fax",dt.Rows[0]["Fax"].ToString());
+                dic.Add("Email",dt.Rows[0]["Email"].ToString());
+                ls.Add(dic);
+            }
+
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+
+
+
+
+
+
+
+    public bool IsReusable
+    {
+        get
+        {
+            return false;
+        }
+    }
+    private IEngine _Engine = null;
+    /// <summary>
+    /// 流程引擎的接口，该接口会比this.Engine的方式更快，因为其中使用了缓存
+    /// </summary>
+    public IEngine Engine
+    {
+        get
+        {
+            if (OThinker.H3.Controllers.AppConfig.ConnectionMode == ConnectionStringParser.ConnectionMode.Mono)
+            {
+                return OThinker.H3.Controllers.AppUtility.Engine;
+            }
+            return _Engine;
+        }
+        set
+        {
+            _Engine = value;
+        }
+    }
+
+}

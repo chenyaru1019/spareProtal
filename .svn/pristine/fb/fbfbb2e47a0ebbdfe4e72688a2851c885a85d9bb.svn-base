@@ -1,0 +1,99 @@
+﻿using System;
+using System.Collections;
+using System.Configuration;
+using System.Data;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.IO;
+using System.Text;
+using OThinker.H3.Controllers;
+using OThinker.H3.DataModel;
+using OThinker.H3.Portal;
+using OThinker.H3.BizBus.BizService;
+using OThinker.H3.Sheet;
+using OThinker.Data;
+using OThinker.H3.Instance;
+using OThinker.Organization;
+using System.Collections.Generic;
+using OThinker.H3.Acl;
+using OThinker.H3.Portal.service;
+using OThinker.H3.Portal.Entity;
+
+namespace OThinker.H3.Portal.Sheets.Agreement
+{
+    public partial class AgreeMent_main : OThinker.H3.Controllers.MvcPage
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+        }
+
+        public override MvcViewContext LoadDataFields()
+        {
+            ////协议号缓存
+            //ContractMain con = Common.getContractByBizId(this.ActionContext.BizObjectID);
+            //this.ActionContext.InstanceData["ContractNo"].Value = con.ContractNo;
+            //协议号修改的版本号
+            int versionBack = OThinker.H3.Controllers.AppUtility.Engine.WorkflowManager.GetWorkflowDefaultVersion("Update_agreement_number");
+            this.ActionContext.InstanceData["Process_version"].Value = versionBack;
+            //协议变更的版本号
+            int Agreement_changeNumbers = OThinker.H3.Controllers.AppUtility.Engine.WorkflowManager.GetWorkflowDefaultVersion("Agreenment_change");
+            this.ActionContext.InstanceData["Agreement_changeNumber"].Value = Agreement_changeNumbers;
+            //协议归档版本号
+            int Agreement_files = OThinker.H3.Controllers.AppUtility.Engine.WorkflowManager.GetWorkflowDefaultVersion("Agreement_file");
+            this.ActionContext.InstanceData["AgreementGD_file"].Value = Agreement_files;
+            //收退款版本号
+            int st_moneys = OThinker.H3.Controllers.AppUtility.Engine.WorkflowManager.GetWorkflowDefaultVersion("Charge_back");
+            this.ActionContext.InstanceData["st_money"].Value = st_moneys;
+            
+            // 获取取回协议子流程的版本号
+            int GetBackAgreement = OThinker.H3.Controllers.AppUtility.Engine.WorkflowManager.GetWorkflowDefaultVersion("GetBackAgreement");
+            this.ActionContext.InstanceData["WorkflowVersion_Back"].Value = GetBackAgreement;
+
+            return base.LoadDataFields();
+        }
+
+
+        public String generateContractNo()
+        {
+            string year = DateTime.Now.Year.ToString().Substring(2, 2);
+            String numberid = "SELECT MAX(Numberid) as num FROM I_AgreeMent_main";
+            string ContractNo = "";
+            string Number = "009";
+            System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+           numberid);
+            if (dt.Rows.Count > 0)
+            {
+                Number = dt.Rows[0]["num"].ToString();
+            }
+            else
+            {
+                Number = "001";
+            }
+
+            ContractNo = "SPIAIE-XY" + year + "-" + Number;
+            /*object JSONObj = JsonConvert.SerializeObject(ContractNo);
+       	 	Response.ContentType = "application/json";
+        	Response.Write(JSONObj);*/
+            return ContractNo;
+
+        }
+        //判断协议号是否存在
+        public String checkNumber()
+        {
+            string ContractNo =  Request["AgreeMent_number"];
+            // string year = DateTime.Now.Year.ToString().Substring(2, 2);
+            // String numberid = "SELECT MAX(Numberid) as num FROM I_AgreeMent_main";
+            //string ContractNo = "22222";
+            //string Number = "009";
+            // System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            //numberid);
+
+            /*object JSONObj = JsonConvert.SerializeObject(ContractNo);
+       	 	Response.ContentType = "application/json";
+        	Response.Write(JSONObj);*/
+            return ContractNo;
+
+        }
+    }
+}

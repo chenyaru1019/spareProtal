@@ -1,0 +1,429 @@
+﻿using System;
+using System.Collections;
+using System.Configuration;
+using System.Data;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.IO;
+using System.Text;
+using OThinker.H3.Controllers;
+using OThinker.H3.DataModel;
+using OThinker.H3.Portal;
+using OThinker.H3.BizBus.BizService;
+using OThinker.H3.Sheet;
+using OThinker.Data;
+using OThinker.H3.Instance;
+using OThinker.Organization;
+using System.Collections.Generic;
+using OThinker.H3.Acl;
+using OThinker.H3.Portal.service;
+using OThinker.H3.Portal.Entity;
+
+namespace OThinker.H3.Portal.Sheets.DefaultEngine
+{
+    public partial class ContractMainMy : OThinker.H3.Controllers.MvcPage
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+        }
+
+        public override MvcViewContext LoadDataFields()
+        {
+            if(this.ActionContext.IsOriginateMode)
+            {
+                this.ActionContext.InstanceData["PostA"].Value = this.ActionContext.ParticipantId;
+            }
+            // 合同状态
+            var ContractNo = this.ActionContext.InstanceData["ContractNo"].Value;
+            if(ContractNo != null )
+            {
+                //System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+                //    "SELECT UpdateNoFlg," +
+                //    " ApproveFlg," +
+                //    " OperateFlg," +
+                //    " CompleteFlg " +
+                //    " FROM I_ContractStatus where ContractNo = '" + ContractNo + "' "
+                //    );
+                //if (dt.Rows.Count > 0)
+                //{
+                //    this.ActionContext.InstanceData["UpdateNoFlg"].Value = dt.Rows[0]["UpdateNoFlg"].ToString();
+                //    this.ActionContext.InstanceData["ApproveFlg"].Value = dt.Rows[0]["ApproveFlg"].ToString();
+                //    this.ActionContext.InstanceData["OperateFlg"].Value = dt.Rows[0]["OperateFlg"].ToString();
+                //    this.ActionContext.InstanceData["CompleteFlg"].Value = dt.Rows[0]["CompleteFlg"].ToString();
+                //}
+                // 合同创建节点时
+                //if (this.ActionContext.ActivityCode.Equals("ActivityCreate"))
+                //{
+                    // 解决缓存问题（合同号修改时）
+                    ContractMain con = Common.getContractByBizId(this.ActionContext.BizObjectID);
+                    this.ActionContext.InstanceData["ContractNo"].Value = con.ContractNo;
+
+                    // 获取申请修改合同号子流程的版本号
+                    int versionBack = OThinker.H3.Controllers.AppUtility.Engine.WorkflowManager.GetWorkflowDefaultVersion("GetBackContract");
+                    this.ActionContext.InstanceData["WorkflowVersion_Back"].Value = versionBack;
+                
+
+                     // 获取申请修改合同号子流程的版本号
+                    int versionUpdateContractNo = OThinker.H3.Controllers.AppUtility.Engine.WorkflowManager.GetWorkflowDefaultVersion("UpdateContractNo");
+                    this.ActionContext.InstanceData["WorkflowVersion_Update"].Value = versionUpdateContractNo;
+
+                    // 获取合同号修改记录
+                    System.Data.DataTable dt_upno = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+                        //"SELECT ins.OriginatorName Approver,CONVERT(varchar(12),ins.StartTime,111) ApproveDate,upd.ContractNoNew,ins.State Status,ins.ObjectID" +
+                        //" FROM I_UpdateContractNo upd, OT_InstanceContext ins " +
+                        //" where upd.ContractNoOld = '" + ContractNo + "' and upd.ObjectID = ins.BizObjectId" +
+                        //" Union " +
+                        " SELECT ins.OriginatorName Approver,CONVERT(varchar(12),ins.StartTime,111) ApproveDate,upd.ContractNoNew,ins.State Status,ins.ObjectID" +
+                        " FROM I_UpdateContractNo upd, OT_InstanceContext ins " +
+                        " where upd.ContractNoNew = '" + ContractNo + "' and upd.ObjectID = ins.BizObjectId");
+                    if (dt_upno.Rows.Count > 0)
+                    {
+                        BizObject[] bizObjects = new BizObject[1];
+                        BizObjectSchema childSchema = this.ActionContext.Schema.GetProperty("UpdateNoTbl").ChildSchema;
+                        // 第一行
+                        bizObjects[0] = new BizObject(this.ActionContext.Engine, childSchema, this.ActionContext.User.UserID);
+                        bizObjects[0]["Approver"] = dt_upno.Rows[0]["Approver"].ToString();
+                        bizObjects[0]["ApproveDate"] = dt_upno.Rows[0]["ApproveDate"].ToString();
+                        bizObjects[0]["ContractNoNew"] = dt_upno.Rows[0]["ContractNoNew"].ToString();
+                        var st = dt_upno.Rows[0]["Status"].ToString();
+                        var workItemId = Common.getWorkItemId(dt_upno.Rows[0]["ObjectID"].ToString(), st);
+                        bizObjects[0]["Status"] = st=="2"?"审批中":(st == "4"?"审批完了":"");
+                        bizObjects[0]["Operate"] = "";
+                        bizObjects[0]["WorkItemId"] = workItemId;
+                        this.ActionContext.InstanceData["UpdateNoTbl"].Value = bizObjects;
+                    }
+
+                //}
+                // 合同审签节点时
+                //if (this.ActionContext.ActivityCode.Equals("ActivityApprove"))
+                //{
+                    // 获取合同审签子流程的版本号
+                    int versionApprove = OThinker.H3.Controllers.AppUtility.Engine.WorkflowManager.GetWorkflowDefaultVersion("ContractApprove");
+                    this.ActionContext.InstanceData["WorkflowVersion_Approve"].Value = versionApprove;
+                    // 获取审签记录
+                    System.Data.DataTable dt_approve = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+                        "SELECT ins.OriginatorName Approver,CONVERT(varchar(12),ins.StartTime,111) ApproveDate,ins.State Status,ins.ObjectID" +
+                        " FROM I_ContractApprove app, OT_InstanceContext ins " +
+                        " where app.ContractNo = '" + ContractNo + "' and app.ObjectID = ins.BizObjectId");
+                    if (dt_approve.Rows.Count > 0)
+                    {
+                        BizObject[] bizObjects = new BizObject[1];
+                        BizObjectSchema childSchema = this.ActionContext.Schema.GetProperty("ContractApproveTbl").ChildSchema;
+                        // 第一行
+                        bizObjects[0] = new BizObject(this.ActionContext.Engine, childSchema, this.ActionContext.User.UserID);
+                        bizObjects[0]["Approver"] = dt_approve.Rows[0]["Approver"].ToString();
+                        bizObjects[0]["ApproveDate"] = dt_approve.Rows[0]["ApproveDate"].ToString();
+                        var st = dt_approve.Rows[0]["Status"].ToString();
+                        var workItemId = Common.getWorkItemId(dt_approve.Rows[0]["ObjectID"].ToString(), st);
+                        bizObjects[0]["Status"] = st == "2" ? "审批中" : (st == "4" ? "审批完了" : "");
+                        bizObjects[0]["Operate"] = "";
+                        bizObjects[0]["WorkItemId"] = workItemId;
+                        this.ActionContext.InstanceData["ContractApproveTbl"].Value = bizObjects;
+                    }
+                //}
+               //PortalControl.PortalPage.GetReadAttachmentUrl()
+                // 合同执行节点时
+                //if (this.ActionContext.ActivityCode.Equals("ActivityOperate"))
+                //{
+                    // 获取请款子流程的版本号
+                    int versionQK = OThinker.H3.Controllers.AppUtility.Engine.WorkflowManager.GetWorkflowDefaultVersion("QK");
+                    this.ActionContext.InstanceData["WorkflowVersion_QK"].Value = versionQK;
+                    // 获取请款记录
+                    var qksql =
+                        "   SELECT max(qk.ObjectId) id,qk.QKSeq QKSeq,sum(tbl.Amount) Amount,sum(tbl.ConvertAmount) ConvertAmount,max(qk.QKTarget) QKTarget,tbl.Currency " +
+                        "   FROM I_QK qk, I_QKSubTbl tbl" +
+                        "   where qk.ContractNo =  '" + ContractNo + "'" +
+                        "   and qk.ObjectID = tbl.ParentObjectID" +
+                        "   group by qk.QKSeq,tbl.Currency";
+                    System.Data.DataTable dt_qk = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+                        " select ic.state Status,t.QKSeq,t.cnt SeqCnt,cast(t.Amount as varchar)+e.EnumValue Amount,cast(t.ConvertAmount as varchar)+'人民币' ConvertAmount,QKTarget " +
+                        " from(" +
+                        "  select t1.id,t1.QKSeq,t1.Amount" +
+                        " ,( " +
+                        "  select sum(t2.ConvertAmount) from (" + 
+                           qksql +
+                        "  ) t2 where t2.QKSeq = t1.QKSeq" +
+                        "  ) ConvertAmount" +
+                        " ,( " +
+                        "  select count(t2.QKSeq) from (" +
+                           qksql +
+                        "  ) t2 where t2.QKSeq = t1.QKSeq" +
+                        "  ) cnt" +
+                        " ,t1.Currency " +
+                        " ,t1.QKTarget" +
+                        " from (" +
+                          qksql +
+                        "  ) t1" +
+                        " ) t LEFT JOIN OT_EnumerableMetadata e on t.Currency = e.Code and e.Category = '币种' " +
+                        " LEFT JOIN OT_InstanceContext ic on ic.BizObjectId = t.id " +
+                        " order by t.QKSeq");
+                    if (dt_qk.Rows.Count > 0)
+                    {
+                        BizObject[] bizObjects = new BizObject[dt_qk.Rows.Count];
+                        var i = 0;
+                        foreach (DataRow dr in dt_qk.Rows)
+                        {
+                            BizObjectSchema childSchema = this.ActionContext.Schema.GetProperty("QKMainTbl").ChildSchema;
+                            // 第一行
+                            bizObjects[i] = new BizObject(this.ActionContext.Engine, childSchema, this.ActionContext.User.UserID);
+                            bizObjects[i]["QKSeq"] = dr["QKSeq"].ToString();
+                            bizObjects[i]["QKAmount"] = dr["Amount"].ToString();
+                            bizObjects[i]["QKTotalAmount"] = dr["ConvertAmount"].ToString();
+                            bizObjects[i]["QKTarget"] = dr["QKTarget"].ToString();
+                            string st = (dr["Status"].ToString().Equals("4") ? "审批完成" : (dr["Status"].ToString().Equals("2") ? "审批中" : ""));
+                            bizObjects[i]["Status"] = st;
+                            bizObjects[i]["SeqCnt"] = dr["SeqCnt"].ToString();
+                            i++;
+                        }
+                        this.ActionContext.InstanceData["QKMainTbl"].Value = bizObjects;
+                    }
+
+
+                    // 获取信用证子流程的版本号
+                    int versionPayment = OThinker.H3.Controllers.AppUtility.Engine.WorkflowManager.GetWorkflowDefaultVersion("PaymentSub");
+                    this.ActionContext.InstanceData["WorkflowVersion_Payment"].Value = versionPayment;
+                    // 获取信用证改证子流程的版本号
+                    int versionPaymentUpdate = OThinker.H3.Controllers.AppUtility.Engine.WorkflowManager.GetWorkflowDefaultVersion("PaymentUpdateSub");
+                    this.ActionContext.InstanceData["WorkflowVersion_PaymentUpdate"].Value = versionPaymentUpdate;
+                    // 获取信用证改证子流程的版本号
+                    int versionImportLicense = OThinker.H3.Controllers.AppUtility.Engine.WorkflowManager.GetWorkflowDefaultVersion("ImportLicenseSub");
+                    this.ActionContext.InstanceData["WorkflowVersion_ImportLicense"].Value = versionImportLicense;
+                
+
+                    // 获取信用证记录
+                System.Data.DataTable dt_payment = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+                        " select * from (" +
+                        " SELECT p.BankName,p.PaymentAmount,ic.State Status,'已开证' as DisplayName,p.CreatedTime,ic.ObjectID,p.ObjectID PaymentId, p.changePaymentFlg, p.RejectFlg" +
+                        " FROM I_PaymentSub p, OT_InstanceContext ic" +
+                        " where p.ObjectID = ic.BizObjectId" +
+                        " and p.ContractNo = '" + ContractNo + "'" +
+                        " and ic.State = '4'" +
+                        " Union All" +
+                        " SELECT p.BankName,p.PaymentAmount,ic.State Status,w.DisplayName+'中' as DisplayName,p.CreatedTime,ic.ObjectID,p.ObjectID PaymentId, p.changePaymentFlg, p.RejectFlg" +
+                        " FROM I_PaymentSub p, OT_InstanceContext ic, OT_WorkItem w" +
+                        " where p.ObjectID = ic.BizObjectId" +
+                        " and ic.ObjectID = w.InstanceId" +
+                        " and p.ContractNo = '" + ContractNo + "'" +
+                        "  and ic.State = '2'" +
+                        " ) t ORDER BY t.CreatedTime desc");
+
+                if (dt_payment.Rows.Count > 0)
+                {
+                    //BizObject[] bizObjects = new BizObject[dt_payment.Rows.Count];
+                    List<Dictionary<string, string>> ls = new List<Dictionary<string,string>>();
+                    var i = 0;
+                    var TheNo = 0;
+                    foreach (DataRow dr in dt_payment.Rows)
+                    {
+                        //BizObjectSchema childSchema = this.ActionContext.Schema.GetProperty("PaymentTbl").ChildSchema;
+                        Dictionary<string, string> dic = new Dictionary<string, string>();
+                        // 第一行
+                        //bizObjects[i] = new BizObject(this.ActionContext.Engine, childSchema, this.ActionContext.User.UserID);
+                        //bizObjects[i]["Bank"] = dr["BankName"].ToString();
+                        //bizObjects[i]["TotalAmount"] = dr["PaymentAmount"].ToString();
+                        //var st = dr["Status"].ToString();
+                        //bizObjects[i]["Status"] = dr["DisplayName"].ToString();
+                        //var workItemId = Common.getWorkItemId(dr["ObjectID"].ToString(), st);
+                        //bizObjects[i]["WorkItemId"] = workItemId;
+                        //bizObjects[i]["PaymentId"] = dr["PaymentId"].ToString();
+                        //bizObjects[i]["changePaymentFlg"] = dr["changePaymentFlg"].ToString();
+                        TheNo++;
+                        dic.Add("TheNo", TheNo.ToString());
+                        dic.Add("Bank", dr["BankName"].ToString());
+                        dic.Add("TotalAmount", dr["PaymentAmount"].ToString());
+                        var st = dr["Status"].ToString();
+                        dic.Add("Status", dr["DisplayName"].ToString());
+                        var workItemId = Common.getWorkItemId(dr["ObjectID"].ToString(), st);
+                        dic.Add("WorkItemId", workItemId);
+                        dic.Add("PaymentId", dr["PaymentId"].ToString());
+                        dic.Add("changePaymentFlg", dr["changePaymentFlg"].ToString());
+                        dic.Add("RejectFlg", dr["RejectFlg"].ToString());
+                        ls.Add(dic);
+                        i++;
+
+                        System.Data.DataTable dtu = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+                            " SELECT p.BankName," +
+                            " up.PaymentAmount," +
+                            " ic.State Status," +
+                            " case ic.State " +
+                            " when '4' then '已开证' " +
+                            " when '2' then " +
+                            "  case up.RejectFlg " +
+                            "  WHEN '1' THEN '驳回' " +
+                            "  else '审批中'  " +
+                            "  end" +
+                            " end DisplayName,  " +
+                            " up.CreatedTime," +
+                            " ic.ObjectID," +
+                            " up.ObjectID PaymentId, " +
+                            " up.RejectFlg, " +
+                            " up.changePaymentFlg  " +
+                            " FROM I_PaymentUpdateSub up ,OT_InstanceContext ic ,I_PaymentSub p " +
+                            " where p.ObjectID ='"+ dr["PaymentId"].ToString() + "' " +
+                            " and up.ObjectID = ic.BizObjectId and p.paymentNo = up.paymentno " +
+                            " order by CreatedTime  ");
+                        if (dtu.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr2 in dtu.Rows)
+                            {
+                                Dictionary<string, string> dic2 = new Dictionary<string, string>();
+                                dic2.Add("TheNo", "");
+                                dic2.Add("Bank", dr2["BankName"].ToString());
+                                dic2.Add("TotalAmount", dr2["PaymentAmount"].ToString());
+                                var st2 = dr2["Status"].ToString();
+                                dic2.Add("Status", dr2["DisplayName"].ToString());
+                                var workItemId2 = Common.getWorkItemId(dr2["ObjectID"].ToString(), st2);
+                                dic2.Add("WorkItemId", workItemId2);
+                                dic2.Add("PaymentId", dr2["PaymentId"].ToString());
+                                dic2.Add("changePaymentFlg", dr2["changePaymentFlg"].ToString());
+                                dic2.Add("RejectFlg", dr2["RejectFlg"].ToString());
+                                ls.Add(dic2);
+                                i++;
+                            }
+
+                        }
+                    }
+
+                    BizObject[] bizObjects = new BizObject[ls.Count];
+                    var j = 0;
+                    foreach (Dictionary<string, string> dic in ls)
+                    {
+                        BizObjectSchema childSchema = this.ActionContext.Schema.GetProperty("PaymentTbl").ChildSchema;
+                        bizObjects[j] = new BizObject(this.ActionContext.Engine, childSchema, this.ActionContext.User.UserID);
+                        bizObjects[j]["TheNo"] = dic["TheNo"].ToString();
+                        bizObjects[j]["Bank"] = dic["Bank"].ToString();
+                        bizObjects[j]["TotalAmount"] = dic["TotalAmount"].ToString();
+                        bizObjects[j]["Status"] = dic["Status"].ToString();
+                        bizObjects[j]["WorkItemId"] = dic["WorkItemId"].ToString();
+                        bizObjects[j]["PaymentId"] = dic["PaymentId"].ToString();
+                        bizObjects[j]["changePaymentFlg"] = dic["changePaymentFlg"].ToString();
+                        bizObjects[j]["RejectFlg"] = dic["RejectFlg"].ToString();
+                        j++;
+                    }
+                    this.ActionContext.InstanceData["PaymentTbl"].Value = bizObjects;
+                }
+
+
+                // 获取进口许可证记录
+                System.Data.DataTable dt_importlicense = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+                        " SELECT p.GoodName,p.GoodCode,ic.State Status," +
+                        " case ic.State  " +
+                        "	when '2' then  " +
+                        "		case p.RejectFlg " +
+                        "			when '1' then '驳回' " +
+                        "			else '办理中' " +
+                        "		end " +
+                        "  when '4' then " +
+                        "		case p.CancelFlg  " +
+                        "			when '1' then '已废除' " +
+                        "			else '已办证' " +
+                        "		end  " +
+                        "  else '草稿'" +
+                        " end DisplayName, " +
+                        " p.CreatedTime," +
+                        " ic.ObjectID IcObjectId," +
+                        " p.ObjectID ImportLicenseId, " +
+                        " p.RejectFlg , " +
+                        " p.CancelFlg " +
+                        " FROM I_ImportLicenseSub p, OT_InstanceContext ic " +
+                        " where p.ObjectID = ic.BizObjectId " +
+                        " and p.ContractNo = '" + ContractNo + "' " +
+                        " order by p.CreatedTime  ");
+
+                if (dt_importlicense.Rows.Count > 0)
+                {
+                    BizObject[] bizObjects = new BizObject[dt_importlicense.Rows.Count];
+                    var i = 0;
+                    foreach (DataRow dr in dt_importlicense.Rows)
+                    {
+                        BizObjectSchema childSchema = this.ActionContext.Schema.GetProperty("ImportLicenceTbl").ChildSchema;
+                        // 第一行
+                        bizObjects[i] = new BizObject(this.ActionContext.Engine, childSchema, this.ActionContext.User.UserID);
+                        bizObjects[i]["GoodName"] = dr["GoodName"].ToString();
+                        bizObjects[i]["GoodCode"] = dr["GoodCode"].ToString();
+                        var st = dr["Status"].ToString();
+                        bizObjects[i]["Status"] = dr["Status"].ToString();
+                        bizObjects[i]["DisplayName"] = dr["DisplayName"].ToString();
+                        var workItemId = Common.getWorkItemId(dr["IcObjectId"].ToString(), st);
+                        bizObjects[i]["WorkItemId"] = workItemId;
+                        bizObjects[i]["ImportLicenseId"] = dr["ImportLicenseId"].ToString();
+                        bizObjects[i]["RejectFlg"] = dr["RejectFlg"].ToString();
+                        bizObjects[i]["CancelFlg"] = dr["CancelFlg"].ToString();
+                        i++;
+                    }
+                    this.ActionContext.InstanceData["ImportLicenceTbl"].Value = bizObjects;
+                }
+                
+            }
+
+
+            //this.ActionContext.InstanceData.Submit();
+            return base.LoadDataFields();
+        }
+
+        public class LinkUrl
+        {
+            public string NavigateUrl { get; set; }
+            public string NavigateUrlDataField { get; set; }
+            public string Text { get; set; }
+            public string TextDataField { get; set; }
+            
+        }
+
+
+        /// <summary>
+        /// 保存表单数据到引擎中
+        /// </summary>
+        /// <param name="Args"></param>
+        public override void SaveDataFields(MvcPostValue MvcPost, MvcResult result)
+        {
+            // 保存后，后台执行事件
+            base.SaveDataFields(MvcPost, result);
+
+            try
+            {
+                //if (this.ActionContext.IsOriginateMode)
+                //{
+                //    var ContractNo = this.ActionContext.InstanceData["ContractNo"].Value;
+                //    // var ContractNo2 = ActionContext.BizObject.GetValue("ContractNo");
+                //    var ContractName = this.ActionContext.InstanceData["ContractName"].Value;
+                //    System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+                //    " insert into I_ContractStatus  " +
+                //    " (ContractNo, ContractName, UpdateNoFlg, ApproveFlg, OperateFlg, CompleteFlg) " +
+                //    "  VALUES('" + ContractNo + "', '" + ContractName + "', '0', '', '', '')  "
+                //    );
+                //    DataRowCollection dr = dt.Rows;
+                //    this.ActionContext.InstanceData.Submit();
+                //}
+
+            }
+            catch (Exception exp)
+            {
+
+            }
+
+        }
+
+        //public List<string> GetBackAction()
+        //{
+        //    List<string> acts = new List<string>();
+        //    var ContractNo = this.ActionContext.InstanceData["ContractNo"].Value;
+        //    ActionContext ac = this.ActionContext;
+        //    this.ActionContext.Engine.InstanceManager.ReloadInstance(ac.InstanceId);
+        //    acts.Add("A001-节点1");
+        //    acts.Add("A002-节点2");
+        //    acts.Add("A003-节点3");
+        //    return acts;
+        //    //if (ContractNo.Equals(""))
+        //    //{
+        //    //    return "error";
+        //    //}
+        //    //else
+        //    //{
+        //    //    return "success";
+        //    //}
+
+        //}
+    }
+}

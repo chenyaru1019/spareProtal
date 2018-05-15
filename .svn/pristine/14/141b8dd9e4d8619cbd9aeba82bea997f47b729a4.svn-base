@@ -1,0 +1,152 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="CancelMy.aspx.cs" Inherits="OThinker.H3.Portal.Sheets.DefaultEngine.CancelMy" EnableEventValidation="false" MasterPageFile="~/MvcSheet.master" %>
+
+<%@ OutputCache Duration="999999" VaryByParam="T" VaryByCustom="browser" %>
+<asp:Content ID="head" ContentPlaceHolderID="headContent" runat="Server">
+    <script type="text/javascript">
+
+</script>
+</asp:Content>
+<asp:Content ID="menu" ContentPlaceHolderID="cphMenu" runat="Server">
+</asp:Content>
+<asp:Content ID="master" ContentPlaceHolderID="masterContent" runat="Server">
+    <script src="CancelMy.js"></script>
+    <div style="text-align: center;" class="DragContainer">
+        <label id="lblTitle" class="panel-title">合同终止流程</label>
+    </div>
+    <div class="panel-body sheetContainer">
+        <div class="ContractContent" style="margin-top: 15px">
+            <div class="nav-icon fa  fa-chevron-right bannerTitle">
+                <label id="divSheetInfo" data-en_us="Sheet information">表单信息</label>
+                <span class="pull-right text-muted" id="toggleBtn">
+                    <i class="fa fa-fw fa-angle-double-down text" style="display:none"></i>
+                    <i class="fa fa-fw  fa-angle-double-up text-active" style="display: block;"></i>
+                </span>
+            </div>
+            <div class="divContent" id="divSheet">
+                <div class="row">
+                    <div id="title1" class="col-md-2">
+                        <span id="Label11" data-type="SheetLabel" data-datafield="ContractNo" style="">合同号</span>
+                    </div>
+                    <div id="control1" class="col-md-4">
+                        <input id="Control11" type="text" data-datafield="ContractNo" data-type="SheetTextBox" style="">
+                    </div>
+                    <div id="title2" class="col-md-2">
+                        <span id="Label12" data-type="SheetLabel" data-datafield="ContractName" style="">合同名称</span>
+                    </div>
+                    <div id="control2" class="col-md-4">
+                        <input id="Control12" type="text" data-datafield="ContractName" data-type="SheetTextBox" style="width:70%">
+                        <input type="button" onclick="viewContractF()" value="查看合同" class="btn btn-primary" >
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title3" class="col-md-2">
+                        <span id="Label13" data-type="SheetLabel" data-datafield="PostAB" style="">项目负责人AB</span>
+                    </div>
+                    <div id="control3" class="col-md-4">
+                        <input id="Control13" type="text" data-datafield="PostAB" data-type="SheetTextBox" style="">
+                    </div>
+                    <div id="title4" class="col-md-2">
+                        <span id="Label14" data-type="SheetLabel" data-datafield="ContractType" style="">合同类型</span>
+                    </div>
+                    <div id="control4" class="col-md-4">
+                        <input id="Control14" type="text" data-datafield="ContractType" data-type="SheetTextBox" style="">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title5" class="col-md-2">
+                        <span id="Label15" data-type="SheetLabel" data-datafield="ContractProperty" style="">合同性质</span>
+                    </div>
+                    <div id="control5" class="col-md-4">
+                        <input id="Control15" type="text" data-datafield="ContractProperty" data-type="SheetTextBox" style="">
+                    </div>
+                    <div id="title6" class="col-md-2">
+                        <span id="Label16" data-type="SheetLabel" data-datafield="ContractAmount" style="">合同金额</span>
+                    </div>
+                    <div id="control6" class="col-md-4">
+                        <input id="Control16" type="text" data-datafield="ContractAmount" data-type="SheetTextBox" style="">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="div454979" class="col-md-2">
+                    </div>
+                    <div id="div311946" class="col-md-4">
+                    </div>
+                    <div id="div885075" class="col-md-2">
+                        <span id="Label17" data-type="SheetLabel" data-datafield="TradeMethod" class="" style="">贸易方式</span>
+                    </div>
+                    <div id="div792583" class="col-md-4">
+                        <input id="Control17" type="text" data-datafield="TradeMethod" data-type="SheetTextBox" class="" style="">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title7" class="col-md-2">
+                        <span id="Label18" data-type="SheetLabel" data-datafield="FinalUser" class="" style="">最终用户</span>
+                    </div>
+                    <div id="control7" class="col-md-4">
+                        <input id="Control18" type="text" data-datafield="FinalUser" data-type="SheetTextBox" class="" style="">
+                    </div>
+                    <div id="title8" class="col-md-2">
+                        <span id="Label19" data-type="SheetLabel" data-datafield="Salers" class="" style="">合同卖方</span>
+                    </div>
+                    <div id="control8" class="col-md-4">
+                        <input id="Control19" type="text" data-datafield="Salers" data-type="SheetTextBox" class="" style="">
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="title9" class="col-md-2">
+                        <span id="Label20" data-type="SheetLabel" data-datafield="BidNo" style="" class="">招标编号</span>
+                    </div>
+                    <div id="control9" class="col-md-4">
+                        <input id="Control20" type="text" data-datafield="BidNo" data-type="SheetTextBox" class="" style="">
+                    </div>
+                    <div id="title10" class="col-md-2">
+                    </div>
+                    <div id="control10" class="col-md-4">
+                    </div>
+                </div>
+                <div class="row tableContent">
+                    <div id="title11" class="col-md-2">
+                        <span id="Label21" data-type="SheetLabel" data-datafield="Remark" style="">合同终止情况说明</span>
+                    </div>
+                    <div id="control11" class="col-md-10">
+                        <textarea id="Control21" data-datafield="Remark" data-type="SheetRichTextBox" style="">					</textarea>
+                    </div>
+                </div>
+                <div class="row tableContent">
+                    <div id="title13" class="col-md-2">
+                        <span id="Label22" data-type="SheetLabel" data-datafield="ManagerComment" style="">部门经理审批意见</span>
+                    </div>
+                    <div id="control13" class="col-md-10">
+                        <div id="Control22" data-datafield="ManagerComment" data-type="SheetComment" style="">
+                        </div>
+                    </div>
+                </div>
+                <div class="row tableContent">
+                    <div id="title15" class="col-md-2">
+                        <span id="Label23" data-type="SheetLabel" data-datafield="CompanyLeaderComment" style="">公司领导审批意见</span>
+                    </div>
+                    <div id="control15" class="col-md-10">
+                        <div id="Control23" data-datafield="CompanyLeaderComment" data-type="SheetComment" style="">
+                        </div>
+                    </div>
+                </div>
+                <div class="row hidden">
+                    <div id="div552950" class="col-md-2">
+                        <input id="Control20" type="text" data-datafield="NeedInstanceId" data-type="SheetTextBox" class="hidden" style="">
+                    </div>
+                    <div id="div903542" class="col-md-2">
+                        <input id="Control20" type="text" data-datafield="IsHYFlg" data-type="SheetTextBox" class="hidden" style="">
+                    </div>
+                    <div id="div553758" class="col-md-2">
+                    </div>
+                    <div id="div341245" class="col-md-2">
+                    </div>
+                    <div id="div785335" class="col-md-2">
+                    </div>
+                    <div id="div392071" class="col-md-2">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</asp:Content>

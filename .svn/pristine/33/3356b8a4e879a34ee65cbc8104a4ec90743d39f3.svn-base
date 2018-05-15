@@ -1,0 +1,124 @@
+﻿// 提交前事件
+$.MvcSheet.SubmitAction.OnActionPreDo = function () {
+
+    
+}
+// 表单验证接口
+$.MvcSheet.Validate = function () {
+    if (this.Action == "Submit") {
+        // 当前节点是发起节点
+        if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+            var ContractNoOld = $.MvcSheetUI.GetControlValue("ContractNoOld");
+            var ContractNoNew = $.MvcSheetUI.GetControlValue("ContractNoNew");
+            var chkFlg = "true";
+            try {
+                // 如果为国内合同
+                if (ContractNoOld.substring(0, 6) == "SPIAIE") {
+                    // 除了流水号可以修改，其他的不能修改
+                    var newArr = ContractNoNew.split("-");
+                    if (newArr.length < 3) {
+                        chkFlg = "false";
+                    }
+                    if (chkFlg == "true") {
+                        var firstIndO = ContractNoOld.indexOf("-");
+                        var firstIndN = ContractNoNew.indexOf("-");
+                        var firstStrO = ContractNoOld.substring(0, firstIndO);
+                        var firstStrN = ContractNoNew.substring(0, firstIndN);
+                        var secondIndO = ContractNoOld.substring(firstIndO + 1).indexOf("-");
+                        var secondIndN = ContractNoNew.substring(firstIndN + 1).indexOf("-");
+                        var secondStrO = ContractNoOld.substring(firstIndO + 1, firstIndO + 1 + secondIndO);
+                        var secondStrN = ContractNoNew.substring(firstIndN + 1, firstIndN + 1 + secondIndN);
+                        var thirdStrO = ContractNoOld.substring(firstIndO + secondIndO + 2);
+                        var thirdStrN = ContractNoNew.substring(firstIndN + secondIndN + 2);
+                        if (firstStrO != firstStrN || secondStrO.substring(0, 2) != secondStrN.substring(0, 2) || thirdStrO.substring(0, thirdStrO.length - 3) != thirdStrN.substring(0, thirdStrO.length - 3)) {
+                            chkFlg = "false";
+                        }
+                        if (!/^[0-9]*$/.test(secondStrN.substring(2)) || !/^[0-9]*$/.test(thirdStrN.substring(thirdStrO.length - 3))) {
+                            chkFlg = "false";
+                        }
+                    }
+                    // 如果为出口合同
+                } else if (ContractNoOld.substring(2, 8) == "SPIAIE") {
+                    var newArr = ContractNoNew.split("-");
+                    // 航油合同
+                    if (newArr.length == 2) {
+                        var firstStrO = ContractNoOld.split("-")[0];
+                        var firstStrN = ContractNoNew.split("-")[0];
+                        var secondStrO = ContractNoOld.split("-")[1];
+                        var secondStrN = ContractNoNew.split("-")[1];
+                        if (firstStrO != firstStrN || secondStrO.substring(secondStrO.length - 2) != secondStrN.substring(secondStrN.length - 2)) {
+                            chkFlg = "false";
+                        }
+                        if (!/^[0-9]*$/.test(secondStrN.substring(0, 3))) {
+                            chkFlg = "false";
+                        }
+                        // 非航油出口合同
+                    } else if (newArr.length > 2) {
+                        var firstIndO = ContractNoOld.indexOf("-");
+                        var firstIndN = ContractNoNew.indexOf("-");
+                        var firstStrO = ContractNoOld.substring(0, firstIndO);
+                        var firstStrN = ContractNoNew.substring(0, firstIndN);
+                        var secondIndO = ContractNoOld.substring(firstIndO + 1).indexOf("-");
+                        var secondIndN = ContractNoNew.substring(firstIndN + 1).indexOf("-");
+                        var secondStrO = ContractNoOld.substring(firstIndO + 1, firstIndO + 1 + secondIndO);
+                        var secondStrN = ContractNoNew.substring(firstIndN + 1, firstIndN + 1 + secondIndN);
+                        var thirdStrO = ContractNoOld.substring(firstIndO + secondIndO + 2);
+                        var thirdStrN = ContractNoNew.substring(firstIndN + secondIndN + 2);
+                        if (firstStrO != firstStrN || secondStrO.substring(secondStrO.length - 2) != secondStrN.substring(secondStrN.length - 2) || thirdStrO.substring(0, thirdStrO.length - 3) != thirdStrN.substring(0, thirdStrO.length - 3)) {
+                            chkFlg = "false";
+                        }
+                        if (!/^[0-9]*$/.test(secondStrN.substring(0, 3)) || !/^[0-9]*$/.test(thirdStrN.substring(thirdStrO.length - 3))) {
+                            chkFlg = "false";
+                        }
+                    } else {
+                        chkFlg = "false";
+                    }
+                }
+            } catch (err) {
+                chkFlg = "false";
+            }
+            if (chkFlg == "false") {
+                layer.confirm('合同编号规则有误，确认提交吗！', function (index) {
+                    $.MvcSheet.Submit2(this);
+                });
+                return false;
+            } else {
+                return true;
+            }
+
+        }
+    }
+}
+//数据加载后
+$.MvcSheet.Loaded = function () {
+    // 合同号码
+    var ContractNo = getUrlParam("ContractNo");
+    if (ContractNo != null && ContractNo != "") {
+        // 根据合同号码获取对应合同相关数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getByContractNo",   //处理页的相对地址
+            data: {
+                ContractNo: ContractNo,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                $.MvcSheetUI.SetControlValue("ContractNoOld", ret.ContractNo);
+                $.MvcSheetUI.SetControlValue("ContractName", ret.ContractName);
+                $.MvcSheetUI.SetControlValue("ContractType", ret.ContractType);
+                $.MvcSheetUI.SetControlValue("Country", ret.Country);
+                $.MvcSheetUI.SetControlValue("ContractProperty", ret.ContractProperty);
+                $.MvcSheetUI.SetControlValue("PostAB", ret.PostA + "," + ret.PostB);
+            }
+        });
+    }
+    $("input[data-datafield='ContractNoOld']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractName']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractType']").attr("disabled", "disabled");
+    $("input[data-datafield='Country']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractProperty']").attr("disabled", "disabled");
+    $("input[data-datafield='PostAB']").attr("disabled", "disabled");
+    
+}
+
+

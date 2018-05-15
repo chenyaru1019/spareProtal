@@ -1,0 +1,107 @@
+﻿// 提交前事件
+$.MvcSheet.SubmitAction.OnActionPreDo = function () {
+    if (!checkCurrency()) {
+        return false;
+    }
+}
+////初始化
+//$.MvcSheet.PreInit = function () {
+
+
+//}
+//数据加载后
+$.MvcSheet.Loaded = function () {
+    // 合同号码
+    var ContractNo = getUrlParam("ContractNo");
+    if (ContractNo != null && ContractNo != "") {
+        // 根据合同号码获取对应合同相关数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getByContractNo",   //处理页的相对地址
+            data: {
+                ContractNo: ContractNo,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                $.MvcSheetUI.SetControlValue("ContractNoOld", ret.ContractNo);
+                $.MvcSheetUI.SetControlValue("ContractName", ret.ContractName);
+                $.MvcSheetUI.SetControlValue("ContractType", ret.ContractType);
+                $.MvcSheetUI.SetControlValue("Country", ret.Country);
+                $.MvcSheetUI.SetControlValue("ContractProperty", ret.ContractProperty);
+                $.MvcSheetUI.SetControlValue("PostAB", ret.PostA + "," + ret.PostB);
+            }
+        });
+        // 根据合同号码获取请款批次
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getMaxQKSeqByContractNo",   //处理页的相对地址
+            data: {
+                ContractNo: ContractNo,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                // 设置请款批次
+                if (ret != null && ret != "") {
+                    $.MvcSheetUI.SetControlValue("QKSeq", parseInt(ret)+1);
+                } else {
+                    $.MvcSheetUI.SetControlValue("QKSeq", 1);
+                }
+            }
+        });
+    }
+
+
+    $("input[data-datafield='ContractNoOld']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractName']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractType']").attr("disabled", "disabled");
+    $("input[data-datafield='Country']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractProperty']").attr("disabled", "disabled");
+    $("input[data-datafield='PostAB']").attr("disabled", "disabled");
+    
+}
+
+function compute() {
+    var i = 0;
+    var totalamount_rmb = 0.0;
+    var totalamount_wb = 0.0;
+    var count = $("[data-datafield='QKSubTbl']").find('tr.rows').length;
+    $("[data-datafield='QKSubTbl']").find('tr.rows').each(function () {
+        if ($(this).find("[data-datafield='QKSubTbl.Currency']")[0].value == "RMB") {
+            var amount = $(this).find("input[data-datafield='QKSubTbl.Amount']")[0].value;
+            var rate = $(this).find("input[data-datafield='QKSubTbl.Rate']")[0].value;
+            totalamount_rmb += (parseFloat(amount) * parseFloat(rate));
+        } else {
+            var amount = $(this).find("input[data-datafield='QKSubTbl.Amount']")[0].value;
+            var rate = $(this).find("input[data-datafield='QKSubTbl.Rate']")[0].value;
+            totalamount_wb += (parseFloat(amount) * parseFloat(rate));
+        }
+        
+    });
+    $.MvcSheetUI.SetControlValue('QKTotalAmoutRMB', totalamount_rmb.toFixed(2));
+    $.MvcSheetUI.SetControlValue('QKTotalAmoutWB', totalamount_wb.toFixed(2));
+}
+
+function checkCurrency() {
+    var curVar = new Array();
+    var count = $("[data-datafield='QKSubTbl']").find('tr.rows').length;
+    $("[data-datafield='QKSubTbl']").find('tr.rows').each(function () {
+        if (!containArra(curVar,
+            $(this).find("[data-datafield='QKSubTbl.Currency']")[0].value)) {
+            curVar.push($(this).find("[data-datafield='QKSubTbl.Currency']")[0].value);
+        }
+    });
+    if (curVar.length > 2) {
+        alert("除了人民币，外币不能选择多种！");
+        return false;
+    }
+    return true;
+}
+
+function containArra(curVar,value) {
+    for (var i = 0; i < curVar.length; i++) {
+        if (curVar[i] == value) {
+            return true;
+        }
+    }
+    return false;
+}

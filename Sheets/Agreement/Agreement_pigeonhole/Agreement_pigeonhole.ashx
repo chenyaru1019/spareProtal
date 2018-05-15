@@ -1,0 +1,139 @@
+﻿<%@ WebHandler Language="C#" Class="Agreement_pigeonhole" %>
+using System;
+using System.Web;
+using System.Web.Script.Serialization;
+using OThinker.H3;
+using System.Data;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+using System.Runtime.Serialization;
+
+
+public class Agreement_pigeonhole : IHttpHandler {
+    JavaScriptSerializer jsSerializer = new JavaScriptSerializer();
+    public void ProcessRequest (HttpContext context) {
+
+        string command = context.Request["Command"];
+        switch (command)
+        {
+
+            case "getByContractNo": getByContractNo(context); break;
+            case "getHYData": getHYData(context); break;
+            case "getGDCont": getGDCont(context); break;
+        }
+    }
+
+    //归档查询
+    public void getGDCont(HttpContext context) {
+        string AgreeMent_number = context.Request["AgreeMent_number"];
+        string agency_type = context.Request["agency_type"];
+        String GDcon = "";
+        if ("USD".Equals(agency_type)) {
+            GDcon = "select am.AgreeMent_number,am.AgreeMent_name,am.Agreement_client,am.Project_head_A,am.Project_head_B," +
+           "am.Pay_conditions,ar.agency_money agency_rate,e1.EnumValue agency_type_name,ar.agency_type agency_type FROM I_AircraftOilAgreement am INNER JOIN I_agency_rates_hy ar ON am.ObjectID = ar.ParentObjectID INNER JOIN OT_EnumerableMetadata e1 ON e1.Code = ar.agency_type AND e1.Category = '代理费费率／金额'" +
+           "where AgreeMent_number='"+AgreeMent_number+"'";
+        } else {
+            GDcon = "select am.AgreeMent_number,am.AgreeMent_name,am.Agreement_client,am.Project_head_A,am.Project_head_B," +
+           "am.Pay_conditions,ar.agency_money agency_rate,e1.EnumValue agency_type_name,ar.agency_type agency_type FROM I_Agreement_mains am INNER JOIN I_agency_rates ar ON am.ObjectID = ar.ParentObjectID INNER JOIN OT_EnumerableMetadata e1 ON e1.Code = ar.agency_type AND e1.Category = '代理费费率／金额' where AgreeMent_number='"+AgreeMent_number+"'";
+        }
+        Dictionary<string,string> dic = new Dictionary<string,string>();
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+           GDcon);
+        if (dt.Rows.Count > 0) {
+            dic.Add("AgreeMent_number",dt.Rows[0]["AgreeMent_number"].ToString());
+            dic.Add("Agreement_name",dt.Rows[0]["AgreeMent_name"].ToString());
+            dic.Add("Project_man",OThinker.H3.Controllers.AppUtility.Engine.Organization.GetName(dt.Rows[0]["Project_head_A"].ToString())+','+OThinker.H3.Controllers.AppUtility.Engine.Organization.GetName(dt.Rows[0]["Project_head_B"].ToString()));
+            dic.Add("Agreement_clint",dt.Rows[0]["Agreement_client"].ToString());
+            dic.Add("Agency_rate",dt.Rows[0]["agency_rate"].ToString()+dt.Rows[0]["agency_type_name"].ToString());
+            dic.Add("Pay_condition",dt.Rows[0]["Pay_conditions"].ToString());
+            //dic.Add("ContractShortName",dt.Rows[0]["ContractShortName"].ToString());           
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(dic);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+
+
+
+
+
+
+    public void getByContractNo (HttpContext context) {
+        string AgreeMent_number = context.Request["AgreeMent_number"];
+        string state = "";
+        // 国内合同
+        String numberid = "SELECT AgreeMent_name  FROM I_AgreeMent_main where AgreeMent_number='"+AgreeMent_number+"'";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+           numberid);
+        if (dt.Rows.Count > 0)
+        {
+            state = "1";
+        }
+        else {
+            state = "2";
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(state);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+
+
+    public void getHYData (HttpContext context) {
+        Dictionary<string,string> dic = new Dictionary<string,string>();
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT * from I_HYContractSet ");
+        if (dt.Rows.Count > 0) {
+            dic.Add("ObjectID",dt.Rows[0]["ObjectID"].ToString());
+            dic.Add("PostB",dt.Rows[0]["PostB"].ToString());
+            dic.Add("FinalUser",dt.Rows[0]["FinalUser"].ToString());
+            dic.Add("BidType",dt.Rows[0]["BidType"].ToString());
+            dic.Add("ContractType",dt.Rows[0]["ContractType"].ToString());
+            dic.Add("ContractName",dt.Rows[0]["ContractName"].ToString());
+            dic.Add("ContractShortName",dt.Rows[0]["ContractShortName"].ToString());
+            dic.Add("ProjectName",dt.Rows[0]["ProjectName"].ToString());
+            dic.Add("SubProjectName",dt.Rows[0]["SubProjectName"].ToString());
+            dic.Add("SubProjectCode",dt.Rows[0]["SubProjectCode"].ToString());
+            dic.Add("TradeMethod",dt.Rows[0]["TradeMethod"].ToString());
+            dic.Add("Country",dt.Rows[0]["Country"].ToString());
+            dic.Add("ContractRemark",dt.Rows[0]["ContractRemark"].ToString());
+            dic.Add("Salers",dt.Rows[0]["Salers"].ToString());
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(dic);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+
+    public bool IsReusable
+    {
+        get
+        {
+            return false;
+        }
+    }
+    private IEngine _Engine = null;
+    /// <summary>
+    /// 流程引擎的接口，该接口会比this.Engine的方式更快，因为其中使用了缓存
+    /// </summary>
+    public IEngine Engine
+    {
+        get
+        {
+            if (OThinker.H3.Controllers.AppConfig.ConnectionMode == ConnectionStringParser.ConnectionMode.Mono)
+            {
+                return OThinker.H3.Controllers.AppUtility.Engine;
+            }
+            return _Engine;
+        }
+        set
+        {
+            _Engine = value;
+        }
+    }
+
+}

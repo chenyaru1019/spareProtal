@@ -1,0 +1,192 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Agreement_sign.aspx.cs" Inherits="OThinker.H3.Portal.Sheets.Agreement.Agreement_sign" EnableEventValidation="false" MasterPageFile="~/MvcSheet.master" %>
+<%@ OutputCache Duration="999999" VaryByParam="T" VaryByCustom="browser" %>
+<asp:Content ID="head" ContentPlaceHolderID="headContent" runat="Server">
+    <script src="Agreement_sign.js"></script>
+	<script type="text/javascript">
+
+</script>
+</asp:Content>
+<asp:Content ID="menu" ContentPlaceHolderID="cphMenu" runat="Server">
+</asp:Content>
+<asp:Content ID="master" ContentPlaceHolderID="masterContent" runat="Server">
+<div style="text-align: center;" class="DragContainer">
+	<label id="lblTitle" class="panel-title">协议审签</label>
+</div>
+<div class="panel-body sheetContainer">
+		<div class="nav-icon fa  fa-chevron-right bannerTitle">
+			<label id="divSheetInfo" data-en_us="Sheet information">表单信息</label>
+		</div>
+		<div class="divContent" id="divSheet">
+            <div class="row">
+				<div id="title17" class="col-md-2">
+					<span id="Label25" data-type="SheetLabel" data-datafield="apply_peo" style="">申请人</span>
+				</div>
+				<div id="control17" class="col-md-4">
+					<input id="Control25" type="text" data-datafield="apply_peo" data-type="SheetTextBox" style="">
+				</div>
+				<div id="title18" class="col-md-2">
+					<span id="Label26" data-type="SheetLabel" data-datafield="apply_time" style="">申请时间</span>
+				</div>
+				<div id="control18" class="col-md-4">
+					<input id="Control26" type="text" data-datafield="apply_time" data-type="SheetTextBox" style="">
+				</div>
+			</div>
+			<div class="row">
+				<div id="title1" class="col-md-2">
+					<span id="Label11" data-type="SheetLabel" data-datafield="Project_head_A" style="">项目负责人A</span>
+				</div>
+				<div id="control1" class="col-md-4">
+					<input id="Control11" type="text" data-datafield="Project_head_A" data-type="SheetTextBox" class="" style="">
+				</div>
+				<div id="title2" class="col-md-2">
+					<span id="Label12" data-type="SheetLabel" data-datafield="Project_head_B" style="">项目负责人B</span>
+				</div>
+				<div id="control2" class="col-md-4">
+					<input id="Control12" type="text" data-datafield="Project_head_B" data-type="SheetTextBox" class="" style="">
+				</div>
+			</div>
+			<div class="row">
+				<div id="title3" class="col-md-2">
+					<span id="Label13" data-type="SheetLabel" data-datafield="AgreeMent_name" style="">协议名称</span>
+				</div>
+				<div id="control3" class="col-md-4">
+					<input id="Control13" type="text" data-datafield="AgreeMent_name" data-type="SheetTextBox" class="" style="">
+				</div>
+				<div id="title4" class="col-md-2">
+					<span id="Label14" data-type="SheetLabel" data-datafield="Agreement_client" style="">协议委托方</span>
+				</div>
+				<div id="control4" class="col-md-4">
+					<input id="Control14" type="text" data-datafield="Agreement_client" data-type="SheetTextBox" class="" style="">
+				</div>
+			</div>
+
+			<div class="row">
+				<div id="title11" class="col-md-2">
+					<span id="Label21" data-type="SheetLabel" data-datafield="Agency_rate" style="">代理费率</span>
+				</div>
+				<div id="control11" class="col-md-4">
+					<input id="Control21" type="text" data-datafield="Agency_rate" data-type="SheetTextBox" class="" style="">
+				</div>
+				<div id="title12" class="col-md-2">
+					<span id="Label22" data-type="SheetLabel" data-datafield="AgreeMent_number" style="">协议号</span>
+				</div>
+				<div id="control12" class="col-md-4">
+					<input id="Control22" type="text" data-datafield="AgreeMent_number" data-type="SheetTextBox" class="" style="">
+				</div>
+			</div>
+			<div class="row">
+				<div id="title13" class="col-md-2">
+					<span id="Label23" data-type="SheetLabel" data-datafield="Pay_conditions" style="">支付条件</span>
+				</div>
+				<div id="control13" class="col-md-4">
+					<input id="Control23" type="text" data-datafield="Pay_conditions" data-type="SheetTextBox" class="" style="">
+				</div>
+				<div id="space14" class="col-md-2">
+				</div>
+				<div id="spaceControl14" class="col-md-4">
+				</div>
+			</div>
+            <div class="row">
+				<div id="title19" class="col-md-2">
+					<span id="Label27" data-type="SheetLabel" data-datafield="Agency_Pro_approval" style="">协议稿文件</span>
+				</div>
+				<div id="control19" class="col-md-10">
+					<div id="Control27" data-datafield="Agency_Pro_approval" data-type="SheetAttachment" style="">
+						
+					</div>
+				</div>
+			</div>
+            <div class="row tableContent">
+				<div id="title21" class="col-md-2">
+					<span id="Label28" data-type="SheetLabel" data-datafield="approval_record" style="">审批记录</span>
+				</div>
+				<div id="control21" class="col-md-10">
+					<table id="Control28" data-datafield="approval_record" data-type="SheetGridView" class="SheetGridView" data-displayadd="false" data-displaydelete="false" data-displaysequenceno="false">
+						<tbody>
+							
+							<tr class="header">
+								<td id="Control28_SerialNo" class="rowSerialNo">
+序号								</td>
+								<td id="Control28_Header3" data-datafield="approval_record.dispose_name">
+									<label id="Control28_Label3" data-datafield="approval_record.dispose_name" data-type="SheetLabel" style="">处理名称</label>
+								</td>
+								<td id="Control28_Header4" data-datafield="approval_record.dispose_peo">
+									<label id="Control28_Label4" data-datafield="approval_record.dispose_peo" data-type="SheetLabel" style="">处理人</label>
+								</td>
+								<td id="Control28_Header5" data-datafield="approval_record.dispose_time">
+									<label id="Control28_Label5" data-datafield="approval_record.dispose_time" data-type="SheetLabel" style="">处理时间</label>
+								</td>
+								<td id="Control28_Header6" data-datafield="approval_record.dispose_result">
+									<label id="Control28_Label6" data-datafield="approval_record.dispose_result" data-type="SheetLabel" style="">处理结果</label>
+								</td>
+								<td id="Control28_Header7" data-datafield="approval_record.remark">
+									<label id="Control28_Label7" data-datafield="approval_record.remark" data-type="SheetLabel" style="">备注</label>
+								</td>
+								<td class="rowOption">
+删除								</td>
+							</tr>
+							<tr class="template">
+								<td id="Control28_Option" class="rowOption">
+								</td>
+								<td data-datafield="approval_record.dispose_name">
+									<input id="Control28_ctl3" type="text" data-datafield="approval_record.dispose_name" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="approval_record.dispose_peo">
+									<input id="Control28_ctl4" type="text" data-datafield="approval_record.dispose_peo" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="approval_record.dispose_time">
+									<input id="Control28_ctl5" type="text" data-datafield="approval_record.dispose_time" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="approval_record.dispose_result">
+									<input id="Control28_ctl6" type="text" data-datafield="approval_record.dispose_result" data-type="SheetTextBox" style="">
+								</td>
+								<td data-datafield="approval_record.remark">
+									<input id="Control28_ctl7" type="text" data-datafield="approval_record.remark" data-type="SheetTextBox" style="">
+								</td>
+								<td class="rowOption">
+									<a class="delete">
+										<div class="fa fa-minus">
+										</div>
+									</a>
+									<a class="insert">
+										<div class="fa fa-arrow-down">
+										</div>
+									</a>
+								</td>
+							</tr>
+							<tr class="footer">
+								<td class="rowOption">
+								</td>
+								<td data-datafield="approval_record.dispose_name">
+								</td>
+								<td data-datafield="approval_record.dispose_peo">
+								</td>
+								<td data-datafield="approval_record.dispose_time">
+								</td>
+								<td data-datafield="approval_record.dispose_result">
+								</td>
+								<td data-datafield="approval_record.remark">
+								</td>
+								<td class="rowOption">
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+            
+			<div class="row tableContent">
+				<div id="title15" class="col-md-2">
+					<span id="Label24" data-type="SheetLabel" data-datafield="Advice" style="">审批建议</span>
+				</div>
+				<div id="control15" class="col-md-10">
+					<div id="Control24" data-datafield="Advice" data-type="SheetComment" style="">
+						
+					</div>
+				</div>
+			</div>
+            
+           
+		</div>
+	</div>
+</asp:Content>

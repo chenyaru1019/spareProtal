@@ -1,0 +1,234 @@
+﻿//数据加载后
+$.MvcSheet.Loaded = function () {
+    // 合同号码
+    var ContractNo = getUrlParam("ContractNo");
+    if (ContractNo != null && ContractNo != "") {
+        
+        // 根据合同号码获取对应合同相关数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getByContractNo",   //处理页的相对地址
+            data: {
+                ContractNo: ContractNo,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                $.MvcSheetUI.SetControlValue("ContractNo", ret.ContractNo);
+                $.MvcSheetUI.SetControlValue("ContractName", ret.ContractName);
+                $.MvcSheetUI.SetControlValue("PostAB", ret.PostA + "," + ret.PostB);
+
+            }
+        });
+    }
+
+    var BHFlg = getUrlParam("BHFlg");
+    if (BHFlg != null && BHFlg != "") {
+        $.MvcSheetUI.SetControlValue("BHFlg", BHFlg);
+    } else {
+        BHFlg = $.MvcSheetUI.GetControlValue("BHFlg");
+    }
+    // 录入flg
+    if (BHFlg == "New") {
+        $(".NewBH").show();
+        $(".ApplyBH").hide();
+        $(".ApproveBH").hide();
+        $(".ConfirmBH").hide();
+
+        // 只显示保存按钮
+        $("li[data-action='Submit']").hide();
+        $("li[data-action='Print']").hide();
+        $("li[data-action='Forward']").hide();
+    // 申请
+    } else if (BHFlg == "Apply") {
+        $(".NewBH").show();
+        $(".ApplyBH").show();
+        $(".ApproveBH").show();
+        $(".ConfirmBH").show();
+        if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+            // 只显示提交按钮
+            $("li[data-action='Save']").hide();
+            $("li[data-action='Print']").hide();
+            $("li[data-action='Forward']").hide();
+        }
+
+        // 录保的数据只可见
+        $("input[data-datafield='BHTarget']").attr("disabled", "disabled");
+        $("input[data-datafield='BHTarget']").parent().find("a").hide();
+        $("[data-datafield='BHType']").attr("disabled", "disabled");
+        $("[data-datafield='BHProperty']").attr("disabled", "disabled");
+        $("[data-datafield='ReceiveDate']").attr("disabled", "disabled");
+        $("[data-datafield='BHAmount']").attr("disabled", "disabled");
+        $("[data-datafield='Currency']").attr("disabled", "disabled");
+        $("[data-datafield='BHGDQX']").attr("disabled", "disabled");
+        $("[data-datafield='ExpirationDate']").attr("disabled", "disabled");
+        $("[data-datafield='ReturnAmountDate']").attr("disabled", "disabled");
+        $("[data-datafield='RemindDate']").attr("disabled", "disabled");
+        $("[data-datafield='Remark']").attr("disabled", "disabled");
+        $("[data-datafield='Attachment']").find("div").attr("disabled", "disabled");
+        $("[data-datafield='Attachment']").find("table tr").each(function () {
+            $(this).find("a.fa-minus").hide();
+        });
+        $("[data-datafield='BHReceiptTbl']").find("tr.rows").each(function () {
+            $(this).find("td a.delete").hide();
+        });
+        $("[data-datafield='LoadRept']").parent().hide();
+        $(".NewBH .bannerTitle").click();
+    }
+
+    $("input[data-datafield='ContractNo']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractName']").attr("disabled", "disabled");
+    $("input[data-datafield='PostAB']").attr("disabled", "disabled");
+    $("input[data-datafield='BHTarget2']").attr("disabled", "disabled");
+    $("input[data-datafield='BHType2']").attr("disabled", "disabled");
+    $("input[data-datafield='BHProperty2']").attr("disabled", "disabled");
+    $("input[data-datafield='ReceiveDate2']").attr("disabled", "disabled");
+    $("input[data-datafield='BHAmount2']").attr("disabled", "disabled");
+    $("input[data-datafield='ExpirationDate2']").attr("disabled", "disabled");
+    
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+        $(".ApproveBH").hide();
+        $(".ConfirmBH").hide();
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityManager") {
+        $(".ApproveBH").show();
+        $(".ConfirmBH").hide();
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityCompanyLeader") {
+        $(".ApproveBH").show();
+        $(".ConfirmBH").hide();
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityConfirm") {
+        $(".ApproveBH").show();
+        $(".ConfirmBH").show();
+    } 
+
+    var BHType2 = $.MvcSheetUI.GetControlValue("BHType2");
+    if (BHType2 == "保函") {
+        $("[data-datafield='BankAccount']").hide();
+        $("[data-datafield='BankName']").hide();
+        $("[data-datafield='Receiver']").hide();
+        $("[data-datafield='PayAttachment']").hide();
+    }
+
+    $("input[data-datafield='LoadRept']").parent().find("a").addClass("btn").addClass("btn-primary");
+    $("input[data-datafield='BHReceiptTbl.ReceiptNo']").attr("disabled", "disabled");
+    $("input[data-datafield='BHReceiptTbl.PayTarget']").attr("disabled", "disabled");
+    $("input[data-datafield='BHReceiptTbl.Amount']").attr("disabled", "disabled");
+    $("input[data-datafield='BHReceiptTbl.Currency']").attr("disabled", "disabled");
+}
+
+
+function BHTargetChange() {
+    $.MvcSheetUI.SetControlValue("BHTarget2", $.MvcSheetUI.GetControlValue("BHTarget"));
+}
+
+function BHTypeChange() {
+    $.MvcSheetUI.SetControlValue("BHType2", $("select[data-datafield='BHType']").children('option:selected').text());
+}
+
+function BHPropertyChange() {
+    $.MvcSheetUI.SetControlValue("BHProperty2", $("select[data-datafield='BHProperty']").children('option:selected').text());
+}
+
+function ReceiveDateChange() {
+    $.MvcSheetUI.SetControlValue("ReceiveDate2", $.MvcSheetUI.GetControlValue("ReceiveDate"));
+}
+
+function BHAmountChange() {
+    $.MvcSheetUI.SetControlValue("BHAmount2", $.MvcSheetUI.GetControlValue("BHAmount"));
+}
+
+function ExpirationDateChange() {
+    var ExpirationDate = $("input[data-datafield='ExpirationDate']").val();
+    var RemindDate = lastMonthDate(ExpirationDate);
+    $("input[data-datafield='RemindDate']").val(RemindDate);
+
+    $.MvcSheetUI.SetControlValue("ExpirationDate2", $.MvcSheetUI.GetControlValue("ExpirationDate"));
+}
+
+//function CurrencyChange() {
+//    var ContractNo = $.MvcSheetUI.GetControlValue("ContractNo");
+//    var CurrencyChangeFlg = $.MvcSheetUI.GetControlValue("CurrencyChangeFlg");
+//    if (CurrencyChangeFlg == "true") {
+//        var Currency = $.MvcSheetUI.GetControlValue("Currency");
+//        var Contract = getContract(ContractNo);
+//        if (Contract.Currency != Currency && Currency != "RMB") {
+//            alert("只能选择人民币和合同外币！");
+//            return false;
+//        }
+//    } else {
+//        $.MvcSheetUI.SetControlValue("CurrencyChangeFlg", "true");
+//        var Contract = getContract(ContractNo);
+//        $.MvcSheetUI.SetControlValue("Currency", Contract.Currency);
+//    }
+//}
+
+function CurrencyHiddenChange() {
+    var dtl = $.MvcSheetUI.GetElement('BHReceiptTbl').SheetGridView();
+    var len = dtl.RowCount;
+    dtl._AddRow();
+    var ReceiptNoHidden = $.MvcSheetUI.GetControlValue('ReceiptNoHidden');
+    var PayTargetHidden = $.MvcSheetUI.GetControlValue('PayTargetHidden');
+    var AmountHidden = $.MvcSheetUI.GetControlValue('AmountHidden');
+    var CurrencyHidden = $.MvcSheetUI.GetControlValue('CurrencyHidden');
+    $.MvcSheetUI.SetControlValue("BHReceiptTbl.ReceiptNo", ReceiptNoHidden, len + 1);
+    $.MvcSheetUI.SetControlValue("BHReceiptTbl.PayTarget", PayTargetHidden, len + 1);
+    $.MvcSheetUI.SetControlValue("BHReceiptTbl.Amount", AmountHidden, len + 1);
+    $.MvcSheetUI.SetControlValue("BHReceiptTbl.Currency", CurrencyHidden, len + 1);
+    $("input[data-datafield='BHReceiptTbl.ReceiptNo']").attr("disabled", "disabled");
+    $("input[data-datafield='BHReceiptTbl.PayTarget']").attr("disabled", "disabled");
+    $("input[data-datafield='BHReceiptTbl.Amount']").attr("disabled", "disabled");
+    $("input[data-datafield='BHReceiptTbl.Currency']").attr("disabled", "disabled");
+    var BHAmount = $.MvcSheetUI.GetControlValue('BHAmount');
+    $.MvcSheetUI.SetControlValue('BHAmount', parseFloat(BHAmount) + parseFloat(AmountHidden));
+}
+
+// 表单验证接口
+$.MvcSheet.Validate = function () {
+
+    // 填写申请单环节，设置  必填
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+        if (this.Action == "Save" || this.Action == "Submit") {
+            var ContractNo = $.MvcSheetUI.GetControlValue("ContractNo");
+            var BHFlg = $.MvcSheetUI.GetControlValue("BHFlg");
+            if (BHFlg == "New") {
+                var Currency = $.MvcSheetUI.GetControlValue("Currency");
+                var Contract = getContract(ContractNo);
+                if (Contract.Currency != Currency && Currency != "RMB") {
+                    alert("币种只能选择人民币和合同外币！");
+                    return false;
+                }
+
+                //收据总金额小于保函金额则不可以提交
+                var BHAmount = $.MvcSheetUI.GetControlValue("BHAmount");
+                var amount2 = $("[data-datafield='BHReceiptTbl']").find("tr.footer").find("[data-datafield='BHReceiptTbl.Amount']").text();
+                if (parseFloat(amount2) < parseFloat(BHAmount)) {
+                    alert("收据总金额小于保函金额！");
+                    return false;
+                }
+            }
+        }
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityFinance" || $.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOffice") {
+        if (this.Action == "Submit") {
+            var IsConfirmTB = $.MvcSheetUI.GetControlValue("IsConfirmTB");
+            if (IsConfirmTB != "是;") {
+                alert("请选择确认退保！");
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+/*
+    子表删除行事件
+    参数：row -> 被删除的行
+*/
+var rowPreRemoved = function (row) {
+    var rownum = row.attr("data-row");
+    var Amount = $.MvcSheetUI.GetControlValue("BHReceiptTbl.Amount", rownum);
+    var BHAmount = $.MvcSheetUI.GetControlValue('BHAmount');
+    if ((parseFloat(BHAmount) - parseFloat(Amount)) >= 0) {
+        $.MvcSheetUI.SetControlValue('BHAmount', parseFloat(BHAmount) - parseFloat(Amount));
+    } else {
+        $.MvcSheetUI.SetControlValue('BHAmount', 0);
+    }
+
+}

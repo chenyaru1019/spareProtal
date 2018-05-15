@@ -1,0 +1,263 @@
+﻿//数据加载后
+$.MvcSheet.Loaded = function () {
+    // 合同号码
+    var ContractNo = getUrlParam("ContractNo");
+    if (ContractNo != null && ContractNo != "") {
+
+        // 根据合同号码获取对应合同相关数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getByContractNo",   //处理页的相对地址
+            data: {
+                ContractNo: ContractNo,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                $.MvcSheetUI.SetControlValue("ContractNo", ret.ContractNo);
+                $.MvcSheetUI.SetControlValue("ContractName", ret.ContractName);
+                $.MvcSheetUI.SetControlValue("PostAB", ret.PostA + "," + ret.PostB);
+                $.MvcSheetUI.SetControlValue("CurrencyRMBOld", "人民币");
+                $.MvcSheetUI.SetControlValue("CurrencyRMBNew", "人民币");
+                $.MvcSheetUI.SetControlValue("AmountRMBOld", ret.ContractTotalPrice);
+                $.MvcSheetUI.SetControlValue("AmountWBOld", ret.JKTotalAmount);
+                $.MvcSheetUI.SetControlValue("CurrencyWBOld", ret.CurrencyName);
+                $.MvcSheetUI.SetControlValue("CurrencyWBNew", ret.CurrencyName);
+                $.MvcSheetUI.SetControlValue("DHDateOld", ret.ContractDHDate);
+                $.MvcSheetUI.SetControlValue("AgencyNumOld", ret.AgencyComputerNum);
+                $.MvcSheetUI.SetControlValue("AgencyTypeOld", ret.AgencyComputerTypeName);
+                $.MvcSheetUI.SetControlValue("PayConditionOld", ret.PayCondition);
+
+                $.MvcSheetUI.SetControlValue("ContractType", ret.ContractType);
+                $.MvcSheetUI.SetControlValue("ContractProperty", ret.ContractProperty);
+
+                //$("[data-datafield='AmountRMBNew']").hide();
+                //$("input[data-datafield='CurrencyRMBNew']").hide();
+                //$("[data-datafield='AmountWBNew']").hide();
+                //$("input[data-datafield='CurrencyWBNew']").hide();
+                //$("[data-datafield='DHDateNew']").hide();
+                //$("[data-datafield='AgencyNumNew']").hide();
+                //$(".AgencyTypeNewDiv").hide();
+                //$("[data-datafield='PayConditionNew']").hide();
+                
+            }
+        });
+
+    }
+    $("input[data-datafield='ContractNo']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractName']").attr("disabled", "disabled");
+    $("input[data-datafield='PostAB']").attr("disabled", "disabled");
+    $("input[data-datafield='CurrencyRMBOld']").attr("disabled", "disabled");
+    $("input[data-datafield='CurrencyRMBNew']").attr("disabled", "disabled");
+    $("input[data-datafield='AmountRMBOld']").attr("disabled", "disabled");
+    $("input[data-datafield='AmountWBOld']").attr("disabled", "disabled");
+    $("input[data-datafield='CurrencyWBOld']").attr("disabled", "disabled");
+    $("input[data-datafield='CurrencyWBNew']").attr("disabled", "disabled");
+    $("[data-datafield='DHDateOld']").attr("disabled", "disabled");
+    $("input[data-datafield='AgencyNumOld']").attr("disabled", "disabled");
+    $("input[data-datafield='AgencyTypeOld']").attr("disabled", "disabled");
+    $("[data-datafield='PayConditionOld']").attr("disabled", "disabled");
+
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+
+        $(".ApproveDiv").hide();
+        $(".BGManager").hide();
+        $(".BGLeader").hide();
+        $(".BGConfirm").hide();
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityManager") {
+        $(".ApproveDiv").show();
+        $(".BGManager").show();
+        $(".BGLeader").hide();
+        $(".BGConfirm").hide();
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityCompanyLeader") {
+        $(".ApproveDiv").show();
+        $(".BGManager").show();
+        $(".BGLeader").show();
+        $(".BGConfirm").hide();
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityConfirm") {
+        $(".ApproveDiv").show();
+        $(".BGManager").show();
+        $(".BGLeader").show();
+        $(".BGConfirm").show();
+    } 
+
+    var ContractType = $.MvcSheetUI.GetControlValue("ContractType");
+    var ContractProperty = $.MvcSheetUI.GetControlValue("ContractProperty");
+    if (ContractType == "国内合同") {
+        if (ContractProperty == "技术合同") {
+            $(".GNAmountDiv").show();
+            $(".JKAmountDiv").hide();
+            $(".DHDateDiv").hide();
+        } else if (ContractProperty == "货物合同") {
+            $(".GNAmountDiv").show();
+            $(".JKAmountDiv").hide();
+            $(".DHDateDiv").show();
+        } 
+        $(".HYDiv").hide();
+        
+    } else {
+        if (ContractProperty == "技术合同") {
+            $(".GNAmountDiv").show();
+            $(".JKAmountDiv").show();
+            $(".DHDateDiv").hide();
+            $(".HYDiv").hide();
+        } else if (ContractProperty == "货物合同") {
+            $(".GNAmountDiv").show();
+            $(".JKAmountDiv").show();
+            $(".DHDateDiv").show();
+            $(".HYDiv").hide();
+        } else if (ContractProperty == "航空煤油") {
+            $(".GNAmountDiv").hide();
+            $(".JKAmountDiv").hide();
+            $(".DHDateDiv").show();
+            $(".HYDiv").show();
+        }
+    }
+    AmountRMBChange();
+    AmountWBChange();
+    DHDateChange();
+    AgencyChange();
+    PayConditionChange();
+
+
+}
+
+function AmountRMBChange() {
+    var v = $.MvcSheetUI.GetControlValue("IsChangeAmountRMB");
+
+    if (v == "是") {
+        $(".AmountRMBDiv").show();
+    } else {
+        $.MvcSheetUI.SetControlValue("AmountRMBNew", "");
+        $(".AmountRMBDiv").hide();
+    }
+
+}
+
+function AmountWBChange() {
+    var v = $.MvcSheetUI.GetControlValue("IsChangeAmountWB");
+
+    if (v == "是") {
+        $(".AmountWBDiv").show();
+    } else {
+        $.MvcSheetUI.SetControlValue("AmountWBNew", "");
+        $(".AmountWBDiv").hide();
+    }
+
+}
+
+function DHDateChange() {
+    var v = $.MvcSheetUI.GetControlValue("IsChangeDHDate");
+
+    if (v == "是") {
+        $(".DHDateNewDiv").show();
+    } else {
+        $.MvcSheetUI.SetControlValue("DHDateNew", "");
+        $(".DHDateNewDiv").hide();
+    }
+
+}
+
+function AgencyChange() {
+    var v = $.MvcSheetUI.GetControlValue("IsChangeAgency");
+
+    if (v == "是") {
+        $(".AgencyDiv").show();
+    } else {
+        $.MvcSheetUI.SetControlValue("AgencyNumNew", "");
+        $(".AgencyDiv").hide();
+    }
+
+}
+
+function PayConditionChange() {
+    var IsChangePayCondition = $.MvcSheetUI.GetControlValue("IsChangePayCondition");
+
+    if (IsChangePayCondition == "是") {
+        $(".PayConditionDiv").show();
+    } else {
+        $.MvcSheetUI.SetControlValue("PayConditionNew", "");
+        $(".PayConditionDiv").hide();
+    }
+
+}
+
+
+// 表单验证接口
+$.MvcSheet.Validate = function () {
+    // 变更合同金额 RMB
+    var IsChangeAmountRMB = $.MvcSheetUI.GetControlValue("IsChangeAmountRMB");
+    // 变更合同金额 WB
+    var IsChangeAmountWB = $.MvcSheetUI.GetControlValue("IsChangeAmountWB");
+    // 变更到货期
+    var IsChangeDHDate = $.MvcSheetUI.GetControlValue("IsChangeDHDate");
+    // 变更代理费率
+    var IsChangeAgency = $.MvcSheetUI.GetControlValue("IsChangeAgency");
+    // 变更支付条件
+    var IsChangePayCondition = $.MvcSheetUI.GetControlValue("IsChangePayCondition");
+
+
+
+    // 填写申请单环节，设置  必填
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+        if (this.Action == "Submit") {
+            if (IsChangeAmountRMB == "是") {
+                var AmountRMBNew = $.MvcSheetUI.GetControlValue("AmountRMBNew");
+                if (parseFloat(AmountRMBNew) <= 0) {
+                    layer.alert('合同变更金额必须大于0！', { icon: 2 });
+                    return false;
+                }
+            } 
+            if (IsChangeAmountWB == "是") {
+                var AmountWBNew = $.MvcSheetUI.GetControlValue("AmountWBNew");
+                if (parseFloat(AmountWBNew) <= 0) {
+                    layer.alert('合同变更金额必须大于0！', { icon: 2 });
+                    return false;
+                }
+            } 
+            if (IsChangeDHDate == "是") {
+                var DHDateNew = $.MvcSheetUI.GetControlValue("DHDateNew");
+                if (DHDateNew == "") {
+                    layer.alert('请填写合同到货期！', { icon: 2 });
+                    return false;
+                }
+            } 
+            if (IsChangeAgency == "是") {
+                var AgencyNumNew = $.MvcSheetUI.GetControlValue("AgencyNumNew");
+                if (parseFloat(AgencyNumNew) <= 0) {
+                    layer.alert('代理费费率／金额必须大于0！', { icon: 2 });
+                    return false;
+                }
+            } 
+            if (IsChangePayCondition == "是") {
+                var PayConditionNew = $.MvcSheetUI.GetControlValue("PayConditionNew");
+                if (PayConditionNew == "") {
+                    layer.alert('请填写支付条件！', { icon: 2 });
+                    return false;
+                }
+            } 
+
+        }
+    }
+    return true;
+}
+
+$.MvcSheet.ActionDone = function (data) {
+    // 提交事件后
+    //if (this.Action == "Submit") {
+    //    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityConfirm") {
+    //        var BizObjcetID = $.MvcSheetUI.SheetInfo.BizObjectID;
+    //        // 变更合同的数据
+    //        $.ajax({
+    //            type: "POST",    //页面请求的类型
+    //            url: "ContractHandler.ashx?Command=doBGContract",   //处理页的相对地址
+    //            data: {
+    //                BizObjcetID: BizObjcetID,
+    //            },
+    //            async: false,
+    //            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+    //                console.log(+"变更成功！");
+    //            }
+    //        });
+    //    }
+    //}
+}

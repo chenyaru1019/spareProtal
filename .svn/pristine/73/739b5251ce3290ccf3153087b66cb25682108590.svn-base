@@ -1,0 +1,72 @@
+﻿using System;
+using System.Collections;
+using System.Configuration;
+using System.Data;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.IO;
+using System.Text;
+using OThinker.H3.Controllers;
+using OThinker.H3.DataModel;
+using OThinker.H3.Portal;
+using OThinker.H3.BizBus.BizService;
+using OThinker.H3.Sheet;
+using OThinker.Data;
+using OThinker.H3.Instance;
+using OThinker.Organization;
+using System.Collections.Generic;
+using OThinker.H3.Acl;
+using OThinker.H3.Portal.service;
+
+namespace OThinker.H3.Portal.Sheets.DefaultEngine
+{
+    public partial class QKMy : OThinker.H3.Controllers.MvcPage 
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+        }
+
+        public override MvcViewContext LoadDataFields()
+        {
+            // 后台获取Url的参数（通过Request来获取）
+            string url = Request.Url.ToString();
+
+            string QKType = Common.getUrlParam(url, "QKType");
+            string JSObjectID = Common.getUrlParam(url, "JSObjectID");
+            string JSResultNum = Common.getUrlParam(url, "JSResultNum");
+            if (!JSObjectID.Equals(""))
+            {
+                this.ActionContext.InstanceData["JSObjectID"].Value = JSObjectID;
+
+                BizObject[] bizObjects = new BizObject[1];
+                BizObjectSchema childSchema = this.ActionContext.Schema.GetProperty("QKSubTbl").ChildSchema;
+                // 第一行
+                bizObjects[0] = new BizObject(this.ActionContext.Engine, childSchema, this.ActionContext.User.UserID);
+
+                bizObjects[0]["QKType"] = QKType;
+                bizObjects[0]["Amount"] = JSResultNum;
+                bizObjects[0]["Currency"] = "RMB";
+                bizObjects[0]["Rate"] = 1;
+                bizObjects[0]["ConvertAmount"] = JSResultNum;
+
+                this.ActionContext.InstanceData["QKSubTbl"].Value = bizObjects;
+            }
+
+            return base.LoadDataFields();
+        }
+
+        /// <summary>
+        /// 保存表单数据到引擎中
+        /// </summary>
+        /// <param name="Args"></param>
+        public override void SaveDataFields(MvcPostValue MvcPost, MvcResult result)
+        {
+            // 保存后，后台执行事件
+            base.SaveDataFields(MvcPost, result);
+
+            
+        }
+        
+    }
+}

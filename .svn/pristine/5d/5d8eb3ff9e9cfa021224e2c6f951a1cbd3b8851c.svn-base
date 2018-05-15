@@ -1,0 +1,118 @@
+﻿//数据加载后
+$.MvcSheet.Loaded = function () {
+    // 合同号码
+    var ContractNo = getUrlParam("ContractNo");
+    if (ContractNo != null && ContractNo != "") {
+
+        // 根据合同号码获取对应合同相关数据
+        $.ajax({
+            type: "POST",    //页面请求的类型
+            url: "ContractHandler.ashx?Command=getByContractNo",   //处理页的相对地址
+            data: {
+                ContractNo: ContractNo,
+            },
+            async: false,
+            success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+                $.MvcSheetUI.SetControlValue("ContractNo", ret.ContractNo);
+                $.MvcSheetUI.SetControlValue("ContractName", ret.ContractName);
+                $.MvcSheetUI.SetControlValue("PostAB", ret.PostA + "," + ret.PostB);
+                
+                
+            }
+        });
+
+    }
+    $("input[data-datafield='ContractNo']").attr("disabled", "disabled");
+    $("input[data-datafield='ContractName']").attr("disabled", "disabled");
+    $("input[data-datafield='PostAB']").attr("disabled", "disabled");
+    
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+
+        $(".ApproveDiv").hide();
+        $(".BGManager").hide();
+        $(".BGLeader").hide();
+        $(".BGConfirm").hide();
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityManager") {
+        $(".ApproveDiv").show();
+        $(".BGManager").show();
+        $(".BGLeader").hide();
+        $(".BGConfirm").hide();
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityCompanyLeader") {
+        $(".ApproveDiv").show();
+        $(".BGManager").show();
+        $(".BGLeader").show();
+        $(".BGConfirm").hide();
+    } else if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityConfirm") {
+        $(".ApproveDiv").show();
+        $(".BGManager").show();
+        $(".BGLeader").show();
+        $(".BGConfirm").show();
+    } 
+
+    var ContractType = $.MvcSheetUI.GetControlValue("ContractType");
+    var ContractProperty = $.MvcSheetUI.GetControlValue("ContractProperty");
+    if (ContractType == "国内合同") {
+        if (ContractProperty == "技术合同") {
+            $(".GNAmountDiv").show();
+            $(".JKAmountDiv").hide();
+            $(".DHDateDiv").hide();
+        } else if (ContractProperty == "货物合同") {
+            $(".GNAmountDiv").show();
+            $(".JKAmountDiv").hide();
+            $(".DHDateDiv").show();
+        } 
+        $(".HYDiv").hide();
+        
+    } else {
+        if (ContractProperty == "技术合同") {
+            $(".GNAmountDiv").show();
+            $(".JKAmountDiv").show();
+            $(".DHDateDiv").hide();
+            $(".HYDiv").hide();
+        } else if (ContractProperty == "货物合同") {
+            $(".GNAmountDiv").show();
+            $(".JKAmountDiv").show();
+            $(".DHDateDiv").show();
+            $(".HYDiv").hide();
+        } else if (ContractProperty == "航空煤油") {
+            $(".GNAmountDiv").hide();
+            $(".JKAmountDiv").hide();
+            $(".DHDateDiv").show();
+            $(".HYDiv").show();
+        }
+    }
+    AmountRMBChange();
+    AmountWBChange();
+    DHDateChange();
+    AgencyChange();
+    PayConditionChange();
+
+
+}
+
+// 表单验证接口
+$.MvcSheet.Validate = function () {
+    // 变更合同金额 RMB
+    var IsChangeAmountRMB = $.MvcSheetUI.GetControlValue("IsChangeAmountRMB");
+    
+
+    // 填写申请单环节，设置  必填
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "ActivityOrig") {
+        if (this.Action == "Submit") {
+            if (IsChangeAmountRMB == "是") {
+                var AmountRMBNew = $.MvcSheetUI.GetControlValue("AmountRMBNew");
+                if (parseFloat(AmountRMBNew) <= 0) {
+                    alert("合同变更金额必须大于0！");
+                    return false;
+                }
+            } 
+            
+
+        }
+    }
+    return true;
+}
+
+$.MvcSheet.ActionDone = function (data) {
+
+}

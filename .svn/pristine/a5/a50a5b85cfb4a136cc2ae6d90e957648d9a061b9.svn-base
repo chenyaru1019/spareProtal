@@ -1,0 +1,513 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="ImportLicenseMy.aspx.cs" Inherits="OThinker.H3.Portal.Sheets.DefaultEngine.ImportLicenseMy" EnableEventValidation="false" MasterPageFile="~/MvcSheet.master" %>
+
+<%@ OutputCache Duration="999999" VaryByParam="T" VaryByCustom="browser" %>
+<asp:Content ID="head" ContentPlaceHolderID="headContent" runat="Server">
+    <script type="text/javascript">
+
+</script>
+</asp:Content>
+<asp:Content ID="menu" ContentPlaceHolderID="cphMenu" runat="Server">
+</asp:Content>
+<asp:Content ID="master" ContentPlaceHolderID="masterContent" runat="Server">
+    <script src="ImportLicenseMy.js"></script>
+        <script src="../js/bootstrap-select.min.js"></script>
+    <script src="../js/bootstrap-table.min.js"></script>
+    <script src="../js/bootstrap-table-zh-CN.min.js"></script>
+
+    <link rel="stylesheet" href="../js/bootstrap-select.min.css">
+    <link rel="stylesheet" href="../js/bootstrap-table.min.css">
+
+    <div style="text-align: center;" class="DragContainer">
+        <label id="lblTitle" class="panel-title">进口许可证子流程</label>
+    </div>
+    <div class="panel-body sheetContainer">
+        <div class="ContractContent" style="margin-top: 15px">
+            <div class="nav-icon fa  fa-chevron-right bannerTitle">
+            <label id="divSheetInfo" data-en_us="Sheet information">表单信息</label>
+                <span class="pull-right text-muted" id="toggleBtn">
+                    <i class="fa fa-fw fa-angle-double-down text" style="display:none"></i>
+                    <i class="fa fa-fw  fa-angle-double-up text-active" style="display: block;"></i>
+                </span>
+        </div>
+            <div class="divContent" id="divSheet">
+            <div class="row NoHYClass">
+                <div id="title1" class="col-md-2">
+                    <span id="Label11" data-type="SheetLabel" data-datafield="ContractNo" style="">合同号</span>
+                </div>
+                <div id="control1" class="col-md-4">
+                    <input id="Control11" type="text" data-datafield="ContractNo" data-type="SheetTextBox" style="">
+                </div>
+                <div id="title2" class="col-md-2">
+                    <span id="Label12" data-type="SheetLabel" data-datafield="ContractName" style="">合同名称</span>
+                </div>
+                <div id="control2" class="col-md-4">
+                        <input id="Control12" type="text" data-datafield="ContractName" data-type="SheetTextBox" style="width:70%">
+                        <input type="button" onclick="viewContractF()" value="查看合同" class="btn btn-primary" >
+                </div>
+            </div>
+            <div class="row NoHYClass">
+                <div id="title3" class="col-md-2">
+                    <span id="Label13" data-type="SheetLabel" data-datafield="PostAB" style="">项目负责人AB</span>
+                </div>
+                <div id="control3" class="col-md-4">
+                    <input id="Control13" type="text" data-datafield="PostAB" data-type="SheetTextBox" style="">
+                </div>
+                <div id="title4" class="col-md-2">
+                    <label data-datafield="IsNeed3C_N" data-type="SheetLabel" id="ctl519367" class="" style="">是否需要3C认证</label>
+                </div>
+                <div id="control4" class="col-md-4">
+                    <select data-datafield="IsNeed3C_N" data-type="SheetDropDownList" id="ctl370546" class="" style="" data-masterdatacategory="是否" data-queryable="false">
+                    </select>
+                </div>
+            </div>
+            <div class="row NoHYClass">
+                <div id="div324641" class="col-md-2">
+                    <label data-datafield="Importer_N" data-type="SheetLabel" id="ctl859392" class="" style="">进口商</label>
+                </div>
+                <div id="div744718" class="col-md-4">
+                    <input type="text" data-datafield="Importer_N" data-type="SheetTextBox" id="ctl791589" class="" style="">
+                </div>
+                <div id="div414380" class="col-md-2">
+                    <label data-datafield="JBRTelephone_N" data-type="SheetLabel" id="ctl318838" class="" style="">经办人/电话</label>
+                </div>
+                <div id="div933938" class="col-md-4">
+                    <input type="text" data-datafield="JBRTelephone_N" data-type="SheetTextBox" id="ctl318807" class="" style="">
+                </div>
+            </div>
+            <div class="row NoHYClass">
+                <div id="div893133" class="col-md-2">
+                    <label data-datafield="ImportUser_N" data-type="SheetLabel" id="ctl810361" class="" style="">进口用户</label>
+                </div>
+                <div id="div526388" class="col-md-4">
+                    <input type="text" data-datafield="ImportUser_N" data-type="SheetTextBox" id="ctl243023" class="" style="">
+                </div>
+                <div id="div404302" class="col-md-2">
+                    <label data-datafield="ImportUserArea_N" data-type="SheetLabel" id="ctl399274" class="" style="">进口用户所在地区(部门)</label>
+                </div>
+                <div id="div413234" class="col-md-4">
+                    <input type="text" data-datafield="ImportUserArea_N" data-type="SheetTextBox" id="ctl805722" class="" style="">
+                </div>
+            </div>
+            <div class="row NoHYClass">
+                <div id="div480334" class="col-md-2">
+                </div>
+                <div id="div942563" class="col-md-4">
+                </div>
+                <div id="div493977" class="col-md-2">
+                    <label data-datafield="Date_N" data-type="SheetLabel" id="ctl706313" class="" style="">日期</label>
+                </div>
+                <div id="div69364" class="col-md-4">
+
+                    <input type="text" data-datafield="Date_N" data-type="SheetTime" id="ctl701496" class="" style="">
+                </div>
+            </div>
+            <div class="row NoHYClass">
+                <div id="div138714" class="col-md-2">
+                    <label data-datafield="TradeType_N" data-type="SheetLabel" id="ctl770247" class="" style="">贸易方式</label>
+                </div>
+                <div id="div562052" class="col-md-4">
+                    <input type="text" data-datafield="TradeType_N" data-type="SheetTextBox" id="ctl435227" class="" style="">
+                </div>
+                <div id="div638894" class="col-md-2">
+                    <label data-datafield="TradeArea_N" data-type="SheetLabel" id="ctl422619" class="" style="">贸易国(地区)</label>
+                </div>
+                <div id="div550854" class="col-md-4">
+                    <input type="text" data-datafield="TradeArea_N" data-type="SheetTextBox" id="ctl571485" class="" style="">
+                </div>
+            </div>
+            <div class="row NoHYClass">
+                <div id="div985870" class="col-md-2">
+                    <label data-datafield="WHLY_N" data-type="SheetLabel" id="ctl165548" class="" style="">外汇来源</label>
+                </div>
+                <div id="div261994" class="col-md-4">
+                    <input type="text" data-datafield="WHLY_N" data-type="SheetTextBox" id="ctl879467" class="" style="">
+                </div>
+                <div id="div120511" class="col-md-2">
+                    <label data-datafield="OrigArea_N" data-type="SheetLabel" id="ctl487154" class="" style="">原产地国(地区)</label>
+                </div>
+                <div id="div361507" class="col-md-4">
+                    <input type="text" data-datafield="OrigArea_N" data-type="SheetTextBox" id="ctl595359" class="" style="">
+                </div>
+            </div>
+            <div class="row NoHYClass">
+                <div id="div732224" class="col-md-2">
+                    <label data-datafield="BGKA_N" data-type="SheetLabel" id="ctl700528" class="" style="">报关口岸</label>
+                </div>
+                <div id="div9717" class="col-md-4">
+                    <input type="text" data-datafield="BGKA_N" data-type="SheetTextBox" id="ctl704880" class="" style="">
+                </div>
+                <div id="div601297" class="col-md-2">
+                    <label data-datafield="GoodUse_N" data-type="SheetLabel" id="ctl755658" class="" style="">商品用途</label>
+                </div>
+                <div id="div909814" class="col-md-4">
+                    <input type="text" data-datafield="GoodUse_N" data-type="SheetTextBox" id="ctl973004" class="" style="">
+                </div>
+            </div>
+            <div class="row NoHYClass">
+                <div id="div132229" class="col-md-6">
+                    <label data-datafield="AProjectType_N" data-type="SheetLabel" id="ctl473667" class="" style="">A项目类型：(申请进口“单机”不需要填写第A项)</label>
+                </div>
+                <div id="div675920" class="col-md-6">
+                </div>
+            </div>
+            <div class="row NoHYClass">
+                <div id="div273817" class="col-md-2">
+                </div>
+                <div id="div537874" class="col-md-4">
+                    <div data-datafield="AProjectType_N" data-type="SheetCheckboxList" id="ctl490576" class="" style="" data-masterdatacategory="A项目类型"></div>
+                </div>
+                <div id="div53110" class="col-md-2">
+                </div>
+                <div id="div523467" class="col-md-4">
+                </div>
+            </div>
+            <div class="row NoHYClass">
+                <div id="div198517" class="col-md-2">
+                    <label data-datafield="ProjectIndustry_N" data-type="SheetLabel" id="ctl721198" class="" style="">项目行业</label>
+                </div>
+                <div id="div162074" class="col-md-4">
+                    <input type="text" data-datafield="ProjectIndustry_N" data-type="SheetTextBox" id="ctl823050" class="" style="">
+                </div>
+                <div id="div802554" class="col-md-2">
+                </div>
+                <div id="div524537" class="col-md-4">
+                </div>
+            </div>
+            <div class="row HYClass">
+                <div id="div510084" class="col-md-2">
+                    <label data-datafield="SQJKDW_HY" data-type="SheetLabel" id="ctl827642" class="" style="">申请进口单位</label>
+                </div>
+                <div id="div413264" class="col-md-4">
+                    <input type="text" data-datafield="SQJKDW_HY" data-type="SheetTextBox" id="ctl616527" class="" style="">
+                </div>
+                <div id="div146036" class="col-md-2">
+                    <label data-datafield="SQDWJJR_HY" data-type="SheetLabel" id="ctl421815" class="" style="">申请单位经办人</label>
+                </div>
+                <div id="div244706" class="col-md-4">
+                    <input type="text" data-datafield="SQDWJJR_HY" data-type="SheetTextBox" id="ctl947636" class="" style="">
+                </div>
+            </div>
+            <div class="row HYClass">
+                <div id="div427980" class="col-md-2">
+                    <label data-datafield="DQJQYCode_HY" data-type="SheetLabel" id="ctl319363" class="" style="">地区及企业法人代码</label>
+                </div>
+                <div id="div985279" class="col-md-4">
+                    <input type="text" data-datafield="DQJQYCode_HY" data-type="SheetTextBox" id="ctl64976" class="" style="">
+                </div>
+                <div id="div822003" class="col-md-2">
+                    <label data-datafield="Telephone_HY" data-type="SheetLabel" id="ctl540410" class="" style="">电话</label>
+                </div>
+                <div id="div436412" class="col-md-4">
+                    <input type="text" data-datafield="Telephone_HY" data-type="SheetTextBox" id="ctl507547" class="" style="">
+                </div>
+            </div>
+            <div class="row HYClass">
+                <div id="div411752" class="col-md-2">
+                    <label data-datafield="SQJKDWAddress_HY" data-type="SheetLabel" id="ctl822533" class="" style="">申请进口单位地址</label>
+                </div>
+                <div id="div556790" class="col-md-4">
+                    <input type="text" data-datafield="SQJKDWAddress_HY" data-type="SheetTextBox" id="ctl68215" class="" style="">
+                </div>
+                <div id="div43014" class="col-md-2">
+                    <label data-datafield="ZipCode_HY" data-type="SheetLabel" id="ctl824935" class="" style="">邮政编码</label>
+                </div>
+                <div id="div827618" class="col-md-4">
+                    <input type="text" data-datafield="ZipCode_HY" data-type="SheetTextBox" id="ctl833776" class="" style="">
+                </div>
+            </div>
+            <div class="row HYClass">
+                <div id="div657403" class="col-md-2">
+                </div>
+                <div id="div223154" class="col-md-4">
+                </div>
+                <div id="div563411" class="col-md-2">
+                </div>
+                <div id="div351002" class="col-md-4">
+                </div>
+            </div>
+            <div class="row HYClass">
+                <div id="div798464" class="col-md-2">
+                    <label data-datafield="JKSYDW_HY" data-type="SheetLabel" id="ctl733978" class="" style="">进口使用单位</label>
+                </div>
+                <div id="div528323" class="col-md-4">
+                    <input type="text" data-datafield="JKSYDW_HY" data-type="SheetTextBox" id="ctl15183" class="" style="">
+                </div>
+                <div id="div550782" class="col-md-2">
+                    <label data-datafield="DWCJDW_HY" data-type="SheetLabel" id="ctl960011" class="" style="">对外成交单位</label>
+                </div>
+                <div id="div603590" class="col-md-4">
+                    <input type="text" data-datafield="DWCJDW_HY" data-type="SheetTextBox" id="ctl389571" class="" style="">
+                </div>
+            </div>
+            <div class="row HYClass">
+                <div id="div725203" class="col-md-2">
+                    <label data-datafield="JKDWCode_HY" data-type="SheetLabel" id="ctl685397" class="" style="">地区及企业法人代码</label>
+                </div>
+                <div id="div316492" class="col-md-4">
+                    <input type="text" data-datafield="JKDWCode_HY" data-type="SheetTextBox" id="ctl86458" class="" style="">
+                </div>
+                <div id="div466477" class="col-md-2">
+                    <label data-datafield="DWDWCode_HY" data-type="SheetLabel" id="ctl345968" class="" style="">地区及企业法人代码</label>
+                </div>
+                <div id="div218226" class="col-md-4">
+                    <input type="text" data-datafield="DWDWCode_HY" data-type="SheetTextBox" id="ctl760240" class="" style="">
+                </div>
+            </div>
+            <div class="row HYClass">
+                <div id="div11546" class="col-md-2">
+                </div>
+                <div id="div381721" class="col-md-4">
+                </div>
+                <div id="div689174" class="col-md-2">
+                </div>
+                <div id="div352173" class="col-md-4">
+                </div>
+            </div>
+            <div class="row HYClass">
+                <div id="div435250" class="col-md-2">
+                    <label data-datafield="TradeType_HY" data-type="SheetLabel" id="ctl221627" class="" style="">贸易方式</label>
+                </div>
+                <div id="div208847" class="col-md-4">
+                    <input type="text" data-datafield="TradeType_HY" data-type="SheetTextBox" id="ctl678089" class="" style="">
+                </div>
+                <div id="div952878" class="col-md-2">
+                    <label data-datafield="TradeArea_HY" data-type="SheetLabel" id="ctl891190" class="" style="">贸易国(地区)</label>
+                </div>
+                <div id="div181843" class="col-md-4">
+                    <input type="text" data-datafield="TradeArea_HY" data-type="SheetTextBox" id="ctl705630" class="" style="">
+                </div>
+            </div>
+            <div class="row HYClass">
+                <div id="div44902" class="col-md-2">
+                    <label data-datafield="IsCountryTrade_HY" data-type="SheetLabel" id="ctl112840" class="" style="">是否国营贸易</label>
+                </div>
+                <div id="div744211" class="col-md-4">
+                    <select data-datafield="IsCountryTrade_HY" data-type="SheetDropDownList" id="ctl246582" class="" style="" data-masterdatacategory="是否">
+                    </select>
+                </div>
+                <div id="div939678" class="col-md-2">
+                    <label data-datafield="WHLY_HY" data-type="SheetLabel" id="ctl29819" class="" style="">外汇来源</label>
+                </div>
+                <div id="div87991" class="col-md-4">
+                    <input type="text" data-datafield="WHLY_HY" data-type="SheetTextBox" id="ctl907829" class="" style="">
+                </div>
+            </div>
+            <div class="row HYClass">
+                <div id="div566558" class="col-md-2">
+                    <label data-datafield="OrigArea_HY" data-type="SheetLabel" id="ctl418231" class="" style="">原产地国(地区)</label>
+                </div>
+                <div id="div905485" class="col-md-4">
+                    <input type="text" data-datafield="OrigArea_HY" data-type="SheetTextBox" id="ctl139550" class="" style="">
+                </div>
+                <div id="div81823" class="col-md-2">
+                    <label data-datafield="BGKA_HY" data-type="SheetLabel" id="ctl112629" class="" style="">报关口岸</label>
+                </div>
+                <div id="div222937" class="col-md-4">
+                    <input type="text" data-datafield="BGKA_HY" data-type="SheetTextBox" id="ctl622073" class="" style="">
+                </div>
+            </div>
+            <div class="row HYClass">
+                <div id="div732672" class="col-md-2">
+                    <label data-datafield="GoodUse_HY" data-type="SheetLabel" id="ctl115830" class="" style="">商品用途</label>
+                </div>
+                <div id="div372805" class="col-md-4">
+                    <input type="text" data-datafield="GoodUse_HY" data-type="SheetTextBox" id="ctl544676" class="" style="">
+                </div>
+                <div id="div9774" class="col-md-2">
+                    <label data-datafield="ImportDate_HY" data-type="SheetLabel" id="ctl816084" class="" style="">预计到港时间</label>
+                </div>
+                <div id="div594529" class="col-md-4">
+                    <input type="text" data-datafield="ImportDate_HY" data-type="SheetTextBox" id="ctl926802" class="" style="">
+                </div>
+            </div>
+            <div class="row">
+                <div id="title5" class="col-md-2">
+                    <span id="Label14" data-type="SheetLabel" data-datafield="GoodName" class="" style="">商品名称</span>
+                </div>
+                <div id="control5" class="col-md-4">
+                    <input id="Control14" type="text" data-datafield="GoodName" data-type="SheetTextBox" class="" style="">
+                </div>
+                <div id="space6" class="col-md-2">
+                    <span id="Label15" data-type="SheetLabel" data-datafield="GoodCode" class="" style="">商品编码</span>
+                </div>
+                <div id="spaceControl6" class="col-md-4">
+                    <input id="Control15" type="text" data-datafield="GoodCode" data-type="SheetTextBox" style="" class="">
+                </div>
+            </div>
+            <div class="row NoHYClass">
+                <div id="div746136" class="col-md-2">
+                    <label data-datafield="SBStatus_N" data-type="SheetLabel" id="ctl537613" class="" style="">设备状态</label>
+                </div>
+                <div id="div440187" class="col-md-4">
+                    <input type="text" data-datafield="SBStatus_N" data-type="SheetTextBox" id="ctl28555" class="" style="">
+                </div>
+                <div id="div535311" class="col-md-2">
+                    <label data-datafield="Currency_N" data-type="SheetLabel" id="ctl238885" class="" style="">货币选择</label>
+                </div>
+                <div id="div38674" class="col-md-4">
+                    <select data-datafield="Currency_N" data-type="SheetDropDownList" id="ctl631283" class="" style="" data-masterdatacategory="币种" data-onchange=" CurrencyChange()">
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div id="title7" class="col-md-2">
+                    <span id="Label16" data-type="SheetLabel" data-datafield="Attachment" style="">附件</span>
+                </div>
+                <div id="control7" class="col-md-10">
+                    <input type="text" data-datafield="Attachment" data-type="SheetTextBox" id="" class="hidden" style="">
+                    <div id="Attachment"></div>
+                </div>
+            </div>
+            <div class="row tableContent">
+                <div id="div507309" class="col-md-2">
+                    <label data-datafield="ApproveRemark" data-type="SheetLabel" id="ctl818667" class="" style="">备注</label>
+                </div>
+                <div id="div203297" class="col-md-10">
+                    <div data-datafield="ApproveRemark" data-type="SheetComment" id="ctl196171" class="" style=""></div>
+                </div>
+            </div>
+            <div class="row ActivityApprove">
+                <div id="div59881" class="col-md-2">
+                    <label data-datafield="KZDate" data-type="SheetLabel" id="ctl606133" class="" style="">开证日期</label></div>
+                <div id="div502895" class="col-md-4">
+                    <input type="text" data-datafield="KZDate" data-type="SheetTime" id="ctl709445" class="" style=""></div>
+                <div id="div717940" class="col-md-2"></div>
+                <div id="div256739" class="col-md-4"></div>
+            </div>
+            <div class="row ActivityApprove">
+                <div id="div709235" class="col-md-2">
+                    <label data-datafield="ExpirationDate" data-type="SheetLabel" id="ctl893959" class="" style="">许可证到期日</label></div>
+                <div id="div521379" class="col-md-4">
+                    <input type="text" data-datafield="ExpirationDate" data-type="SheetTime" id="ctl585186" class="" style="" data-onchange=" ExpirationDateChange()"></div>
+                <div id="div856933" class="col-md-2"></div>
+                <div id="div147689" class="col-md-4"></div>
+            </div>
+            <div class="row ActivityApprove">
+                <div id="div286008" class="col-md-2">
+                    <label data-datafield="RemindDate" data-type="SheetLabel" id="ctl148596" class="" style="">何时提醒到期</label></div>
+                <div id="div937660" class="col-md-4">
+                    <input type="text" data-datafield="RemindDate" data-type="SheetTime" id="ctl338309" class="" style=""></div>
+                <div id="div83428" class="col-md-2"></div>
+                <div id="div6283" class="col-md-4"></div>
+            </div>
+            <div class="row ActivityApprove">
+                <div id="div744884" class="col-md-2">
+                    <label data-datafield="ApproveAttachment" data-type="SheetLabel" id="ctl697001" class="" style="">进口许可证副本</label></div>
+                <div id="div528211" class="col-md-10">
+                    <input type="text" data-datafield="ApproveAttachment" data-type="SheetTextBox" id="" class="hidden" style="">
+                    <div id="ApproveAttachment"></div>
+                </div>
+            </div>
+            <div class="row ActivityApprove">
+                <div id="div616644" class="col-md-2">
+                    <label data-datafield="ConfirmRemark" data-type="SheetLabel" id="ctl769440" class="" style="">确认备注</label></div>
+                <div id="div987579" class="col-md-10">
+                    <textarea data-datafield="ConfirmRemark" style="height: 60px; width: 100%;" data-type="SheetRichTextBox" id="ctl894420" class=""></textarea></div>
+            </div>
+
+            <div class="row hidden">
+                <div id="div150508" class="col-md-1">
+                    <input type="text" data-datafield="CurrencyChangeFlg" data-type="SheetTextBox" id="ctl191826" class="hidden" style=""></div>
+                <div id="div261065" class="col-md-1">
+                    <input type="text" data-datafield="IsHYFlg" data-type="SheetTextBox" id="ctl357140" class="hidden" style=""></div>
+                <div id="div816040" class="col-md-1">
+                    <input type="text" data-datafield="RejectFlg" data-type="SheetTextBox" id="ctl357140" class="hidden" style="">
+                </div>
+                <div id="div762393" class="col-md-1">
+                    <input type="text" data-datafield="CancelFlg" data-type="SheetTextBox" id="ctl357140" class="hidden" style="">
+                </div>
+                <div id="div56842" class="col-md-1">
+                    <input type="text" data-datafield="WorkflowVersion_Back" data-type="SheetTextBox" id="ctl456922" class="hidden" style="">
+                </div>
+                <div id="div724039" class="col-md-1"></div>
+                <div id="div110461" class="col-md-1"></div>
+                <div id="div803555" class="col-md-1"></div>
+                <div id="div269532" class="col-md-1"></div>
+                <div id="div934398" class="col-md-1"></div>
+                <div id="div760200" class="col-md-1"></div>
+                <div id="div79142" class="col-md-1"></div>
+            </div>
+        </div>
+        </div>
+
+        <div class="ContractContent ContractContentGetBack">
+            <div class="nav-icon fa  fa-chevron-right bannerTitle bannerTitleGetBack">
+                <label id="divSheetInfo" data-en_us="Sheet information">进口许可证回退记录&nbsp;<span class="ContractNoShow"></span></label>
+                <span class="pull-right text-muted" id="toggleBtn">
+                    <i class="fa fa-fw fa-angle-double-down text" style="display:none"></i>
+                    <i class="fa fa-fw  fa-angle-double-up text-active" style="display: block;"></i>
+                </span>
+            </div>
+            <div class="divContent divContent_Tab" id="divSheet">
+                <div class="row">
+                    <div id="div371959" class="col-md-2">
+                        <label data-datafield="GetBackImportLicenseSubTbl" data-type="SheetLabel" id="ctl280690" class="" style="">进口许可证回退记录</label>
+                    </div>
+                    <div id="div666980" class="col-md-10">
+                        <table id="ctl532792" data-datafield="GetBackImportLicenseSubTbl" data-type="SheetGridView" class="SheetGridView" style="" data-displayadd="false" data-displaydelete="false" data-defaultrowcount="0" data-displaysequenceno="false" data-displaysummary="false">
+                            <tbody>
+                                <tr class="header">
+                                    <td id="ctl532792_SerialNo" class="rowSerialNo">序号</td>
+                                    <td id="ctl532792_header0" data-datafield="GetBackImportLicenseSubTbl.Approver" style="">
+                                        <label id="ctl532792_Label0" data-datafield="GetBackImportLicenseSubTbl.Approver" data-type="SheetLabel" style="">申请人</label></td>
+                                    <td id="ctl532792_header1" data-datafield="GetBackImportLicenseSubTbl.ApproveDate" style="">
+                                        <label id="ctl532792_Label1" data-datafield="GetBackImportLicenseSubTbl.ApproveDate" data-type="SheetLabel" style="">申请时间</label></td>
+                                    <td id="ctl532792_header2" data-datafield="GetBackImportLicenseSubTbl.Remark" style="">
+                                        <label id="ctl532792_Label2" data-datafield="GetBackImportLicenseSubTbl.Remark" data-type="SheetLabel" style="">回退事由</label></td>
+                                    <td id="ctl532792_header3" data-datafield="GetBackImportLicenseSubTbl.OldInstanceActivityName" style="">
+                                        <label id="ctl532792_Label3" data-datafield="GetBackImportLicenseSubTbl.OldInstanceActivityName" data-type="SheetLabel" style="">当前阶段</label></td>
+                                    <td id="ctl532792_header4" data-datafield="GetBackImportLicenseSubTbl.InstanceActivityName" style="">
+                                        <label id="ctl532792_Label4" data-datafield="GetBackImportLicenseSubTbl.InstanceActivityName" data-type="SheetLabel" style="">回退到</label></td>
+                                    <td id="ctl532792_header5" data-datafield="GetBackImportLicenseSubTbl.Status" style="">
+                                        <label id="ctl532792_Label5" data-datafield="GetBackImportLicenseSubTbl.Status" data-type="SheetLabel" style="">状态</label></td>
+                                    <td id="ctl532792_header6" data-datafield="GetBackImportLicenseSubTbl.Operate" style="">
+                                        <label id="ctl532792_Label6" data-datafield="GetBackImportLicenseSubTbl.Operate" data-type="SheetLabel" style="">操作</label></td>
+                                    <td id="ctl532792_header7" data-datafield="GetBackImportLicenseSubTbl.WorkItemId" style="" class="hidden">
+                                        <label id="ctl532792_Label7" data-datafield="GetBackImportLicenseSubTbl.WorkItemId" data-type="SheetLabel" style="">流程节点Id</label></td>
+                                    <td class="rowOption hidden">删除</td>
+                                </tr>
+                                <tr class="template">
+                                    <td></td>
+                                    <td id="ctl532792_control0" data-datafield="GetBackImportLicenseSubTbl.Approver" style="">
+                                        <input type="text" data-datafield="GetBackImportLicenseSubTbl.Approver" data-type="SheetTextBox" id="ctl532792_control0" style=""></td>
+                                    <td id="ctl532792_control1" data-datafield="GetBackImportLicenseSubTbl.ApproveDate" style="">
+                                        <input type="text" data-datafield="GetBackImportLicenseSubTbl.ApproveDate" data-type="SheetTextBox" id="ctl532792_control1" style=""></td>
+                                    <td id="ctl532792_control2" data-datafield="GetBackImportLicenseSubTbl.Remark" style="">
+                                        <input type="text" data-datafield="GetBackImportLicenseSubTbl.Remark" data-type="SheetTextBox" id="ctl532792_control2" style=""></td>
+                                    <td id="ctl532792_control3" data-datafield="GetBackImportLicenseSubTbl.OldInstanceActivityName" style="">
+                                        <input type="text" data-datafield="GetBackImportLicenseSubTbl.OldInstanceActivityName" data-type="SheetTextBox" id="ctl532792_control3" style=""></td>
+                                    <td id="ctl532792_control4" data-datafield="GetBackImportLicenseSubTbl.InstanceActivityName" style="">
+                                        <input type="text" data-datafield="GetBackImportLicenseSubTbl.InstanceActivityName" data-type="SheetTextBox" id="ctl532792_control4" style=""></td>
+                                    <td id="ctl532792_control5" data-datafield="GetBackImportLicenseSubTbl.Status" style="">
+                                        <input type="text" data-datafield="GetBackImportLicenseSubTbl.Status" data-type="SheetTextBox" id="ctl532792_control5" style=""></td>
+                                    <td id="ctl532792_control6" data-datafield="GetBackImportLicenseSubTbl.Operate" style="">
+                                        <a class="btn btn-primary viewBack" onclick="viewBack(this)">查看</a></td>
+                                    <td id="ctl532792_control7" data-datafield="GetBackImportLicenseSubTbl.WorkItemId" style="" class="hidden">
+                                        <input type="text" data-datafield="GetBackImportLicenseSubTbl.WorkItemId" data-type="SheetTextBox" id="ctl532792_control7" style=""></td>
+                                    <td class="rowOption hidden"><a class="delete">
+                                        <div class="fa fa-minus"></div>
+                                    </a><a class="insert">
+                                        <div class="fa fa-arrow-down"></div>
+                                    </a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ContractContent">
+            <label data-en_us="Sheet information">处理记录</label>
+            <div class="myTable">
+                <table data-toggle="table" class="table table-striped table-bordered table-hover ApprovalTbl"></table>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/jquery-ui.min.js"></script>
+    <script src="../js/file2.js"></script>
+    <script src="../js/select2.js"></script>
+
+    <script src="../js/ApprovalTbl.js"></script>
+</asp:Content>

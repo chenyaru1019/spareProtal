@@ -1,0 +1,167 @@
+<!-- 易耗品采购货品查询 -->
+
+<div class="hbox hbox-auto-xs hbox-auto-sm" ng-init="
+     app.settings.asideFolded=false;
+     app.settings.asideDock=false;">
+    <!-- main -->
+    <div class="col">
+        <!-- main header -->
+        <div class="bg-light lter b-b wrapper-md">
+            <div class="row" style=" padding-right: 15px; ">
+                <div class="col-sm-6 col-xs-12">
+                    <span class="h3" title-name function-view-models="user.FunctionViewModels"></span>
+                </div>
+            </div>
+        </div>
+
+        <!--表格部分Start-->
+        <div class="wrapper-md paddingbottomNone QueryList">
+            <div class="panel panel-default">
+                <div>
+                    <h4 style="text-align: center;padding-top: 9px; cursor: pointer;" class='search_yhpcg'>查询条件</h4>
+                    <div class="searchBox" >
+                        <div class="divBox ng-scope" style="margin-top:10px;" >
+                            <div class="input-group searchYear" style="width: 100%;padding: 0px">
+                                <span class="input-group-addon ng-binding" style="width:10%">年份</span>
+                                <div class="ng-scope">
+                                    <label>
+                                        <input type="text" class="YearName form-control" style="margin-top:10px;">
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="input-group searchQuarter" style="width: 100%;">
+                                <span class="input-group-addon ng-binding" style="width:10%">所有季度</span>
+                                <div class="ng-scope">
+                                    <label>
+                                        <input type="radio" name="QuarterName" value="0" style="margin-top:10px;">所有季度
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="QuarterName" value="1" style="margin-top:10px;">第一季度
+                                    </label>
+                                    <label  class="ng-binding ng-scope">
+                                        <input type="radio" name="QuarterName" value="2">第二季度
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="QuarterName" value="3" style="margin-top:10px;" >第三季度
+                                    </label>
+                                    <label  class="ng-binding ng-scope">
+                                        <input type="radio" name="QuarterName" value="4">第四季度
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="input-group searchType" style="width: 100%; border-bottom: 1px dashed #C4C4C4">
+                                <span class="input-group-addon ng-binding" style="width:10%">所有类型</span>
+                                <div class="ng-scope">
+                                    <label>
+                                        <input type="radio" name="TypeName" value="所有类型" style="margin-top:10px;">所有类型
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="TypeName" value="办公类" style="margin-top:10px;">办公类
+                                    </label>
+                                    <label  class="ng-binding ng-scope">
+                                        <input type="radio" name="TypeName" value="信息类">信息类
+                                    </label>
+                                    <label  class="ng-binding ng-scope">
+                                        <input type="radio" name="TypeName" value="清洁类">清洁类
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-12 btn-xxhtzcx" style="text-align: center;margin-top: 15px;">
+                            <div class="btn-group btn-default searchBtn">
+                                <a href="javascript:void(0);" class="btn btn-default fa fa-search">
+                                    查询
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dropDown" id='Btn_dropDown'>
+                        <a class="Btn_dropDown"></a>
+                    </div>
+                </div>
+
+                <div>
+                    <div class='search_box' style='height: 60px;'>
+                        <div class="form-inline" style="float:right;">
+                            <div class="btn-group btn-default btnExport" style="margin: 10px">
+                                <a class="btn btnExport btn-default fa" target="_blank">导出</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive" style="width: 100%;border-top: 1px solid #dee5e7;position: relative;min-height:123px;">
+                        <div class='textPrompt'><i class="icon-emoticon-smile"></i>可根据您的搜索条件，查询出公司历史采购易耗品的总数量及总费用</div>
+                        <table id="cs_table" class="datatable" style="width: 100%"></table>
+                        <div class='total'></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--表格部分End-->
+    </div>
+    <!-- / main -->
+</div>
+<style>
+    .dropDown {
+        height: 1px;
+        background: #dee5e7;
+        margin-top: 60px;
+        position: relative;
+    }
+    .dropUp {
+        margin-top: 0px;
+    }
+    .Btn_dropDown {
+        background: url(img/icon_arrow.png) no-repeat -61px 0px;
+        width: 61px;
+        height: 17px;
+        position: absolute;
+        top: 1px;
+        margin-left: -30px;
+        left: 50%;
+    }
+    .Btn_dropup {
+        background: url(img/icon_arrow.png) no-repeat 0px 0px;
+    }
+</style>
+<script type="text/javascript">
+    $(function () {
+        $('.Btn_dropDown').on('click',function () {
+            $('.searchBox').toggle(200);
+            $('.Btn_dropDown').toggleClass('Btn_dropup');
+            $('#Btn_dropDown').toggleClass('dropUp');
+        });
+        $('.searchBtn').on('click',function () {
+            $('.textPrompt').css('display','none');
+            var year = $('.YearName').val();
+            var quarter = $('.searchBox .searchQuarter label input:radio:checked').val();
+            var type = $('.searchBox .searchType label input:radio:checked').val();
+            var href  = url+'quarterly/exportpurchase?year='+year+'&&qt='+quarter+'&&type='+type;
+            $('.btnExport').attr('href',href);
+            $.ajax({
+                type: "GET",
+                async: false,
+                url: url+'quarterly/purchase',
+                data:{"year":year,"qt":quarter,"type":type},
+                dataType: "jsonp",//加入这个选项即可
+                jsonpCallback: "callbackName",
+                success:function (data) {
+                    var html = '';
+                    var data = data.result.rows;
+                    html='<div class="totalData">共'+data.length+'条数据</div>';
+                    for(var i=0;i<data.length;i++){
+                        data[i] = {id:i+1,type:data[i].type,sname:data[i].sname,brand:data[i].brand,model:data[i].model,price:data[i].price,quantity:data[i].quantity,purchaseNum:data[i].purchaseNum,totalprice:data[i].totalprice};
+                    }
+                    new table({
+                        "tableId":"cs_table",  //必须
+                        "headers":["序号","类别","名称","品牌","规格型号","单价","申请数量","建议采购数量","总价"],  //必须
+                        "data":data,    //必须
+                        "displayNum": 10,  //必须  默认 10
+                        "groupDataNum":5 //可选  默认 10
+                    });
+                    $('.total').html(html);
+                }
+            });
+        });
+    })
+</script>

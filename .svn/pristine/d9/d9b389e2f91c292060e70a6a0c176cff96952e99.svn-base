@@ -1,0 +1,2345 @@
+﻿<%@ WebHandler Language="C#" Class="ContractHandler" %>
+
+using System;
+using System.Web;
+using System.Web.Script.Serialization;
+using OThinker.H3;
+using System.Data;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+using System.Runtime.Serialization;
+using OThinker.H3.Portal.Entity;
+using OThinker.H3.Portal.service;
+using System.Net.Http;
+
+public class ContractHandler : IHttpHandler {
+    JavaScriptSerializer jsSerializer = new JavaScriptSerializer();
+    public void ProcessRequest (HttpContext context) {
+
+        string command = context.Request["Command"];
+        switch (command)
+        {
+            case "generateContractNo": generateContractNo(context); break;
+            case "getMasterByType": getMasterByType(context); break;
+            case "getByContractNo": getByContractNo(context); break;
+            case "getPaymentByID": getPaymentByID(context); break;
+            case "getHYData": getHYData(context); break;
+            case "getSalesHYData": getSalesHYData(context); break;
+            case "getBidsHYData": getBidsHYData(context); break;
+            case "getBizStatusOfContract": getBizStatusOfContract(context); break;
+            case "getWorkItemIDByICPID": getWorkItemIDByICPID(context); break;
+            case "getMaxQKSeqByContractNo": getMaxQKSeqByContractNo(context); break;
+            case "setChangePayment": setChangePayment(context); break;
+            case "getPaymentUpdateByPID": getPaymentUpdateByPID(context); break;
+            case "cancelImportLicence": cancelImportLicence(context); break;
+            case "getDHSeq": getDHSeq(context); break;
+            case "getDHSeqCnt": getDHSeqCnt(context); break;
+            case "getGoodNum": getGoodNum(context); break;
+            case "getHGBZJ": getHGBZJ(context); break;
+            case "getDHByBizObjectID": getDHByBizObjectID(context); break;
+            case "getFKById": getFKById(context); break;
+            case "getDKTbl": getDKTbl(context); break;
+            case "getDKTblOfJS": getDKTblOfJS(context); break;
+            case "getFKTblOfJS": getFKTblOfJS(context); break;
+            case "getApplyZJAmount": getApplyZJAmount(context); break;
+            case "getZFGLData": getZFGLData(context); break;
+            case "getPayManager": getPayManager(context); break;
+            case "insertOrUpdatePayManager": insertOrUpdatePayManager(context); break;
+            case "getCountByConId": getCountByConId(context); break;
+            case "getApplyingCountOfOper": getApplyingCountOfOper(context); break;
+            case "getDataOfOper": getDataOfOper(context); break;
+            case "getInstanceById": getInstanceById(context); break;
+            // 批量
+            case "getJSLSData": getJSLSData(context); break;
+            case "getDKLSData": getDKLSData(context); break;
+            case "getCustomerById": getCustomerById(context); break;
+            case "setJS_Status": setJS_Status(context); break;
+            case "getBatchJS_QKData": getBatchJS_QKData(context); break;
+            case "getBatchJS_FKData": getBatchJS_FKData(context); break;
+            case "getBatchJS_JQData": getBatchJS_JQData(context); break;
+            case "getBatchDK_DKData": getBatchDK_DKData(context); break;
+            case "getCurrencys": getCurrencys(context); break;
+            case "SetQKLJDK": SetQKLJDK(context); break;
+            //case "doBGContract": doBGContract(context); break;
+
+            // admin 弃用
+            // 获取流程节点数据
+            case "PullInstanceNode": PullInstanceNode(context); break;
+
+        }
+    }
+
+    public void generateContractNo (HttpContext context) {
+
+        string ContractType = context.Request["ContractType"];
+        string ContractProperty = context.Request["ContractProperty"];
+        string SubProjectCode = context.Request["SubProjectCode"];
+        string Country = context.Request["Country"];
+        string ContractNo = "";
+        string year = DateTime.Now.Year.ToString().Substring(2,2);
+        // 国内合同
+        if(ContractType.Equals("GN"))
+        {
+            //SPIAIE - 17028-PK-TILC II 01 015
+            //SPIAIE：固定公司名称
+            //17 : 当前年份
+            //028 ：国内合同当年累积流水号
+            //PK-TILC II ：最终用户对应的工程编码
+            //01 :  国内合同
+            //015 : 对应工程下国内合同流水号（国内／进口分开）
+            int curyearnum = (int)Convert.ToSingle(getMaxContNumOfCurYear(year)) + 1;
+            int gnpronum = (int)Convert.ToSingle(getMaxContNumOfGNPro(SubProjectCode,"01")) + 1;
+            ContractNo = "SPIAIE-" + year + string.Format("{0:000}",curyearnum) + "-" + SubProjectCode + "01" + string.Format("{0:000}",gnpronum);
+            // 进口合同
+        } else if (ContractType.Equals("JK"))
+        {
+            //17SPIAIE56-855BE-PK-5PDII 02 002
+            //17 ：当前年份
+            //SPIAIE：固定公司名称
+            //56 ：合同性质，56对应货物、技术合同；34对应航空煤油
+            //855 ：航油／非航油进口合同累积流水号（航油、非航油分开累计）
+            //BE ：国别编码
+            //PK－5PDII ：最终用户对应的工程编码
+            //02 ：进口合同
+            //002: 工程下进口合同流水号
+            //备注：航油合同没有-PK-5PDII 02 002 
+            string type = "";
+            if(ContractProperty.Equals("ContractProperty_HKMY"))
+            {
+                type = "34";
+            }else if(ContractProperty.Equals("ContractProperty_JS") || ContractProperty.Equals("ContractProperty_HW"))
+            {
+                type = "56";
+            }
+            int curyearnum = (int)Convert.ToSingle(getMaxContNumOfHY(year,type)) + 1;
+            int gnpronum = (int)Convert.ToSingle(getMaxContNumOfGNPro(SubProjectCode,"02")) + 1;
+            if (ContractProperty.Equals("ContractProperty_HKMY"))
+            {
+                ContractNo = year + "SPIAIE" + type + "-" + string.Format("{0:000}",curyearnum) + Country;
+            }else
+            {
+                ContractNo = year + "SPIAIE" + type + "-" + string.Format("{0:000}",curyearnum) + Country + "-" + SubProjectCode + "02" + string.Format("{0:000}",gnpronum);
+            }
+
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(ContractNo);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取Master的数据
+    public void getMasterByType(HttpContext context)
+    {
+        string Type = context.Request["Type"];
+        var sql = " select * from PD_Master where type = '"+Type+"' order by attr3";
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql);
+        List<Dictionary<string, string>> ls = new List<Dictionary<string, string>>();
+        // 获取Master的数据
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                Dictionary<string, string> dic = new Dictionary<string, string>();
+                dic.Add("id", dr["id"].ToString());
+                dic.Add("type", dr["type"].ToString());
+                dic.Add("key", dr["key"].ToString());
+                dic.Add("value", dr["value"].ToString());
+                dic.Add("attr1", dr["attr1"].ToString());
+                dic.Add("attr2", dr["attr2"].ToString());
+                dic.Add("attr3", dr["attr3"].ToString());
+                dic.Add("attr4", dr["attr4"].ToString());
+                dic.Add("attr5", dr["attr5"].ToString());
+                ls.Add(dic);
+            }
+        }
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取国内合同当年累积流水号
+    public string getMaxContNumOfCurYear(string year)
+    {
+        int num = 0;
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            "SELECT ContractNo FROM I_ContractMain where ContractNo like 'SPIAIE-"+year+"%' ");
+        List<Dictionary<string, string>> mList = new List<Dictionary<string, string>>();
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                try
+                {
+                    int curnum = (int)Convert.ToSingle(dr["ContractNo"].ToString().Split('-')[1].Substring(2));
+                    if (curnum > num)
+                    {
+                        num = curnum;
+                    }
+                }
+                catch (Exception exp)
+                {
+                    continue;
+                }
+
+            }
+            return num.ToString();
+        } else
+        {
+            return num.ToString();
+        }
+    }
+
+    // 获取对应工程下国内合同流水号（国内／进口分开）
+    public string getMaxContNumOfGNPro(string SubProjectCode, string countrytype)
+    {
+        int num = 0;
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            "SELECT ContractNo FROM I_ContractMain where ContractNo like '%"+SubProjectCode+countrytype+"%' ");
+        List<Dictionary<string, string>> mList = new List<Dictionary<string, string>>();
+        int len = (SubProjectCode + countrytype).Length;
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                try
+                {
+                    int curnum = (int)Convert.ToSingle(dr["ContractNo"].ToString().Split('-')[2].Substring(len));
+                    if (curnum > num)
+                    {
+                        num = curnum;
+                    }
+
+                }
+                catch (Exception exp)
+                {
+                    continue;
+                }
+
+            }
+            return num.ToString();
+        } else
+        {
+            return num.ToString();
+        }
+    }
+
+    // 获取航油、非航油合同累积流水号
+    public string getMaxContNumOfHY(string year, string type)
+    {
+        int num = 0;
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            "SELECT ContractNo FROM I_ContractMain where ContractNo like '"+year+"SPIAIE"+type+"-%' ");
+        List<Dictionary<string, string>> mList = new List<Dictionary<string, string>>();
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                try
+                {
+                    string tp = dr["ContractNo"].ToString().Split('-')[1];
+                    int curnum = (int)Convert.ToSingle(tp.Substring(0, tp.Length - 2));
+                    if (curnum > num)
+                    {
+                        num = curnum;
+                    }
+
+                }
+                catch (Exception exp)
+                {
+                    continue;
+                }
+            }
+            return num.ToString();
+        } else
+        {
+            return num.ToString();
+        }
+    }
+
+    public void getByContractNo (HttpContext context) {
+        string ContractNo = context.Request["ContractNo"];
+        // 国内合同
+        ContractMain con = new ContractMain();
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT ContractNo,ContractName,PostA,PostB"+
+            " ,ContractType,enum1.EnumValue as ContractTypeName"+
+            " ,Country,enum2.EnumValue as CountryName"+
+            " ,ContractProperty ,enum3.EnumValue as ContractPropertyName"+
+            " ,Salers "+
+            " ,FinalUser "+
+            " ,BidNo "+
+            " ,ContractRemark "+
+            " ,enum4.EnumValue as AgencyTypeName "+
+            " ,ProjectName "+
+            " ,SubProjectName "+
+            " ,SubProjectCode "+
+            " ,TradeMethod "+
+            " ,enum7.EnumValue as TradeMethodName "+
+            " ,Country "+
+            " ,ContractRemark "+
+            " ,Salers "+
+            " ,Currency " +
+            " ,enum5.EnumValue  CurrencyName" +
+            " ,ContractTotalPrice" +
+            " ,JKTotalAmount" +
+            " ,ContractDHDate" +
+            " ,AgencyComputerNum" +
+            " ,AgencyComputerType" +
+            " ,enum6.EnumValue AgencyComputerTypeName" +
+            " ,PayCondition"+
+            " ,ContractFile"+
+            " ,TalkFile"+
+            " FROM I_ContractMain con"+
+            " LEFT JOIN OT_EnumerableMetadata enum1 on con.ContractType = enum1.Code and enum1.Category = '合同类型' "+
+            " LEFT JOIN OT_EnumerableMetadata enum2 on con.Country = enum2.Code and enum2.Category = '国别'"+
+            " LEFT JOIN OT_EnumerableMetadata enum3 on con.ContractProperty = enum3.Code and enum3.Category like '合同性质%'"+
+            " LEFT JOIN OT_EnumerableMetadata enum4 on con.AgencyType = enum4.Code and enum4.Category = '合同审签_代理协议类型'" +
+            " LEFT JOIN OT_EnumerableMetadata enum5 on con.Currency = enum5.Code and enum5.Category = '币种'" +
+            " LEFT JOIN OT_EnumerableMetadata enum6 on con.AgencyComputerType = enum6.Code and enum6.Category = '代理费费率／金额'"+
+            " LEFT JOIN OT_EnumerableMetadata enum7 on con.TradeMethod = enum7.Code and enum7.Category = '贸易方式'"+
+            " where con.ContractNo = '"+ContractNo+"'");
+        if (dt.Rows.Count > 0)
+        {
+            con.ContractNo = dt.Rows[0]["ContractNo"].ToString();
+            con.ContractName = dt.Rows[0]["ContractName"].ToString();
+            //OThinker.Organization.User ua = Common.getUserById(dt.Rows[0]["PostA"].ToString());
+            //OThinker.Organization.User ub = Common.getUserById(dt.Rows[0]["PostB"].ToString());
+            con.PostA = OThinker.H3.Controllers.AppUtility.Engine.Organization.GetName(dt.Rows[0]["PostA"].ToString());
+            con.PostB = OThinker.H3.Controllers.AppUtility.Engine.Organization.GetName(dt.Rows[0]["PostB"].ToString());
+            con.ContractType = dt.Rows[0]["ContractTypeName"].ToString();
+            con.TradeMethod = dt.Rows[0]["TradeMethod"].ToString();
+            con.TradeMethodName = dt.Rows[0]["TradeMethodName"].ToString();
+            con.Country = dt.Rows[0]["CountryName"].ToString();
+            con.ContractProperty = dt.Rows[0]["ContractPropertyName"].ToString();
+            con.Salers = dt.Rows[0]["Salers"].ToString();
+            con.FinalUser = dt.Rows[0]["FinalUser"].ToString();
+            con.BidNo = dt.Rows[0]["BidNo"].ToString();
+            con.ContractRemark = dt.Rows[0]["ContractRemark"].ToString();
+            con.AgencyType = dt.Rows[0]["AgencyTypeName"].ToString();
+            con.Currency = dt.Rows[0]["Currency"].ToString();
+            con.CurrencyName = dt.Rows[0]["CurrencyName"].ToString();
+            con.ContractTotalPrice = dt.Rows[0]["ContractTotalPrice"].ToString();
+            con.JKTotalAmount = dt.Rows[0]["JKTotalAmount"].ToString();
+            con.ContractDHDate = dt.Rows[0]["ContractDHDate"].ToString();
+            con.AgencyComputerNum = dt.Rows[0]["AgencyComputerNum"].ToString();
+            con.AgencyComputerType = dt.Rows[0]["AgencyComputerType"].ToString();
+            con.AgencyComputerTypeName = dt.Rows[0]["AgencyComputerTypeName"].ToString();
+            con.PayCondition = dt.Rows[0]["PayCondition"].ToString();
+            con.ContractFile = dt.Rows[0]["ContractFile"].ToString();
+            con.TalkFile = dt.Rows[0]["TalkFile"].ToString();
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(con);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    public void getPaymentByID (HttpContext context) {
+        string PaymentObjectID = context.Request["PaymentObjectID"];
+        Payment con = new Payment();
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT top 1 * from I_PaymentSub where ObjectID = '"+PaymentObjectID+"'");
+        if (dt.Rows.Count > 0)
+        {
+            con.PaymentNo = dt.Rows[0]["PaymentNo"].ToString();
+            con.PaymentDate = dt.Rows[0]["PaymentDate"].ToString();
+            con.ExpirationDate = dt.Rows[0]["ExpirationDate"].ToString();
+            con.RemindDate = dt.Rows[0]["RemindDate"].ToString();
+            con.OperateRemark = dt.Rows[0]["OperateRemark"].ToString();
+            con.PaymentAmount = dt.Rows[0]["PaymentAmount"].ToString();
+            con.Currency = dt.Rows[0]["Currency"].ToString();
+        } else
+        {
+            System.Data.DataTable dt2 = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT top 1 * from I_PaymentUpdateSub where ObjectID = '"+PaymentObjectID+"'");
+            if (dt2.Rows.Count > 0)
+            {
+                con.PaymentNo = dt2.Rows[0]["PaymentNo"].ToString();
+                con.PaymentDate = dt2.Rows[0]["PaymentUpdateDate"].ToString();
+                con.ExpirationDate = dt2.Rows[0]["ExpirationDate"].ToString();
+                con.RemindDate = dt2.Rows[0]["RemindDate"].ToString();
+                con.OperateRemark = dt2.Rows[0]["OperateRemark"].ToString();
+                con.PaymentAmount = dt2.Rows[0]["PaymentAmount"].ToString();
+                con.Currency = dt2.Rows[0]["Currency"].ToString();
+            }
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(con);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    public void getDHByBizObjectID (HttpContext context) {
+        string BizObjectID = context.Request["BizObjectID"];
+        Dictionary<string,string> dic = new Dictionary<string,string>();
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT top 1 * from I_DH where ObjectID = '"+BizObjectID+"'");
+        if (dt.Rows.Count > 0)
+        {
+            dic.Add("ObjectID",dt.Rows[0]["ObjectID"].ToString());
+            dic.Add("DHSeq",dt.Rows[0]["DHSeq"].ToString());
+        }
+        object JSONObj = JsonConvert.SerializeObject(dic);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    public void getFKById (HttpContext context) {
+        string BizObjectID = context.Request["BizObjectID"];
+        Dictionary<string,string> dic = new Dictionary<string,string>();
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT top 1 f.ObjectID,Receiver,Content,DKRemark,Remark,BankName,BankAccount,CurZJAmount,Currency,e.EnumValue CurrencyName "+
+            " FROM I_FK f "+
+            " inner JOIN OT_EnumerableMetadata e on f.Currency = e.Code and e.Category = '币种' and f.ObjectID = '"+BizObjectID+"'");
+        if (dt.Rows.Count > 0)
+        {
+            dic.Add("ObjectID",dt.Rows[0]["ObjectID"].ToString());
+            dic.Add("Currency",dt.Rows[0]["Currency"].ToString());
+            dic.Add("Receiver",dt.Rows[0]["Receiver"].ToString());
+            dic.Add("Content",dt.Rows[0]["Content"].ToString());
+            dic.Add("DKRemark",dt.Rows[0]["DKRemark"].ToString());
+            dic.Add("Remark",dt.Rows[0]["Remark"].ToString());
+            dic.Add("BankName",dt.Rows[0]["BankName"].ToString());
+            dic.Add("BankAccount",dt.Rows[0]["BankAccount"].ToString());
+            dic.Add("CurZJAmount",dt.Rows[0]["CurZJAmount"].ToString());
+            dic.Add("CurrencyName",dt.Rows[0]["CurrencyName"].ToString());
+        }
+        object JSONObj = JsonConvert.SerializeObject(dic);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+
+    public void getHYData (HttpContext context) {
+        Dictionary<string,string> dic = new Dictionary<string,string>();
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT top 1 h.* from I_HYContractSet h,OT_InstanceContext ic where h.ObjectID = ic.BizObjectID order by h.modifiedTime desc ");
+        if (dt.Rows.Count > 0) {
+            dic.Add("ObjectID",dt.Rows[0]["ObjectID"].ToString());
+            dic.Add("PostB",dt.Rows[0]["PostB"].ToString());
+            dic.Add("FinalUser",dt.Rows[0]["FinalUser"].ToString());
+            dic.Add("BidType",dt.Rows[0]["BidType"].ToString());
+            dic.Add("BidNo",dt.Rows[0]["BidNo"].ToString());
+            dic.Add("ContractType",dt.Rows[0]["ContractType"].ToString());
+            dic.Add("ContractName",dt.Rows[0]["ContractName"].ToString());
+            dic.Add("ContractShortName",dt.Rows[0]["ContractShortName"].ToString());
+            dic.Add("ProjectName",dt.Rows[0]["ProjectName"].ToString());
+            dic.Add("SubProjectName",dt.Rows[0]["SubProjectName"].ToString());
+            dic.Add("SubProjectCode",dt.Rows[0]["SubProjectCode"].ToString());
+            dic.Add("TradeMethod",dt.Rows[0]["TradeMethod"].ToString());
+            dic.Add("Country",dt.Rows[0]["Country"].ToString());
+            dic.Add("ContractRemark",dt.Rows[0]["ContractRemark"].ToString());
+            dic.Add("Salers",dt.Rows[0]["Salers"].ToString());
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(dic);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    public void getBidsHYData (HttpContext context) {
+        // 
+        string ObjectID = context.Request["ObjectID"];
+        List<Dictionary<string,string>> ls = new List<Dictionary<string,string>>();
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT bhy.* FROM I_BidTblOfHY bhy, I_HYContractSet hy where bhy.ParentObjectID = hy.ObjectID and hy.ObjectID = '"+ObjectID+"'");
+        if (dt.Rows.Count > 0) {
+            foreach (DataRow dr in dt.Rows)
+            {
+                Dictionary<string,string> dic = new Dictionary<string,string>();
+                dic.Add("ObjectID",dr["ObjectID"].ToString());
+                dic.Add("ProjectShortName",dr["ProjectShortName"].ToString());
+                dic.Add("BidPrice",dr["BidPrice"].ToString());
+                ls.Add(dic);
+            }
+
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    public void getSalesHYData (HttpContext context) {
+        // 
+        string ObjectID = context.Request["ObjectID"];
+        List<Dictionary<string,string>> ls = new List<Dictionary<string,string>>();
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT shy.* FROM I_SalerTblOfHY shy, I_HYContractSet hy where shy.ParentObjectID = hy.ObjectID and hy.ObjectID = '"+ObjectID+"'");
+        if (dt.Rows.Count > 0) {
+            foreach (DataRow dr in dt.Rows)
+            {
+                Dictionary<string,string> dic = new Dictionary<string,string>();
+                dic.Add("ObjectID",dr["ObjectID"].ToString());
+                dic.Add("CompanyName",dr["CompanyName"].ToString());
+                dic.Add("ContactName",dr["ContactName"].ToString());
+                dic.Add("Telephone",dr["Telephone"].ToString());
+                dic.Add("Mobile",dr["Mobile"].ToString());
+                dic.Add("Fax",dr["Fax"].ToString());
+                dic.Add("Email",dr["Email"].ToString());
+                ls.Add(dic);
+            }
+
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+
+
+    // 获取业务子流程的状态，和合同号相关
+    public void getBizStatusOfContract (HttpContext context) {
+        string ContractNo = context.Request["ContractNo"];
+        string BizNo = context.Request["BizNo"];
+        string ret = "";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT ic.State FROM I_"+BizNo+" tbl, OT_InstanceContext ic where tbl.ObjectID = ic.BizObjectId and tbl.ContractNo = '"+ContractNo+"'");
+        if (dt.Rows.Count > 0) {
+            ret = dt.Rows[0]["State"].ToString();
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(ret);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+    // 根据InstanceContext父节点id获取workItem的id
+    public void getWorkItemIDByICPID (HttpContext context) {
+        string InstanceId = context.Request["InstanceId"];
+        // workItem的id
+        string ObjectId = "";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " select top 1 wi.ObjectId"+
+            " from OT_InstanceContext ic,OT_WorkItem wi"+
+            " where ic.ParentInstanceId = '"+InstanceId+"'"+
+            " and ic.ObjectID = wi.InstanceId"+
+            " order by ic.CreatedTime desc ");
+        if (dt.Rows.Count > 0)
+        {
+            ObjectId = dt.Rows[0]["ObjectId"].ToString();
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(ObjectId);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取合同号对应的请款最大批次
+    public void getMaxQKSeqByContractNo (HttpContext context) {
+        string ContractNo = context.Request["ContractNo"];
+        // workItem的id
+        string QKSeq = "";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT Max(QKSeq) QKSeq FROM I_QK "+
+            " where ContractNo = '"+ContractNo+"'");
+        if (dt.Rows.Count > 0)
+        {
+            QKSeq = dt.Rows[0]["QKSeq"].ToString();
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(QKSeq);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    public void setChangePayment (HttpContext context) {
+        string PaymentObjectID = context.Request["PaymentObjectID"];
+        string Status = context.Request["Status"];
+
+        System.Data.DataTable dt1 = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " update I_PaymentSub set changePaymentFlg = '"+Status+"' where ObjectID = '"+PaymentObjectID+"' ");
+
+        System.Data.DataTable dt2 = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " update I_PaymentUpdateSub set changePaymentFlg = '"+Status+"' where ObjectID = '"+PaymentObjectID+"' ");
+
+        object JSONObj = JsonConvert.SerializeObject("");
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    public void cancelImportLicence (HttpContext context) {
+        string ImportLicenseId = context.Request["ImportLicenseId"];
+        string flg = context.Request["flg"];
+        string cancelFlg = "";
+        if(flg.Equals("cancel"))
+        {
+            cancelFlg = "1";
+        } else if(flg.Equals("undocancel"))
+        {
+            cancelFlg = "0";
+        }
+
+        System.Data.DataTable dt1 = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " update I_ImportLicenseSub set cancelFlg = '"+cancelFlg+"' where ObjectID = '"+ImportLicenseId+"' ");
+
+        object JSONObj = JsonConvert.SerializeObject("");
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+
+    public void getPaymentUpdateByPID (HttpContext context) {
+        // 
+        string PObjectID = context.Request["PObjectID"];
+        List<Dictionary<string,string>> ls = new List<Dictionary<string,string>>();
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT p.BankName," +
+            " up.PaymentAmount," +
+            " ic.State Status," +
+            " case ic.State when '2' then '审批中' when '4' then '已开证' end DisplayName, " +
+            " up.CreatedTime," +
+            " ic.ObjectID," +
+            " p.PaymentNo PaymentId, " +
+            " case up.changePaymentFlg when '2' then '改证中' when '4' then '已改证' end changePaymentFlg " +
+            " FROM I_PaymentUpdateSub up ,OT_InstanceContext ic ,I_PaymentSub p " +
+            " where p.ObjectID ='603ea6c6-054e-4eff-8dd9-9a961b248e45' " +
+            " and up.ObjectID = ic.BizObjectId and p.paymentNo = up.paymentno " +
+            " order by CreatedTime desc ");
+        if (dt.Rows.Count > 0) {
+            foreach (DataRow dr in dt.Rows)
+            {
+                Dictionary<string,string> dic = new Dictionary<string,string>();
+                dic.Add("BankName",dr["BankName"].ToString());
+                dic.Add("PaymentAmount",dt.Rows[0]["PaymentAmount"].ToString());
+                dic.Add("DisplayName",dt.Rows[0]["DisplayName"].ToString());
+                dic.Add("changePaymentFlg",dt.Rows[0]["changePaymentFlg"].ToString());
+
+                ls.Add(dic);
+            }
+
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取到货批次
+    public void getDHSeq (HttpContext context) {
+        string ContractNo = context.Request["ContractNo"];
+        string DHSeq = "";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " select ISNULL(Max(DHSeq),0) + 1 DHSeq from I_DH dh" +
+            " where ContractNo = '"+ContractNo+"' ");
+        if (dt.Rows.Count > 0)
+        {
+            DHSeq = dt.Rows[0]["DHSeq"].ToString();
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(DHSeq);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取到货批次的数量
+    public void getDHSeqCnt (HttpContext context) {
+        string ContractNo = context.Request["ContractNo"];
+        string DHSeq = context.Request["DHSeq"];
+        string Cnt = "";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " select Count(1) Cnt from I_DH" +
+            " where ContractNo = '"+ContractNo+"' and DHSeq = '"+DHSeq+"'  ");
+        if (dt.Rows.Count > 0)
+        {
+            Cnt = dt.Rows[0]["Cnt"].ToString();
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(Cnt);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取商品数量
+    public void getGoodNum (HttpContext context) {
+        string ContractNo = context.Request["ContractNo"];
+        string DHSeq = context.Request["DHSeq"];
+        string GoodName = context.Request["GoodName"];
+        string Num = "";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " select g.Num from I_DHGoodsTbl g, I_DH d " +
+            " where d.ContractNo = '"+ContractNo+"' " +
+            " and d.DHSeq = '"+DHSeq+"' " +
+            " and g.GoodName = '"+GoodName+"'" +
+            " and g.parentObjectId = d.ObjectId" );
+        if (dt.Rows.Count > 0)
+        {
+            Num = dt.Rows[0]["Num"].ToString();
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(Num);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取海关保证金
+    public void getHGBZJ (HttpContext context) {
+        List<Dictionary<string,string>> ls = new List<Dictionary<string,string>>();
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " select '海关保证金' as ZJKX, '2.00美元' as Amount, '17人民币' as ConvertAmount, '无' as PayContent, '汇款' as PayType,'询诺' as Receiver " +
+            " UNION " +
+            " select '海关保证金' as ZJKX, '3.00美元' as Amount, '22人民币' as ConvertAmount, '无' as PayContent, '支付宝' as PayType,'询诺' as Receiver " );
+
+        if (dt.Rows.Count > 0) {
+            foreach (DataRow dr in dt.Rows)
+            {
+                Dictionary<string,string> dic = new Dictionary<string,string>();
+                dic.Add("ZJKX",dr["ZJKX"].ToString());
+                dic.Add("Amount",dr["Amount"].ToString());
+                dic.Add("ConvertAmount",dr["ConvertAmount"].ToString());
+                dic.Add("PayContent",dr["PayContent"].ToString());
+                dic.Add("PayType",dr["PayType"].ToString());
+                dic.Add("Receiver",dr["Receiver"].ToString());
+                ls.Add(dic);
+            }
+
+        }
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取到款记录（到款模块中）
+    public void getDKTbl(HttpContext context)
+    {
+        string ContractNo = context.Request["ContractNo"];
+        var dksql = " select t1.*,t2.cnt SeqCnt,t3.ConvertAmountSum QKConvertAmount from ( "+
+                        " SELECT "+
+                        " 	tbl.ObjectID QKObjectID," +
+                        "   qk.QKSeq QKSeq, "+
+                        "   tbl.ParentIndex, "+
+                        " 	tbl.QKType QKTypeCode, "+
+                        " 	e3.EnumValue QKType, "+
+                        " 	qk.QKTarget, "+
+                        " 	CONVERT(varchar(12),qk.ModifiedTime,111) QKDate, "+
+                        " 	e2.EnumValue ZJKX, "+
+                        " 	tbl.ZJMS, "+
+                        " 	tbl.Amount QKAmount, "+
+                        " 	tbl.LJDKAmount LJDKAmount, "+
+                        " 	tbl.Currency QKCurrencyCode, "+
+                        " 	e1.EnumValue QKCurrency "+
+                        " FROM "+
+                        " 	I_QK qk "+
+                        " INNER JOIN I_QKSubTbl tbl ON qk.ObjectID = tbl.ParentObjectID and tbl.Amount > tbl.LJDKAmount "+
+                        " INNER JOIN OT_InstanceContext ic ON qk.ObjectId = ic.BizObjectID and ic.State = '4' and qk.ContractNo = '"+ContractNo+"'  "+
+                        " LEFT JOIN OT_EnumerableMetadata e1 ON tbl.Currency = e1.Code AND e1.Category = '币种' "+
+                        " LEFT JOIN OT_EnumerableMetadata e2 ON tbl.ZJKX = e2.Code AND e2.Category = '资金款项' " +
+                        " LEFT JOIN OT_EnumerableMetadata e3 ON tbl.QKType = e3.Code AND e3.Category = '请款类型'"+
+                        " ) t1, "+
+                        " (select QKSeq,count(1) cnt FROM "+
+                        " 	I_QK qk "+
+                        " INNER JOIN I_QKSubTbl tbl ON qk.ObjectID = tbl.ParentObjectID and tbl.Amount > tbl.LJDKAmount "+
+                        " INNER JOIN OT_InstanceContext ic ON qk.ObjectId = ic.BizObjectID and ic.State = '4' "+
+                        " and qk.ContractNo = '"+ContractNo+"' "+
+                        " group by qk.QKSeq "+
+                        " ) t2, "+
+                        " (select QKSeq,sum(tbl.ConvertAmount) ConvertAmountSum FROM "+
+                        " 	I_QK qk "+
+                        " INNER JOIN I_QKSubTbl tbl ON qk.ObjectID = tbl.ParentObjectID and tbl.Amount > tbl.LJDKAmount "+
+                        " INNER JOIN OT_InstanceContext ic ON qk.ObjectId = ic.BizObjectID and ic.State = '4' "+
+                        " and qk.ContractNo = '"+ContractNo+"' "+
+                        " group by qk.QKSeq "+
+                        " ) t3 "+
+                        " where t1.QKSeq = t2.QKSeq  and t1.QKSeq = t3.QKSeq and t1.QKAmount > t1.LJDKAmount"+
+                        " order BY t1.QKSeq,t1.ParentIndex ";
+
+        // 正在审批中的 到款 和 批量到款 的QKObjectID
+        var sql_dk = " select dt.QKObjectID,dt.CurDKAmount "+
+                        " from I_DK d "+
+                        " INNER JOIN I_DKTbl dt on d.ObjectID = dt.ParentObjectID and dt.CurDKAmount > 0 and d.ContractNo ='"+ContractNo+"'"+
+                        " INNER JOIN OT_InstanceContext ic ON d.ObjectId = ic.BizObjectID and ic.State = '2'  "+
+                        " Union "+
+                        " select bdt.QKObjectID,bdt.CurDKAmount "+
+                        " from I_BatchDK_DK bd "+
+                        " INNER JOIN I_BatchDKTblOfDK bdt on bd.ObjectID = bdt.ParentObjectID and cast(bdt.CurDKAmount as DECIMAL) > 0  "+
+                        " INNER JOIN OT_InstanceContext ic ON bd.ObjectId = ic.BizObjectID and ic.State = '2'  " ;
+        System.Data.DataTable dt_dk = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(dksql);
+        System.Data.DataTable dt_dk2 = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql_dk);
+        List<Dictionary<string, string>> ret = new List<Dictionary<string, string>>();
+        List<Dictionary<string, string>> ls = new List<Dictionary<string, string>>();
+        List<Dictionary<string, string>> ls_sub = new List<Dictionary<string, string>>();
+        if (dt_dk.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt_dk.Rows)
+            {
+                if(!Common.Contains(dt_dk2,dr["QKObjectID"].ToString()))
+                {
+                    Dictionary<string, string> dic = new Dictionary<string, string>();
+                    dic.Add("ContractNo", ContractNo);
+                    dic.Add("QKSeq", dr["QKSeq"].ToString());
+                    dic.Add("QKObjectID", dr["QKObjectID"].ToString());
+                    dic.Add("QKType", dr["QKType"].ToString());
+                    dic.Add("QKTypeCode", dr["QKTypeCode"].ToString());
+                    dic.Add("QKTarget", dr["QKTarget"].ToString());
+                    dic.Add("QKDate", dr["QKDate"].ToString());
+                    dic.Add("ZJKX", dr["ZJKX"].ToString());
+                    dic.Add("ZJMS", dr["ZJMS"].ToString());
+                    dic.Add("QKAmount", dr["QKAmount"].ToString());
+                    dic.Add("QKCurrencyCode", dr["QKCurrencyCode"].ToString());
+                    dic.Add("QKCurrency", dr["QKCurrency"].ToString());
+                    dic.Add("QKConvertAmount", dr["QKConvertAmount"].ToString()+"人民币");
+                    dic.Add("SeqCnt", dr["SeqCnt"].ToString());
+                    dic.Add("LJDKAmount", dr["LJDKAmount"].ToString());
+                    ls.Add(dic);
+                } else{
+                    Dictionary<string, string> dic = new Dictionary<string, string>();
+                    dic.Add("ContractNo", ContractNo);
+                    dic.Add("QKSeq", dr["QKSeq"].ToString());
+                    ls_sub.Add(dic);
+                }
+            }
+        }
+        ret = Common.Subs(ls,ls_sub);
+        object JSONObj = JsonConvert.SerializeObject(ret);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取到款记录（结算模块中）
+    public void getDKTblOfJS(HttpContext context)
+    {
+        string ContractNo = context.Request["ContractNo"];
+        // 从到款模块中取数据
+        var dksql = " select dk.ObjectID DKObjectID, dk.QKTargetCode QKTarget, e2.EnumValue DKType,  "+
+                    " CONVERT(varchar(12),d.DKDate,111) DKDate, "+
+                    " CONVERT(varchar,dk.CurDKAmount) DKAmount,e1.EnumValue DKCurrency,d.ModifiedTime,ic.ObjectID IcObjectId ,ic.State Status "+
+                    " from I_DK d "+
+                    " INNER JOIN I_DKTbl dk on dk.ParentObjectID = d.ObjectID "+
+                    " INNER JOIN OT_InstanceContext ic on d.ObjectID = ic.BizObjectId "+
+                    " INNER JOIN OT_EnumerableMetadata e1 ON dk.CurDKCurrency = e1.Code AND e1.Category = '币种' "+
+                    " INNER JOIN OT_EnumerableMetadata e2 ON d.DKType = e2.Code AND e2.Category = '到款类型' "+
+                    " and d.ContractNo = '"+ContractNo+"'  and (dk.CurDKAmount > 0 ) and ic.State = '4' ";
+        // 获取已经进行结算的到款数据，包含保存和提交和审批过的数据
+        var jdksql = " select dj.DKObjectID DKObjectID,dj.DKAmount from I_JS j  "+
+                   " INNER JOIN I_DKTblOfJS dj on dj.ParentObjectID = j.ObjectID  "+
+                   " INNER JOIN OT_InstanceContext ic on j.ObjectID = ic.BizObjectId "+
+                   " and j.ContractNo = '"+ContractNo+"'  and dj.IsCheck = '是;' "+
+                   " order by dj.ParentIndex ";
+        System.Data.DataTable dt_dk = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(dksql);
+        System.Data.DataTable dt_dkj = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(jdksql);
+        List<Dictionary<string, string>> ls_dk = new List<Dictionary<string, string>>();
+        List<Dictionary<string, string>> ls_dkj = new List<Dictionary<string, string>>();
+        if (dt_dkj.Rows.Count > 0)
+        {
+            var i = 0;
+            foreach (DataRow dr in dt_dkj.Rows)
+            {
+                i++;
+                Dictionary<string, string> dic = new Dictionary<string, string>();
+                dic.Add("DKObjectID", dr["DKObjectID"].ToString());
+                ls_dkj.Add(dic);
+            }
+        }
+        if (dt_dk.Rows.Count > 0)
+        {
+            var i = 0;
+            foreach (DataRow dr in dt_dk.Rows)
+            {
+                // 如果已经结算过，那么跳过
+                if(Common.Contains(ls_dkj,dr["DKObjectID"].ToString()))
+                {
+                    continue;
+                }
+                i++;
+                Dictionary<string, string> dic = new Dictionary<string, string>();
+                dic.Add("TheNo", i.ToString());
+                dic.Add("QKTarget", dr["QKTarget"].ToString());
+                dic.Add("DKType", dr["DKType"].ToString());
+                dic.Add("DKAmount", dr["DKAmount"].ToString());
+                dic.Add("DKCurrency", dr["DKCurrency"].ToString());
+                dic.Add("DKDate", dr["DKDate"].ToString());
+                Dictionary<string, string> workItemDic = Common.getWorkItemId(dr["IcObjectId"].ToString(), dr["Status"].ToString());
+                foreach (var item in workItemDic)
+                {
+                    if (item.Key.Equals("workItemId"))
+                    {
+                        dic.Add("WorkItemId", item.Value);
+                    }
+                }
+                dic.Add("DKObjectID", dr["DKObjectID"].ToString());
+                ls_dk.Add(dic);
+            }
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(ls_dk);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取付款记录（结算模块中）
+    public void getFKTblOfJS(HttpContext context)
+    {
+        string ContractNo = context.Request["ContractNo"];
+        var fksql = " select t1.ObjectID FKObjectID,t1.ZKMS,cast(t1.Amount as varchar) as Amount,e1.EnumValue CurrencyName,  "+
+                    " CONVERT(varchar(12),t1.FKDate,111) FKDate,t1.ConvertAmount,  "+
+                    " cast(t2.AmountSum as varchar)+e1.EnumValue as AmountSum,t2.Cnt,t1.Receiver,t1.State Status,t1.IcObjectID  "+
+                    " from   "+
+                    " (  "+
+                    " 	SELECT f.ObjectID,ft.ZKMS,ft.Amount,f.Currency,f.FKDate,f.ConvertAmount,f.ModifiedTime ,ft.ParentIndex,f.Receiver,  "+
+                    " 	ic.State,ic.ObjectID IcObjectID "+
+                    " 	FROM I_FK f  "+
+                    " 	INNER JOIN I_FKTbl ft on f.ObjectID = ft.ParentObjectID  "+
+                    " 	INNER JOIN OT_InstanceContext ic on f.ObjectID = ic.BizObjectID  and ic.State = '4' "+
+                    " 	and f.ContractNo = '"+ContractNo+"'  "+
+                    " ) t1 INNER JOIN   "+
+                    " (  "+
+                    " 	SELECT f.ObjectID,sum(ft.Amount) AmountSum,count(ft.ObjectID) Cnt  "+
+                    " 	FROM I_FK f  "+
+                    " 	INNER JOIN I_FKTbl ft on f.ObjectID = ft.ParentObjectID  "+
+                    " 	INNER JOIN OT_InstanceContext ic on f.ObjectID = ic.BizObjectID  and ic.State = '4' "+
+                    " 	and f.ContractNo = '"+ContractNo+"'  "+
+                    " 	GROUP BY f.ObjectID  "+
+                    " ) t2 on t1.ObjectID = t2.ObjectID  "+
+                    " LEFT JOIN OT_EnumerableMetadata e1 on t1.Currency = e1.Code and e1.Category = '币种'  "+
+                    " order by t1.ModifiedTime ,t1.ObjectID,t1.ParentIndex    ";
+        // 获取已经进行结算的付款数据，包含保存和提交和审批过的的数据
+        var jfksql = " select dj.FKObjectID FKObjectID,dj.FKAmount from I_JS j  "+
+                   " INNER JOIN I_FKTblOfJS dj on dj.ParentObjectID = j.ObjectID  "+
+                   " INNER JOIN OT_InstanceContext ic on j.ObjectID = ic.BizObjectId "+
+                   " and j.ContractNo = '"+ContractNo+"' and dj.IsCheck = '是;' "+
+                   " order by dj.ParentIndex ";
+        System.Data.DataTable dt_fk = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(fksql);
+        System.Data.DataTable dt_fkj = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(jfksql);
+        List<Dictionary<string, string>> ls_fk = new List<Dictionary<string, string>>();
+        List<Dictionary<string, string>> ls_fkj = new List<Dictionary<string, string>>();
+        if (dt_fkj.Rows.Count > 0)
+        {
+            var i = 0;
+            foreach (DataRow dr in dt_fkj.Rows)
+            {
+                i++;
+                Dictionary<string, string> dic = new Dictionary<string, string>();
+                dic.Add("FKObjectID", dr["FKObjectID"].ToString());
+                ls_fkj.Add(dic);
+            }
+        }
+        if (dt_fk.Rows.Count > 0)
+        {
+            var i = 0;
+            var TheNo = 0;
+            var ObjectIDBak = "";
+            foreach (DataRow dr in dt_fk.Rows)
+            {
+                // 如果已经结算过，那么跳过
+                if(Common.Contains(ls_fkj,dr["FKObjectID"].ToString()))
+                {
+                    continue;
+                }
+                i++;
+                Dictionary<string, string> dic = new Dictionary<string, string>();
+                if (!ObjectIDBak.Equals(dr["FKObjectID"].ToString()))
+                {
+                    TheNo++;
+                }
+                ObjectIDBak = dr["FKObjectID"].ToString();
+                dic.Add("TheNo", TheNo.ToString());
+
+                // 如果是人民币，直接拿人民币合计作为折算金额
+                if(dr["CurrencyName"].ToString().Equals("人民币"))
+                {
+                    dic.Add("ConvertAmount", dr["AmountSum"].ToString());
+                } else
+                {
+                    // 如果有折算金额，则取之，不然就是没有折算金额
+                    var ConvertAmount = (double)Convert.ToSingle(dr["ConvertAmount"]);
+                    if(ConvertAmount > 0)
+                    {
+                        dic.Add("ConvertAmount", dr["ConvertAmount"].ToString()+"人民币");
+                    }
+
+                }
+                dic.Add("ZKMS", dr["ZKMS"].ToString());
+                dic.Add("FKAmount", dr["Amount"].ToString());
+                dic.Add("FKCurrency", dr["CurrencyName"].ToString());
+                dic.Add("Receiver", dr["Receiver"].ToString());
+                if (dr["Status"].ToString().Equals("4"))
+                {
+                    dic.Add("FKDate", dr["FKDate"].ToString());
+                }
+
+                Dictionary<string, string> workItemDic = Common.getWorkItemId(dr["IcObjectId"].ToString(), dr["Status"].ToString());
+                foreach (var item in workItemDic)
+                {
+                    Console.WriteLine(item.Key + item.Value);
+                    if (item.Key.Equals("workItemId"))
+                    {
+                        dic.Add("WorkItemId", item.Value);
+                    }
+                }
+                dic.Add("FKObjectID", dr["FKObjectID"].ToString());
+                dic.Add("Cnt", dr["Cnt"].ToString());
+                ls_fk.Add(dic);
+            }
+
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(ls_fk);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    //public void doBGContract (HttpContext context) {
+    //    string BizObjcetID = context.Request["BizObjcetID"];
+
+    //    System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+    //        " select * from I_BG where ObjectID = '"+BizObjcetID+"' ");
+    //    System.Data.DataTable dt2 = null;
+
+    //    if (dt.Rows.Count > 0)
+    //    {
+
+    //        var ContractNo = dt.Rows[0]["ContractNo"].ToString();
+    //        var IsChangeAmountRMB = dt.Rows[0]["IsChangeAmountRMB"].ToString();
+    //        var IsChangeAmountWB = dt.Rows[0]["IsChangeAmountWB"].ToString();
+    //        var IsChangeDHDate = dt.Rows[0]["IsChangeDHDate"].ToString();
+    //        var IsChangeAgency = dt.Rows[0]["IsChangeAgency"].ToString();
+    //        var IsChangePayCondition = dt.Rows[0]["IsChangePayCondition"].ToString();
+    //        string sql_update1 = " update I_ContractMain set ";
+    //        string sql_update2 = " where ContractNo = '"+ContractNo+"'";
+    //        string sql_t = "";
+    //        if (IsChangeAmountRMB == "是")
+    //        {
+    //            sql_t += " ,ContractTotalPrice=" + dt.Rows[0]["AmountRMBNew"].ToString();
+    //        }
+    //        if (IsChangeAmountWB == "是")
+    //        {
+    //            sql_t += " ,JKTotalAmount=" + dt.Rows[0]["AmountWBNew"].ToString();
+    //        }
+    //        if (IsChangeDHDate == "是")
+    //        {
+    //            sql_t += " ,ContractDHDate='" + dt.Rows[0]["DHDateNew"].ToString() + "'";
+    //        }
+    //        if (IsChangeAgency == "是")
+    //        {
+    //            sql_t += " ,AgencyComputerNum=" + dt.Rows[0]["AgencyNumNew"].ToString();
+    //        }
+    //        if (IsChangePayCondition == "是")
+    //        {
+    //            sql_t += " ,PayCondition='" + dt.Rows[0]["PayConditionNew"].ToString() + "'";
+    //        }
+    //        if(sql_t != "")
+    //        {
+    //            dt2 = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+    //                sql_update1 + sql_t.Substring(2) + sql_update2);
+
+    //        }
+    //    }
+
+    //    object JSONObj = JsonConvert.SerializeObject(dt2);
+    //    context.Response.ContentType = "application/json";
+    //    context.Response.Write(JSONObj);
+    //}
+
+    // 获取已申请支付金额
+    public void getApplyZJAmount(HttpContext context)
+    {
+        string ContractNo = context.Request["ContractNo"];
+        var sql = " select t.Currency,sum(t.Amount) TotalAmount from ( "+
+                    " 	select f.ZKType,f.Currency,ft.ZJKX,ft.Amount "+
+                    " 	from I_FK f "+
+                    " 	INNER JOIN I_FKTbl ft on f.ObjectID = ft.ParentObjectID "+
+                    " 	INNER JOIN OT_InstanceContext ic on f.ObjectID = ic.BizObjectID "+
+                    " 	and f.ContractNo = '"+ContractNo+"' and ic.State='4' and f.ZKType = 'ZKType_HT' "+
+                    " 	Union "+
+                    " 	select f.ZKType,f.Currency,ft.ZJKX,ft.Amount "+
+                    " 	from I_FK f "+
+                    " 	INNER JOIN I_FKTbl ft on f.ObjectID = ft.ParentObjectID "+
+                    " 	INNER JOIN OT_InstanceContext ic on f.ObjectID = ic.BizObjectID and ic.State='2' "+
+                    " 	INNER JOIN OT_WorkItem wi on ic.ObjectID = wi.InstanceId and f.ZKType = 'ZKType_HT' and wi.ActivityCode != 'ActivityOrig' "+
+                    " 	and f.ContractNo = '"+ContractNo+"' ) t "+
+                    " GROUP BY t.Currency ";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql);
+        Dictionary<string, string> dic = new Dictionary<string, string>();
+        dic.Add("RMB", "0");
+        dic.Add("WB", "0");
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                if(dr["Currency"].ToString() == "RMB")
+                {
+                    if (dic.ContainsKey("RMB"))
+                    {
+                        dic.Remove("RMB");
+                    }
+                    dic.Add("RMB", dr["TotalAmount"].ToString());
+                } else
+                {
+                    if (dic.ContainsKey("WB"))
+                    {
+                        dic.Remove("WB");
+                    }
+                    dic.Add("WB", dr["TotalAmount"].ToString());
+                }
+
+            }
+
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(dic);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取支付管理中的基本数据（资金计划，请款，到款，付款）
+    public void getZFGLData(HttpContext context)
+    {
+        string ContractNo = context.Request["ContractNo"];
+        var sql_zjjh = " SELECT pt.ObjectID,pt.Content " +
+                            " FROM I_ZJPlan p" +
+                            " INNER JOIN I_PlanTbl pt on p.ObjectID = pt.ParentObjectID " +
+                            " INNER JOIN OT_InstanceContext ic on p.ObjectID = ic.BizObjectId " +
+                            " and p.ContractNo = '"+ContractNo+"'" +
+                            " order by pt.parentIndex ";
+        var sql_qk = " SELECT "+
+                            " 	t.QKObjectId, "+
+                            " 	t.QKSeq, "+
+                            " 	CAST (t.Amount AS VARCHAR) + e.EnumValue Amount "+
+                            " FROM "+
+                            " 	( "+
+                            " 	SELECT "+
+                            " 		MAX (qk.ObjectId) QKObjectId, "+
+                            " 		qk.QKSeq QKSeq, "+
+                            " 		SUM (tbl.Amount) Amount, "+
+                            " 		SUM (tbl.ConvertAmount) ConvertAmount, "+
+                            " 		MAX (qk.QKTarget) QKTarget, "+
+                            " 		tbl.Currency, "+
+                            " 		MAX (ic.ObjectID) icObjectId, "+
+                            " 		MAX (qk.RejectFlg) RejectFlg "+
+                            " 	FROM "+
+                            " 		I_QK qk "+
+                            " 	INNER JOIN I_QKSubTbl tbl ON qk.ObjectID = tbl.ParentObjectID "+
+                            " 	INNER JOIN OT_InstanceContext ic ON qk.ObjectId = ic.BizObjectID "+
+                            " 	AND qk.ContractNo = '"+ContractNo+"' and ic.State = '4' "+
+                            " 	GROUP BY "+
+                            " 		qk.QKSeq, "+
+                            " 		tbl.Currency "+
+                            " 	) t "+
+                            " LEFT JOIN OT_EnumerableMetadata e ON t.Currency = e.Code AND e.Category = '币种' "+
+                            " ORDER BY "+
+                            " 	t.QKSeq ";
+        var sql_dk = " select  dk.ObjectID DKObjectID, "+
+                            " dk.QKSeqHidden QKSeq,dk.ZJMS, "+
+                            " CONVERT(varchar,dk.CurDKAmount)+e1.EnumValue DKTotalAmount "+
+                            " from I_DK d "+
+                            " INNER JOIN I_DKTbl dk on dk.ParentObjectID = d.ObjectID "+
+                            " INNER JOIN OT_InstanceContext ic on d.ObjectID = ic.BizObjectId "+
+                            " INNER JOIN OT_EnumerableMetadata e1 ON dk.CurDKCurrency = e1.Code AND e1.Category = '币种' "+
+                            " and d.ContractNo = '"+ContractNo+"'  and dk.CurDKAmount > 0 and ic.State = '4' "+
+                            " order by d.ModifiedTime  ";
+        var sql_fk = " select t.FKObjectID,min(t.Currency) Currency,min(t.CurrencyName) CurrencyName,  "+
+                            "  min(t.FKDate) FKDate,min(t.ConvertAmount) ConvertAmount,  "+
+                            "  min(t.AmountSum) AmountSum, min(t.Content) Content,t.ModifiedTime "+
+                            " from ( "+
+                            "  select t1.ObjectID FKObjectID,cast(t1.Amount as varchar)+e1.EnumValue as Amount,t1.Currency,e1.EnumValue CurrencyName,  "+
+                            "  CONVERT(varchar(12),t1.FKDate,111) FKDate,t1.ConvertAmount,  "+
+                            "  cast(t2.AmountSum as varchar)+e1.EnumValue as AmountSum, t1.Content,t1.ModifiedTime "+
+                            "  from   "+
+                            "  (  "+
+                            "  	SELECT f.ObjectID,ft.Amount,f.Currency,f.FKDate,f.ConvertAmount,f.ModifiedTime ,ft.ParentIndex,f.Content "+
+                            "  	FROM I_FK f  "+
+                            "  	INNER JOIN I_FKTbl ft on f.ObjectID = ft.ParentObjectID  "+
+                            "  	INNER JOIN OT_InstanceContext ic on f.ObjectID = ic.BizObjectID  "+
+                            "  	and f.ContractNo = '"+ContractNo+"'  and ic.State = '4' "+
+                            "  ) t1 INNER JOIN   "+
+                            "  (  "+
+                            "  	SELECT f.ObjectID,sum(ft.Amount) AmountSum  "+
+                            "  	FROM I_FK f  "+
+                            "  	INNER JOIN I_FKTbl ft on f.ObjectID = ft.ParentObjectID  "+
+                            "  	INNER JOIN OT_InstanceContext ic on f.ObjectID = ic.BizObjectID  "+
+                            "  	and f.ContractNo = '"+ContractNo+"'  and ic.State = '4' "+
+                            "  	GROUP BY f.ObjectID  "+
+                            "  ) t2 on t1.ObjectID = t2.ObjectID  "+
+                            "  LEFT JOIN OT_EnumerableMetadata e1 on t1.Currency = e1.Code and e1.Category = '币种'  "+
+                            " ) t "+
+                            " GROUP BY t.ModifiedTime,t.FKObjectID "+
+                            " ORDER BY t.ModifiedTime,t.FKObjectID ";
+        System.Data.DataTable dt_zjjh = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql_zjjh);
+        System.Data.DataTable dt_qk = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql_qk);
+        System.Data.DataTable dt_dk = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql_dk);
+        System.Data.DataTable dt_fk = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql_fk);
+        Dictionary<string, List<Dictionary<string, string>>> dic_all = new Dictionary<string, List<Dictionary<string, string>>>();
+        List<Dictionary<string, string>> ls_zjjh = new List<Dictionary<string, string>>();
+        List<Dictionary<string, string>> ls_qk = new List<Dictionary<string, string>>();
+        List<Dictionary<string, string>> ls_dk = new List<Dictionary<string, string>>();
+        List<Dictionary<string, string>> ls_fk = new List<Dictionary<string, string>>();
+        // 资金计划
+        if (dt_zjjh.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt_zjjh.Rows)
+            {
+                Dictionary<string, string> dic = new Dictionary<string, string>();
+                dic.Add("key", dr["ObjectID"].ToString());
+                dic.Add("value", dr["Content"].ToString());
+                ls_zjjh.Add(dic);
+            }
+        }
+        // 请款
+        if (dt_qk.Rows.Count > 0)
+        {
+            var QKSeq = "";
+            var Amount = "";
+            foreach (DataRow dr in dt_qk.Rows)
+            {
+
+                if(!QKSeq.Equals("") && !QKSeq.Equals(dr["QKSeq"].ToString()))
+                {
+                    Dictionary<string, string> dic = new Dictionary<string, string>();
+                    dic.Add("key", QKSeq);
+                    dic.Add("value", "批次:"+QKSeq+"("+Amount+")");
+                    ls_qk.Add(dic);
+                    Amount = dr["Amount"].ToString()+" ";
+                } else
+                {
+                    Amount += dr["Amount"].ToString()+" ";
+                }
+                QKSeq = dr["QKSeq"].ToString();
+            }
+            Dictionary<string, string> dic2 = new Dictionary<string, string>();
+            dic2.Add("key", QKSeq);
+            dic2.Add("value", "批次:"+QKSeq+"("+Amount+")");
+            ls_qk.Add(dic2);
+        }
+        // 到款
+        if (dt_dk.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt_dk.Rows)
+            {
+                Dictionary<string, string> dic = new Dictionary<string, string>();
+                dic.Add("key", dr["DKObjectID"].ToString());
+                dic.Add("value", dr["DKTotalAmount"].ToString() + "(请款批次:"+ dr["QKSeq"].ToString() + " "+dr["ZJMS"].ToString()+")");
+                ls_dk.Add(dic);
+            }
+        }
+        // 付款
+        if (dt_fk.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt_fk.Rows)
+            {
+                Dictionary<string, string> dic = new Dictionary<string, string>();
+                dic.Add("key", dr["FKObjectID"].ToString());
+                if(dr["Currency"].ToString().Equals("RMB"))
+                {
+                    dic.Add("value", dr["AmountSum"].ToString() + "("+ dr["FKDate"].ToString() + " "+dr["Content"].ToString()+")");
+                } else
+                {
+                    // 如果有折算金额，则取之，不然就是没有折算金额
+                    var ConvertAmount = (double)Convert.ToSingle(dr["ConvertAmount"]);
+                    if(ConvertAmount > 0)
+                    {
+                        dic.Add("value", dr["ConvertAmount"].ToString() + "人民币("+ dr["FKDate"].ToString() + " "+dr["Content"].ToString()+")");
+                    }
+                    else
+                    {
+                        dic.Add("value", "无折算金额("+ dr["FKDate"].ToString() + " "+dr["Content"].ToString()+")");
+                    }
+                }
+
+                ls_fk.Add(dic);
+            }
+        }
+        dic_all.Add("zjjh",ls_zjjh);
+        dic_all.Add("qk",ls_qk);
+        dic_all.Add("dk",ls_dk);
+        dic_all.Add("fk",ls_fk);
+        object JSONObj = JsonConvert.SerializeObject(dic_all);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取支付管理表中的数据
+    public void getPayManager(HttpContext context)
+    {
+        string ContractNo = context.Request["ContractNo"];
+        var sql = " select * from PD_PayManager where ContractNo = '"+ContractNo+"' order by id";
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql);
+        List<Dictionary<string, string>> ls = new List<Dictionary<string, string>>();
+        // 支付管理
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                Dictionary<string, string> dic = new Dictionary<string, string>();
+                dic.Add("id", dr["id"].ToString());
+                dic.Add("ZJJH_Keys", dr["ZJJH_Keys"].ToString());
+                dic.Add("ZJJH_Values", dr["ZJJH_Values"].ToString().Replace(",","<br>"));
+                dic.Add("QK_Keys", dr["QK_Keys"].ToString());
+                dic.Add("QK_Values", dr["QK_Values"].ToString().Replace(",","<br>"));
+                dic.Add("DK_Keys", dr["DK_Keys"].ToString());
+                dic.Add("DK_Values", dr["DK_Values"].ToString().Replace(",","<br>"));
+                dic.Add("FK_Keys", dr["FK_Keys"].ToString());
+                dic.Add("FK_Values", dr["FK_Values"].ToString().Replace(",","<br>"));
+                dic.Add("JSAmount", dr["JSAmount"].ToString());
+                ls.Add(dic);
+            }
+        }
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 插入支付管理表
+    public void insertOrUpdatePayManager(HttpContext context)
+    {
+        string Flg = context.Request["Flg"];
+        string ContractNo = context.Request["ContractNo"];
+        string id = context.Request["id"];
+        string zjjh_keys = context.Request["zjjh_keys"];
+        string zjjh_values = context.Request["zjjh_values"];
+        string qk_keys = context.Request["qk_keys"];
+        string qk_values = context.Request["qk_values"];
+        string dk_keys = context.Request["dk_keys"];
+        string dk_values = context.Request["dk_values"];
+        string fk_keys = context.Request["fk_keys"];
+        string fk_values = context.Request["fk_values"];
+        string djsje = context.Request["djsje"];
+        List<Dictionary<string, string>> ls = new List<Dictionary<string, string>>();
+        try
+        {
+            if(Flg.Equals("insert"))
+            {
+                var sql = " insert into PD_PayManager ( " +
+                " ZJJH_Keys, " +
+                " ZJJH_Values, " +
+                " QK_Keys, " +
+                " QK_Values, " +
+                " DK_Keys, " +
+                " DK_Values, " +
+                " FK_Keys, " +
+                " FK_Values, " +
+                " JSAmount, " +
+                " ContractNo," +
+                " modifyTime " +
+                " ) " +
+                " values ( " +
+                " '" + zjjh_keys + "', " +
+                " '" + zjjh_values + "', " +
+                " '" + qk_keys + "', " +
+                " '" + qk_values + "', " +
+                " '" + dk_keys + "', " +
+                " '" + dk_values + "', " +
+                " '" + fk_keys + "', " +
+                " '" + fk_values + "', " +
+                " '" + djsje + "', " +
+                " '" + ContractNo + "'," +
+                " CURRENT_TIMESTAMP " +
+                " ) ";
+
+                System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql);
+            }
+            else if (Flg.Equals("update"))
+            {
+                var sql = " update PD_PayManager  " +
+                " set ZJJH_Keys = '" + zjjh_keys + "', " +
+                " ZJJH_Values = '" + zjjh_values + "', " +
+                " QK_Keys = '" + qk_keys + "', " +
+                " QK_Values = '" + qk_values + "', " +
+                " DK_Keys = '" + dk_keys + "', " +
+                " DK_Values = '" + dk_values + "', " +
+                " FK_Keys = '" + fk_keys + "', " +
+                " FK_Values = '" + fk_values + "', " +
+                " JSAmount = '" + djsje + "', " +
+                " ContractNo = '" + ContractNo + "', " +
+                " modifyTime = CURRENT_TIMESTAMP" +
+                " where id =  '" + id + "'" ;
+
+                System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql);
+            }
+            else if (Flg.Equals("delete"))
+            {
+                var sql = " delete from PD_PayManager  " +
+                " where id =  '" + id + "'" ;
+
+                System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql);
+            }
+
+
+            var sql2 = " select * from PD_PayManager where ContractNo = '"+ContractNo+"' order by id";
+
+            System.Data.DataTable dt2 = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql2);
+
+            // 支付管理
+            if (dt2.Rows.Count > 0)
+            {
+                foreach (DataRow dr in dt2.Rows)
+                {
+                    Dictionary<string, string> dic = new Dictionary<string, string>();
+                    dic.Add("id", dr["id"].ToString());
+                    dic.Add("ZJJH_Keys", dr["ZJJH_Keys"].ToString());
+                    dic.Add("ZJJH_Values", dr["ZJJH_Values"].ToString().Replace(",","<br>"));
+                    dic.Add("QK_Keys", dr["QK_Keys"].ToString());
+                    dic.Add("QK_Values", dr["QK_Values"].ToString().Replace(",","<br>"));
+                    dic.Add("DK_Keys", dr["DK_Keys"].ToString());
+                    dic.Add("DK_Values", dr["DK_Values"].ToString().Replace(",","<br>"));
+                    dic.Add("FK_Keys", dr["FK_Keys"].ToString());
+                    dic.Add("FK_Values", dr["FK_Values"].ToString().Replace(",","<br>"));
+                    dic.Add("JSAmount", dr["JSAmount"].ToString());
+                    ls.Add(dic);
+                }
+            }
+
+        }
+        catch (Exception exp)
+        {
+
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取请款、到款、付款、结算流程数量
+    public void getCountByConId(HttpContext context)
+    {
+        string ContractNo = context.Request["ContractNo"];
+        var sql = " select Count(qk.ObjectID) qkCnt, "+
+                    " Count(dk.ObjectID) dkCnt, "+
+                    " Count(fk.ObjectID) fkCnt, "+
+                    " Count(js.ObjectID) jsCnt," +
+                    " Count(gd.ObjectID) gdCnt"+
+                    " from OT_InstanceContext ic "+
+                    " LEFT JOIN I_QK qk on ic.BizObjectId = qk.ObjectID and qk.ContractNo = '"+ContractNo+"' "+
+                    " LEFT JOIN I_DK dk on ic.BizObjectId = dk.ObjectID and dk.ContractNo = '"+ContractNo+"' "+
+                    " LEFT JOIN I_FK fk on ic.BizObjectId = fk.ObjectID and fk.ContractNo = '"+ContractNo+"' "+
+                    " LEFT JOIN I_JS js on ic.BizObjectId = js.ObjectID and js.ContractNo = '"+ContractNo+"' " +
+                    " LEFT JOIN I_GD gd on ic.BizObjectId = gd.ObjectID and gd.ContractNo = '"+ContractNo+"' ";
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql);
+        Dictionary<string, string> dic = new Dictionary<string, string>();
+        // 支付管理
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                dic.Add("qkCnt", dr["qkCnt"].ToString());
+                dic.Add("dkCnt", dr["dkCnt"].ToString());
+                dic.Add("fkCnt", dr["fkCnt"].ToString());
+                dic.Add("jsCnt", dr["jsCnt"].ToString());
+                dic.Add("gdCnt", dr["gdCnt"].ToString());
+            }
+        }
+        object JSONObj = JsonConvert.SerializeObject(dic);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取执行中的所有相关流程正在申请中的数量
+    public void getApplyingCountOfOper(HttpContext context)
+    {
+        string ContractNo = context.Request["ContractNo"];
+        var sql = " select Count(qk.ObjectID) qkCnt, "+
+                    " Count(dk.ObjectID) dkCnt, "+
+                    " Count(fk.ObjectID) fkCnt, "+
+                    " Count(js.ObjectID) jsCnt, "+
+                    " Count(ps.ObjectID) psCnt, "+
+                    " Count(ils.ObjectID) ilsCnt, "+
+                    " Count(dh.ObjectID) dhCnt, "+
+                    " Count(bg.ObjectID) bgCnt, "+
+                    " Count(bh.ObjectID) bhCnt, "+
+                    " Count(gd.ObjectID) gdCnt, "+
+                    " Count(gdc.ObjectID) gdcCnt "+
+                    " from OT_InstanceContext ic "+
+                    " LEFT JOIN I_QK qk on ic.BizObjectId = qk.ObjectID and qk.ContractNo = '"+ContractNo+"' and ic.State = '2' "+
+                    " LEFT JOIN I_DK dk on ic.BizObjectId = dk.ObjectID and dk.ContractNo = '"+ContractNo+"' and ic.State = '2' "+
+                    " LEFT JOIN I_FK fk on ic.BizObjectId = fk.ObjectID and fk.ContractNo = '"+ContractNo+"' and ic.State = '2' "+
+                    " LEFT JOIN I_JS js on ic.BizObjectId = js.ObjectID and js.ContractNo = '"+ContractNo+"' and ic.State = '2' "+
+                    " LEFT JOIN I_PaymentSub ps on ic.BizObjectId = ps.ObjectID and ps.ContractNo = '"+ContractNo+"' and ic.State = '2' "+
+                    " LEFT JOIN I_ImportLicenseSub ils on ic.BizObjectId = ils.ObjectID and ils.ContractNo = '"+ContractNo+"' and ic.State = '2' "+
+                    " LEFT JOIN I_DH dh on ic.BizObjectId = dh.ObjectID and dh.ContractNo = '"+ContractNo+"' and ic.State = '2' "+
+                    " LEFT JOIN I_BG bg on ic.BizObjectId = bg.ObjectID and bg.ContractNo = '"+ContractNo+"' and ic.State = '2' "+
+                    " LEFT JOIN I_BH bh on ic.BizObjectId = bh.ObjectID and bh.ContractNo = '"+ContractNo+"' and ic.State = '2' "+
+                    " LEFT JOIN I_GD gd on ic.BizObjectId = gd.ObjectID and gd.ContractNo = '"+ContractNo+"' and ic.State = '2' "+
+                    " LEFT JOIN I_GDChange gdc on ic.BizObjectId = gdc.ObjectID and gdc.ContractNo = '"+ContractNo+"' and ic.State = '2' ";
+        var sql_js = " select js.ObjectID JSObjectID ,Max(js.JSResult) JSResult,Max(qk.ObjectID) QKObjcetID,Max(fk.ObjectID) FKObjectID "+
+                    " from I_JS js "+
+                    " INNER JOIN OT_InstanceContext ic on ic.BizObjectId = js.ObjectID and js.ContractNo = '"+ContractNo+"' and ic.State = '4' "+
+                    " left JOIN I_QK qk on qk.JSObjectID = js.ObjectID  "+
+                    " left JOIN I_FK fk on fk.JSObjectID = js.ObjectID  "+
+                    " group BY js.ObjectID ";
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql);
+        System.Data.DataTable dt_js = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql_js);
+        Dictionary<string, string> dic = new Dictionary<string, string>();
+        // 支付管理
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                dic.Add("qkCnt", dr["qkCnt"].ToString());
+                dic.Add("dkCnt", dr["dkCnt"].ToString());
+                dic.Add("fkCnt", dr["fkCnt"].ToString());
+                // 如果结算有在申请中的，直接返回count
+                if((int)Convert.ToSingle(dr["jsCnt"].ToString()) > 0)
+                {
+                    dic.Add("jsCnt", dr["jsCnt"].ToString());
+                }else
+                {
+                    // 如果结算申请完了，则需要查看待请款和待付款情况
+                    if (dt_js.Rows.Count > 0)
+                    {
+                        foreach (DataRow dr2 in dt_js.Rows)
+                        {
+                            if(dr2["JSResult"].ToString().Equals("0")
+                                    || (!dr2["JSResult"].ToString().Equals("0") && (!dr2["QKObjcetID"].ToString().Equals("") || !dr2["FKObjectID"].ToString().Equals(""))))
+                            {
+                                continue;
+                            } else
+                            {
+                                dic.Add("jsCnt", "1");
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                dic.Add("psCnt", dr["psCnt"].ToString());
+                dic.Add("ilsCnt", dr["ilsCnt"].ToString());
+                dic.Add("dhCnt", dr["dhCnt"].ToString());
+                dic.Add("bgCnt", dr["bgCnt"].ToString());
+                dic.Add("bhCnt", dr["bhCnt"].ToString());
+                dic.Add("gdCnt", dr["gdCnt"].ToString());
+                dic.Add("gdcCnt", dr["gdcCnt"].ToString());
+            }
+        }
+        object JSONObj = JsonConvert.SerializeObject(dic);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取执行中的累计请款金额等
+    public void getDataOfOper(HttpContext context)
+    {
+        string ContractNo = context.Request["ContractNo"];
+        var sql_cuy = " select con.ContractTotalPrice,con.JKTotalAmount,enum1.EnumValue CurrencyName from I_ContractMain con "+
+                    " INNER JOIN OT_EnumerableMetadata enum1 on con.Currency = enum1.Code  "+
+                    " and con.ContractNo = '"+ContractNo+"' and enum1.Category = '币种' ";
+
+        var sql_qk = " select qks.QKType,qks.Currency,sum(qks.Amount) LJQKAmount "+
+                    " from I_QK qk "+
+                    " INNER JOIN I_QKSubTbl qks on qks.ParentObjectID = qk.ObjectID  "+
+                    " INNER JOIN OT_InstanceContext ic on ic.BizObjectId = qk.ObjectID  "+
+                    " and qk.ContractNo = '"+ContractNo+"' and ic.State = '4' "+
+                    " group by qks.QKType,qks.Currency "+
+                    " ORDER BY qks.QKType,qks.Currency ";
+
+        var sql_dk = " select dk.DKType,DKCurrency,sum(dk.DKAmount) LJDKAmount "+
+                    " from I_DK dk "+
+                    " INNER JOIN OT_InstanceContext ic on ic.BizObjectId = dk.ObjectID  "+
+                    " and dk.ContractNo = '"+ContractNo+"' and ic.State = '4' "+
+                    " group by dk.DKType,dk.DKCurrency "+
+                    " order by dk.DKType,dk.DKCurrency ";
+
+        var sql_fk = " select fk.ZKType,fk.Currency,sum(fk.CurZJAmount) LJFKAmount "+
+                    " from I_FK fk "+
+                    " INNER JOIN OT_InstanceContext ic on ic.BizObjectId = fk.ObjectID  "+
+                    " and fk.ContractNo = '"+ContractNo+"' and ic.State = '4'  "+
+                    " group by fk.ZKType,fk.Currency "+
+                    " order by fk.ZKType,fk.Currency ";
+
+        Dictionary<string, string> dic = new Dictionary<string, string>();
+        System.Data.DataTable dt_cuy = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql_cuy);
+        System.Data.DataTable dt_qk = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql_qk);
+        System.Data.DataTable dt_dk = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql_dk);
+        System.Data.DataTable dt_fk = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql_fk);
+
+        // 币种
+        var ContractTotalPrice = 0.0;
+        var JKTotalAmount = 0.0;
+        if (dt_cuy.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt_cuy.Rows)
+            {
+                dic.Add("ContractTotalPrice", dr["ContractTotalPrice"].ToString());
+                dic.Add("JKTotalAmount", dr["JKTotalAmount"].ToString());
+                dic.Add("CurrencyName", dr["CurrencyName"].ToString());
+                ContractTotalPrice = (double)Convert.ToSingle(dr["ContractTotalPrice"].ToString());
+                JKTotalAmount = (double)Convert.ToSingle(dr["JKTotalAmount"].ToString());
+            }
+        }
+        // 请款
+        if (dt_qk.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt_qk.Rows)
+            {
+                if(dr["QKType"].ToString().Equals("HT"))
+                {
+                    if (dr["Currency"].ToString().Equals("RMB"))
+                    {
+                        dic.Add("LJQKAmountRMB", dr["LJQKAmount"].ToString());
+                    } else
+                    {
+                        dic.Add("LJQKAmountWB", dr["LJQKAmount"].ToString());
+                    }
+                } else if (dr["QKType"].ToString().Equals("FY"))
+                {
+                    if (dr["Currency"].ToString().Equals("RMB"))
+                    {
+                        dic.Add("LJQKFYAmountRMB", dr["LJQKAmount"].ToString());
+                    } else
+                    {
+                        dic.Add("LJQKFYAmountWB", dr["LJQKAmount"].ToString());
+                    }
+                }
+            }
+        }
+
+        // 到款
+        if (dt_dk.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt_dk.Rows)
+            {
+                if(dr["DKType"].ToString().Equals("DKType_HT"))
+                {
+                    if (dr["DKCurrency"].ToString().Equals("RMB"))
+                    {
+                        dic.Add("LJDKAmountRMB", dr["LJDKAmount"].ToString());
+                    } else
+                    {
+                        dic.Add("LJDKAmountWB", dr["LJDKAmount"].ToString());
+                    }
+                } else if (dr["DKType"].ToString().Equals("DKType_FY"))
+                {
+                    if (dr["DKCurrency"].ToString().Equals("RMB"))
+                    {
+                        dic.Add("LJDKFYAmountRMB", dr["LJDKAmount"].ToString());
+                    } else
+                    {
+                        dic.Add("LJDKFYAmountWB", dr["LJDKAmount"].ToString());
+                    }
+                }
+            }
+        }
+
+        // 付款
+        var LJFKAmountRMB = 0.0;
+        var LJFKAmountWB = 0.0;
+        if (dt_fk.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt_fk.Rows)
+            {
+                if(dr["ZKType"].ToString().Equals("ZKType_HT"))
+                {
+                    if (dr["Currency"].ToString().Equals("RMB"))
+                    {
+                        dic.Add("LJFKAmountRMB", dr["LJFKAmount"].ToString());
+                        LJFKAmountRMB = (double)Convert.ToSingle(dr["LJFKAmount"].ToString());
+                    } else
+                    {
+                        dic.Add("LJFKAmountWB", dr["LJFKAmount"].ToString());
+                        LJFKAmountWB = (double)Convert.ToSingle(dr["LJFKAmount"].ToString());
+                    }
+                } else if (dr["ZKType"].ToString().Equals("ZKType_FY"))
+                {
+                    if (dr["Currency"].ToString().Equals("RMB"))
+                    {
+                        dic.Add("LJFKFYAmountRMB", dr["LJFKAmount"].ToString());
+                    } else
+                    {
+                        dic.Add("LJFKFYAmountWB", dr["LJFKAmount"].ToString());
+                    }
+                }
+            }
+        }
+        if(ContractTotalPrice != 0)
+        {
+            dic.Add("FKPercentRMB", ((LJFKAmountRMB / ContractTotalPrice) * 100).ToString());
+        }
+        if(JKTotalAmount != 0)
+        {
+            dic.Add("FKPercentWB", ((LJFKAmountWB / JKTotalAmount) * 100).ToString());
+        }
+
+        object JSONObj = JsonConvert.SerializeObject(dic);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 根据流程id获取流程entity
+    public void getInstanceById (HttpContext context) {
+        string InstanceId = context.Request["InstanceId"];
+        Dictionary<string,string> dic = new Dictionary<string,string>();
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT top 1 * from OT_InstanceContext where ObjectID = '"+InstanceId+"'");
+        if (dt.Rows.Count > 0)
+        {
+            dic.Add("ObjectID",dt.Rows[0]["ObjectID"].ToString());
+            dic.Add("InstanceName",dt.Rows[0]["InstanceName"].ToString());
+        }
+        object JSONObj = JsonConvert.SerializeObject(dic);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 批量
+    // 获取结算记录选择
+    public void getJSLSData(HttpContext context)
+    {
+        string JS_Target = context.Request["JS_Target"];
+        var sql = " select t1.*,t2.Cnt from (  "+
+                    " 	 select cm.ContractNo, "+
+                    " 	 cm.ContractName, "+
+                    " 	 cm.PostA, " +
+                    "    case e1.EnumValue when '航空煤油' then '航油合同' else '非航油合同' end ContractProperty,"+
+                    " 	 cm.PostB, "+
+                    " 	 CONVERT(VARCHAR,j.LJDKAmountRMB)+j.CurrencyRMB LJDKAmountRMB,   "+
+                    " 	 CONVERT(VARCHAR,j.LJFKAmountRMB)+j.CurrencyRMB LJFKAmountRMB,  "+
+                    " 	 CONVERT(VARCHAR,j.BankFY)+j.CurrencyRMB BankFY,  "+
+                    " 	 CONVERT(VARCHAR,j.AgencyFY)+j.CurrencyRMB + '\n(' + CONVERT(VARCHAR,j.AgencyFYWB)+j.CurrencyWB + ')' AgencyFY,  "+
+                    " 	 CONVERT(VARCHAR,j.OtherFY)+j.CurrencyRMB OtherFY,  "+
+                    " 	 j.JSResult JSResultNum,  "+
+                    " 	 j.JSStatus+CONVERT(VARCHAR,j.JSResult)+j.CurrencyRMB JSResult,  "+
+                    " 	 j.JSStatus,  "+
+                    " 	 j.ObjectID JSObjectID,   "+
+                    " 	 ic.ObjectID IcObjectId , "+
+                    " 	 j.ModifiedTime , "+
+                    " 	 ic.State Status,j.QK_FK_Status QK_FK_Status "+
+                    " 	 from I_JS j  "+
+                    " 	 INNER JOIN OT_InstanceContext ic on j.ObjectID = ic.BizObjectId and ic.State = '4' and j.QK_FK_Status is null "+
+                    " 	 INNER JOIN I_ContractMain cm on cm.ContractNo = j.ContractNo and cm.FinalUser = '"+JS_Target+"'  " +
+                    "    INNER JOIN OT_EnumerableMetadata e1 on e1.Category like '合同性质%' and cm.ContractProperty = e1.Code"+
+                    " ) t1, "+
+                    " ( "+
+                    " 	select cm.ContractNo,count(1) cnt "+
+                    " 	from I_JS j  "+
+                    " 	INNER JOIN OT_InstanceContext ic on j.ObjectID = ic.BizObjectId and ic.State = '4' and j.QK_FK_Status is null "+
+                    " 	INNER JOIN I_ContractMain cm on cm.ContractNo = j.ContractNo and cm.FinalUser = '"+JS_Target+"'  "+
+                    " 	GROUP BY cm.ContractNo "+
+                    " ) t2 "+
+                    " where t1.ContractNo = t2.ContractNo "+
+                    " ORDER BY t1.ContractNo,t1.ModifiedTime  ";
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql);
+        List<Dictionary<string, string>> ls = new List<Dictionary<string, string>>();
+        // 支付管理
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                // 请付款状态为空，说明结算完了，但还没有进行请付款
+                if(dr["QK_FK_Status"].ToString().Equals(""))
+                {
+                    Dictionary<string, string> dic = new Dictionary<string, string>();
+                    dic.Add("ContractNo", dr["ContractNo"].ToString());
+                    dic.Add("ContractNoHidden", dr["ContractNo"].ToString());
+                    dic.Add("ContractName", dr["ContractName"].ToString());
+                    dic.Add("ContractProperty", dr["ContractProperty"].ToString());    
+                    var PostA = OThinker.H3.Controllers.AppUtility.Engine.Organization.GetName(dr["PostA"].ToString());
+                    var PostB = OThinker.H3.Controllers.AppUtility.Engine.Organization.GetName(dr["PostB"].ToString());
+                    dic.Add("PostAB", PostA+","+PostB);
+                    dic.Add("DKAmount", dr["LJDKAmountRMB"].ToString());
+                    dic.Add("FKAmount", dr["LJFKAmountRMB"].ToString());
+                    dic.Add("BankFY", dr["BankFY"].ToString());
+                    dic.Add("AgencyFY", dr["AgencyFY"].ToString());
+                    dic.Add("OtherFY", dr["OtherFY"].ToString());
+                    dic.Add("JSResult", dr["JSResult"].ToString());
+                    dic.Add("JSObjectID", dr["JSObjectID"].ToString());
+                    dic.Add("Cnt", dr["Cnt"].ToString());
+                    Dictionary<string, string> workItemDic = Common.getWorkItemId(dr["IcObjectId"].ToString(), dr["Status"].ToString());
+                    foreach (var item in workItemDic)
+                    {
+                        Console.WriteLine(item.Key + item.Value);
+                        if (item.Key.Equals("workItemId"))
+                        {
+                            dic.Add("WorkItemId", item.Value);
+                        }
+                    }
+                    ls.Add(dic);
+                }
+            }
+        }
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 通过ID获取客户信息
+    public void getCustomerById (HttpContext context) {
+        string ObjectID = context.Request["ObjectID"];
+        Dictionary<string,string> dic = new Dictionary<string,string>();
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT * FROM I_CustomerList WHERE ObjectID = '"+ObjectID+"'");
+        if (dt.Rows.Count > 0)
+        {
+            dic.Add("CompanyName",dt.Rows[0]["CompanyName"].ToString());
+            dic.Add("ModelOrDepartment",dt.Rows[0]["ModelOrDepartment"].ToString());
+        }
+        object JSONObj = JsonConvert.SerializeObject(dic);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 设置请付款状态为
+    public void setJS_Status (HttpContext context) {
+        string JSObjectIDs = context.Request["JSObjectIDs"];
+        string Status = context.Request["Status"];
+        string[] arr = JSObjectIDs.Split(',');
+        Dictionary<string,string> dic = new Dictionary<string,string>();
+        foreach(string item in arr)
+        {
+            System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " update I_JS set QK_FK_Status = '"+Status+"' where ObjectID = '"+item+"'");
+        }
+        object JSONObj = JsonConvert.SerializeObject(dic);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取批量结算之批量请款记录
+    public void getBatchJS_QKData(HttpContext context)
+    {
+        string QK_Target = context.Request["QK_Target"];
+        string QK_Status = context.Request["QK_Status"];
+        var sql = "  SELECT q.QK_Target,q.Content,cast(q.Amount as VARCHAR)+' 人民币'  Amount, " +
+                    "  CONVERT(varchar(12),q.DKDate,111) DKDate,CONVERT(varchar(12),q.SDDate,111) SDDate, " +
+                    "  ic.State Status,ic.ObjectID IcObjectID,q.RejectFlg" +
+                    "  FROM I_BatchJS_QK q " +
+                    "  INNER JOIN OT_InstanceContext ic on q.ObjectID = ic.BizObjectID ";
+        var sql2 = QK_Target.Equals("")?"":" and q.QK_Target = '" + QK_Target + "'  ";
+        var sql3 = "  order by q.CreatedTime desc ";
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql + sql2 + sql3);
+        List<Dictionary<string, string>> ls = new List<Dictionary<string, string>>();
+        // 
+        var TheNo = 1;
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                Dictionary<string, string> dic = new Dictionary<string, string>();
+                dic.Add("TheNo", TheNo.ToString());
+                dic.Add("QK_Target", dr["QK_Target"].ToString());
+                dic.Add("Content", dr["Content"].ToString());
+                dic.Add("Amount", dr["Amount"].ToString());
+                if(dr["SDDate"].ToString() != "1753/01/01")
+                {
+                    dic.Add("SDDate", dr["SDDate"].ToString());
+                }
+                if (dr["DKDate"].ToString() != "1753/01/01")
+                {
+                    dic.Add("DKDate", dr["DKDate"].ToString());
+                }
+
+                var ActivityCode = "";
+                Dictionary<string, string> workItemDic = Common.getWorkItemId(dr["IcObjectId"].ToString(), dr["Status"].ToString());
+                foreach (var item in workItemDic)
+                {
+                    Console.WriteLine(item.Key + item.Value);
+                    if (item.Key.Equals("workItemId"))
+                    {
+                        dic.Add("WorkItemId", item.Value);
+                    }
+                    else if (item.Key.Equals("ActivityCode"))
+                    {
+                        ActivityCode = item.Value;
+                    }
+                }
+                string st = "";
+                if (dr["Status"].ToString().Equals("4"))
+                {
+                    st = "完成";
+                }
+                else if (dr["Status"].ToString().Equals("2"))
+                {
+                    if (dr["RejectFlg"].ToString().Equals("1"))
+                    {
+                        st = "驳回";
+                    }
+                    else
+                    {
+                        if (ActivityCode.Equals("ActivityOrig"))
+                        {
+                            st = "草稿";
+                        }
+                        else if (ActivityCode.Equals("ActivityConfirm"))
+                        {
+                            st = "送达确认中";
+                        }
+                        else if (ActivityCode.Equals("ActivityDKConfirm"))
+                        {
+                            st = "到款确认中";
+                        }
+                        else
+                        {
+                            st = "审批中";
+                        }
+
+                    }
+                }
+                // 如果状态不等于查询条件的状态，则跳到下一条
+                if(!QK_Status.Equals("") && QK_Status.IndexOf(st) == -1)
+                {
+                    continue;
+                }
+                dic.Add("DisplayName", st);
+                dic.Add("RejectFlg", dr["RejectFlg"].ToString());
+                dic.Add("Status", dr["Status"].ToString());
+                ls.Add(dic);
+                TheNo++;
+            }
+        }
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取批量结算之批量付款记录
+    public void getBatchJS_FKData(HttpContext context)
+    {
+        string FK_Target = context.Request["FK_Target"];
+        string FK_Status = context.Request["FK_Status"];
+        var sql = "  SELECT f.Receiver,e1.EnumValue PayType,f.Content,cast(f.Amount as VARCHAR)+' 人民币'  Amount,CONVERT(varchar(12),f.FKDate,111) FKDate, " +
+                    "  ic.State Status,ic.ObjectID IcObjectID,f.RejectFlg " +
+                    "  FROM I_BatchJS_FK f " +
+                    "  INNER JOIN OT_InstanceContext ic on f.ObjectID = ic.BizObjectID ";
+        var sql2 = FK_Target.Equals("")?"":" and f.Receiver = '" + FK_Target + "'  ";
+        var sql3 = "  LEFT JOIN OT_EnumerableMetadata e1 on f.PayType = e1.Code and e1.Category = '支付方式' "+
+                    "  order by f.CreatedTime desc ";
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql + sql2 + sql3);
+        List<Dictionary<string, string>> ls = new List<Dictionary<string, string>>();
+        // 
+        var TheNo = 1;
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                Dictionary<string, string> dic = new Dictionary<string, string>();
+                dic.Add("TheNo", TheNo.ToString());
+                dic.Add("Receiver", dr["Receiver"].ToString());
+                dic.Add("PayType", dr["PayType"].ToString());
+                dic.Add("Content", dr["Content"].ToString());
+                dic.Add("Amount", dr["Amount"].ToString());
+                var ActivityCode = "";
+                Dictionary<string, string> workItemDic = Common.getWorkItemId(dr["IcObjectId"].ToString(), dr["Status"].ToString());
+                foreach (var item in workItemDic)
+                {
+                    Console.WriteLine(item.Key + item.Value);
+                    if (item.Key.Equals("workItemId"))
+                    {
+                        dic.Add("WorkItemId", item.Value);
+                    }
+                    else if (item.Key.Equals("ActivityCode"))
+                    {
+                        ActivityCode = item.Value;
+                    }
+                }
+                string st = "";
+                if (dr["Status"].ToString().Equals("4"))
+                {
+                    st = "完成";
+                    dic.Add("FKDate", dr["FKDate"].ToString());
+                }
+                else if (dr["Status"].ToString().Equals("2"))
+                {
+                    if (dr["RejectFlg"].ToString().Equals("1"))
+                    {
+                        st = "驳回";
+                    }
+                    else
+                    {
+                        if (ActivityCode.Equals("ActivityOrig"))
+                        {
+                            st = "草稿";
+                        }
+                        else if (ActivityCode.Equals("ActivityConfirm"))
+                        {
+                            st = "确认中";
+                        }
+                        else
+                        {
+                            st = "审批中";
+                        }
+
+                    }
+                }
+                // 如果状态不等于查询条件的状态，则跳到下一条
+                if(!FK_Status.Equals("") && FK_Status.IndexOf(st) == -1)
+                {
+                    continue;
+                }
+                dic.Add("DisplayName", st);
+                dic.Add("RejectFlg", dr["RejectFlg"].ToString());
+                dic.Add("Status", dr["Status"].ToString());
+                ls.Add(dic);
+                TheNo++;
+            }
+        }
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取批量结算之批量结清记录
+    public void getBatchJS_JQData(HttpContext context)
+    {
+        string JQ_Target = context.Request["JQ_Target"];
+        string JQ_Status = context.Request["JQ_Status"];
+        var sql = "  SELECT j.JQ_Target,j.Content, " +
+                    "  ic.State Status,ic.ObjectID IcObjectID,j.RejectFlg " +
+                    "  FROM I_BatchJS_JQ j " +
+                    "  INNER JOIN OT_InstanceContext ic on j.ObjectID = ic.BizObjectID ";
+        var sql2 = JQ_Target.Equals("")?"":" and j.JQ_Target = '" + JQ_Target + "'  ";
+        var sql3 = "  order by j.CreatedTime desc ";
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql + sql2 + sql3);
+        List<Dictionary<string, string>> ls = new List<Dictionary<string, string>>();
+        // 
+        var TheNo = 1;
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                Dictionary<string, string> dic = new Dictionary<string, string>();
+                dic.Add("TheNo", TheNo.ToString());
+                dic.Add("JQ_Target", dr["JQ_Target"].ToString());
+                dic.Add("Content", dr["Content"].ToString());
+                var ActivityCode = "";
+                Dictionary<string, string> workItemDic = Common.getWorkItemId(dr["IcObjectId"].ToString(), dr["Status"].ToString());
+                foreach (var item in workItemDic)
+                {
+                    Console.WriteLine(item.Key + item.Value);
+                    if (item.Key.Equals("workItemId"))
+                    {
+                        dic.Add("WorkItemId", item.Value);
+                    }
+                    else if (item.Key.Equals("ActivityCode"))
+                    {
+                        ActivityCode = item.Value;
+                    }
+                }
+                string st = "";
+                if (dr["Status"].ToString().Equals("4"))
+                {
+                    st = "完成";
+                }
+                else if (dr["Status"].ToString().Equals("2"))
+                {
+                    if (dr["RejectFlg"].ToString().Equals("1"))
+                    {
+                        st = "驳回";
+                    }
+                    else
+                    {
+                        if (ActivityCode.Equals("ActivityOrig"))
+                        {
+                            st = "草稿";
+                        }
+                        else
+                        {
+                            st = "审批中";
+                        }
+
+                    }
+                }
+                // 如果状态不等于查询条件的状态，则跳到下一条
+                if(!JQ_Status.Equals("") && JQ_Status.IndexOf(st) == -1)
+                {
+                    continue;
+                }
+                dic.Add("DisplayName", st);
+                dic.Add("RejectFlg", dr["RejectFlg"].ToString());
+                dic.Add("Status", dr["Status"].ToString());
+                ls.Add(dic);
+                TheNo++;
+            }
+        }
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取批量到款之批量到款记录
+    public void getBatchDK_DKData(HttpContext context)
+    {
+        string DK_Target = context.Request["DK_Target"];
+        string DK_Status = context.Request["DK_Status"];
+        var sql = "   SELECT d.DK_Target,d.Amount,CONVERT(varchar(12),d.DKDate,111) DKDate, " +
+                    "  ic.State Status,ic.ObjectID IcObjectID,d.RejectFlg " +
+                    "  FROM I_BatchDK_DK d " +
+                    "  INNER JOIN OT_InstanceContext ic on d.ObjectID = ic.BizObjectID ";
+        var sql2 = DK_Target.Equals("")?"":" and d.DK_Target = '" + DK_Target + "'  ";
+        var sql3 = "  order by d.CreatedTime desc ";
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql + sql2 + sql3);
+        List<Dictionary<string, string>> ls = new List<Dictionary<string, string>>();
+        // 
+        var TheNo = 1;
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                Dictionary<string, string> dic = new Dictionary<string, string>();
+                dic.Add("TheNo", TheNo.ToString());
+                dic.Add("DK_Target", dr["DK_Target"].ToString());
+                dic.Add("Amount", dr["Amount"].ToString().Replace(",","<br>"));
+                var ActivityCode = "";
+                Dictionary<string, string> workItemDic = Common.getWorkItemId(dr["IcObjectId"].ToString(), dr["Status"].ToString());
+                foreach (var item in workItemDic)
+                {
+                    Console.WriteLine(item.Key + item.Value);
+                    if (item.Key.Equals("workItemId"))
+                    {
+                        dic.Add("WorkItemId", item.Value);
+                    }
+                    else if (item.Key.Equals("ActivityCode"))
+                    {
+                        ActivityCode = item.Value;
+                    }
+                }
+                string st = "";
+                if (dr["Status"].ToString().Equals("4"))
+                {
+                    st = "完成";
+                    dic.Add("DKDate", dr["DKDate"].ToString());
+                }
+                else if (dr["Status"].ToString().Equals("2"))
+                {
+                    if (dr["RejectFlg"].ToString().Equals("1"))
+                    {
+                        st = "驳回";
+                    }
+                    else
+                    {
+                        if (ActivityCode.Equals("ActivityOrig"))
+                        {
+                            st = "草稿";
+                        }
+                        else if (ActivityCode.Equals("ActivityConfirm"))
+                        {
+                            st = "确认中";
+                        }
+                        else
+                        {
+                            st = "审批中";
+                        }
+
+                    }
+                }
+                // 如果状态不等于查询条件的状态，则跳到下一条
+                if(DK_Status.IndexOf(st) == -1)
+                {
+                    continue;
+                }
+                dic.Add("DisplayName", st);
+                dic.Add("RejectFlg", dr["RejectFlg"].ToString());
+                dic.Add("Status", dr["Status"].ToString());
+                ls.Add(dic);
+                TheNo++;
+            }
+        }
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取批量到款中的请款记录选择
+    public void getDKLSData(HttpContext context)
+    {
+        // 所有请款的数据 - 正在到款的数据 - 正在批量到款的数据
+        string DK_Target = context.Request["DK_Target"];
+        var sql = " select t1.*,t2.cnt SeqCnt,t3.ConvertAmountSum QKConvertAmount from (  "+
+                    " SELECT  "+
+                    " 	tbl.ObjectID QKObjectID, "+
+                    "  qk.ContractNo, "+
+                    "   qk.QKSeq QKSeq,  "+
+                    "   tbl.ParentIndex,  "+
+                    " 	tbl.QKType QKTypeCode,  "+
+                    " 	e3.EnumValue QKType,  "+
+                    " 	qk.QKTarget,  "+
+                    " 	CONVERT(varchar(12),qk.ModifiedTime,111) QKDate,  "+
+                    " 	e2.EnumValue ZJKX,  "+
+                    " 	tbl.ZJMS,  "+
+                    " 	tbl.Amount QKAmount,  "+
+                    " 	tbl.LJDKAmount LJDKAmount,  "+
+                    " 	tbl.Currency QKCurrencyCode,  "+
+                    " 	e1.EnumValue QKCurrency  "+
+                    " FROM  "+
+                    " 	I_QK qk  "+
+                    " INNER JOIN I_QKSubTbl tbl ON qk.ObjectID = tbl.ParentObjectID and tbl.Amount > tbl.LJDKAmount  "+
+                    " INNER JOIN I_ContractMain cm on cm.ContractNo = qk.ContractNo and cm.FinalUser = '" + DK_Target + "'  "+
+                    " INNER JOIN OT_InstanceContext ic ON qk.ObjectId = ic.BizObjectID and ic.State = '4' "+
+                    " LEFT JOIN OT_EnumerableMetadata e1 ON tbl.Currency = e1.Code AND e1.Category = '币种'  "+
+                    " LEFT JOIN OT_EnumerableMetadata e2 ON tbl.ZJKX = e2.Code AND e2.Category = '资金款项'  "+
+                    " LEFT JOIN OT_EnumerableMetadata e3 ON tbl.QKType = e3.Code AND e3.Category = '请款类型'  "+
+                    " ) t1,  "+
+                    " (select qk.ContractNo,QKSeq,count(1) cnt FROM  "+
+                    " 	I_QK qk  "+
+                    " INNER JOIN I_QKSubTbl tbl ON qk.ObjectID = tbl.ParentObjectID and tbl.Amount > tbl.LJDKAmount  "+
+                    " INNER JOIN I_ContractMain cm on cm.ContractNo = qk.ContractNo and cm.FinalUser = '" + DK_Target + "'  "+
+                    " INNER JOIN OT_InstanceContext ic ON qk.ObjectId = ic.BizObjectID and ic.State = '4'  "+
+                    " group by qk.ContractNo,qk.QKSeq  "+
+                    " ) t2,  "+
+                    " (select qk.ContractNo,QKSeq,sum(tbl.ConvertAmount) ConvertAmountSum FROM  "+
+                    " 	I_QK qk  "+
+                    " INNER JOIN I_QKSubTbl tbl ON qk.ObjectID = tbl.ParentObjectID and tbl.Amount > tbl.LJDKAmount  "+
+                    " INNER JOIN I_ContractMain cm on cm.ContractNo = qk.ContractNo and cm.FinalUser = '" + DK_Target + "'  "+
+                    " INNER JOIN OT_InstanceContext ic ON qk.ObjectId = ic.BizObjectID and ic.State = '4'  "+
+                    " group by qk.ContractNo,qk.QKSeq  "+
+                    " ) t3  "+
+                    " where t1.ContractNo = t2.ContractNo and t1.QKSeq = t2.QKSeq  and t1.ContractNo = t3.ContractNo  "+
+                    " and t1.QKSeq = t3.QKSeq and t1.QKAmount > t1.LJDKAmount "+
+                    " order BY t1.ContractNo,t1.QKSeq,t1.ParentIndex  ";
+        // 正在审批中的 到款 和 批量到款 的QKObjectID
+        var sql_dk = " select dt.QKObjectID,dt.CurDKAmount "+
+                        " from I_DK d "+
+                        " INNER JOIN I_DKTbl dt on d.ObjectID = dt.ParentObjectID and dt.CurDKAmount > 0 "+
+                        " INNER JOIN OT_InstanceContext ic ON d.ObjectId = ic.BizObjectID and ic.State = '2'  "+
+                        " INNER JOIN I_ContractMain cm on cm.ContractNo = d.ContractNo and cm.FinalUser = '" + DK_Target + "'  "+
+                        " Union "+
+                        " select bdt.QKObjectID,bdt.CurDKAmount "+
+                        " from I_BatchDK_DK bd "+
+                        " INNER JOIN I_BatchDKTblOfDK bdt on bd.ObjectID = bdt.ParentObjectID and cast(bdt.CurDKAmount as DECIMAL) > 0  "+
+                        " and bd.DK_Target = '" + DK_Target + "'  "+
+                        " INNER JOIN OT_InstanceContext ic ON bd.ObjectId = ic.BizObjectID and ic.State = '2'  ";
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql);
+        System.Data.DataTable dt_dk = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql_dk);
+        List<Dictionary<string, string>> ret = new List<Dictionary<string, string>>();
+        List<Dictionary<string, string>> ls = new List<Dictionary<string, string>>();
+        List<Dictionary<string, string>> ls_sub = new List<Dictionary<string, string>>();
+        // 
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                if(!Common.Contains(dt_dk,dr["QKObjectID"].ToString()))
+                {
+                    Dictionary<string, string> dic = new Dictionary<string, string>();
+                    dic.Add("ContractNo", dr["ContractNo"].ToString());
+                    dic.Add("QKSeq", dr["QKSeq"].ToString());
+                    dic.Add("QKType", dr["QKType"].ToString());
+                    dic.Add("QKTarget", dr["QKTarget"].ToString());
+                    dic.Add("QKDate", dr["QKDate"].ToString());
+                    dic.Add("ZJKX", dr["ZJKX"].ToString());
+                    dic.Add("ZJMS", dr["ZJMS"].ToString());
+                    dic.Add("QKAmount", dr["QKAmount"].ToString());
+                    dic.Add("QKCurrency", dr["QKCurrency"].ToString());
+                    dic.Add("QKConvertAmount", dr["QKConvertAmount"].ToString()+"人民币");
+                    dic.Add("SeqCnt", dr["SeqCnt"].ToString());
+                    dic.Add("QKCurrencyCode", dr["QKCurrencyCode"].ToString());
+                    dic.Add("LJDKAmount", dr["LJDKAmount"].ToString());
+                    dic.Add("QKSeqHidden", dr["ContractNo"].ToString()+dr["QKSeq"].ToString());
+                    dic.Add("QKTypeCode", dr["QKTypeCode"].ToString());
+                    dic.Add("QKObjectID", dr["QKObjectID"].ToString());
+                    ls.Add(dic);
+                } else
+                {
+                    Dictionary<string, string> dic = new Dictionary<string, string>();
+                    dic.Add("ContractNo", dr["ContractNo"].ToString());
+                    dic.Add("QKSeq", dr["QKSeq"].ToString());
+                    ls_sub.Add(dic);
+                }
+            }
+        }
+        ret = Common.Subs(ls,ls_sub);
+        object JSONObj = JsonConvert.SerializeObject(ret);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 获取所有货币
+    public void getCurrencys(HttpContext context)
+    {
+        string ContractNo = context.Request["ContractNo"];
+        var sql = " select Code,EnumValue Value from OT_EnumerableMetadata where Category = '币种' order by SortKey ";
+
+        System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(sql);
+        List<Dictionary<string, string>> ls = new List<Dictionary<string, string>>();
+        if (dt.Rows.Count > 0)
+        {
+            foreach (DataRow dr in dt.Rows)
+            {
+                Dictionary<string, string> dic = new Dictionary<string, string>();
+                dic.Add("Code", dr["Code"].ToString());
+                dic.Add("Value", dr["Value"].ToString());
+                ls.Add(dic);
+            }
+        }
+        object JSONObj = JsonConvert.SerializeObject(ls);
+        context.Response.ContentType = "application/json";
+        context.Response.Write(JSONObj);
+    }
+
+    // 设置请款中的累计到款值
+    public void SetQKLJDK(HttpContext context)
+    {
+        string QKObjectIDs = context.Request["QKObjectIDs"];
+        string[] arr = QKObjectIDs.Split(',');
+        if (arr.Length > 0)
+        {
+            foreach (string item in arr)
+            {
+                if(!item.Trim().Equals(""))
+                {
+                    var QKObjectID = item.Split(':')[0];
+                    var CurDKAmount = item.Split(':')[1];
+                    var CurDKCurrency = item.Split(':')[2];
+                    // 修改请款中的累计到款金额
+                    OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+                    " update I_QKSubTbl set LJDKAmount = LJDKAmount + " + CurDKAmount + " where ObjectID = '" + QKObjectID + "' and Currency = '"+CurDKCurrency+"'");
+                }
+
+            }
+        }
+        return;
+    }
+
+    // 获取流程节点数据
+    public void PullInstanceNode(HttpContext context)
+    {
+        //string Uri = "http://localhost:8010/Portal/InstanceDetail/AdjustActivity?ActivityCode=ActivityCreate&InstanceID=b8c166db-828e-4e12-a2a1-baf8cf56043a&Participants=18f923a7-5a5e-426d-94ae-a55ad1a4b239";
+        //HttpClient httpClient = new HttpClient();
+        //    string res1 = "";
+        //// 创建一个异步GET请求，当请求返回时继续处理
+        //httpClient.GetAsync(Uri).ContinueWith(
+        //    (requestTask) =>
+        //    {
+        //        HttpResponseMessage response = requestTask.Result;
+        //        // 确认响应成功，否则抛出异常
+        //        response.EnsureSuccessStatusCode();
+        //        // 异步读取响应为字符串
+
+        //        response.Content.ReadAsStringAsync().ContinueWith(
+        //            (readTask) => (res1 = readTask.Result));
+        //        Console.WriteLine(res1);
+        //    });
+        //object JSONObj = JsonConvert.SerializeObject("");
+        //context.Response.ContentType = "application/json";
+        //context.Response.Write(JSONObj);
+    }
+
+    public bool IsReusable
+    {
+        get
+        {
+            return false;
+        }
+    }
+    private IEngine _Engine = null;
+    /// <summary>
+    /// 流程引擎的接口，该接口会比this.Engine的方式更快，因为其中使用了缓存
+    /// </summary>
+    public IEngine Engine
+    {
+        get
+        {
+            if (OThinker.H3.Controllers.AppConfig.ConnectionMode == ConnectionStringParser.ConnectionMode.Mono)
+            {
+                return OThinker.H3.Controllers.AppUtility.Engine;
+            }
+            return _Engine;
+        }
+        set
+        {
+            _Engine = value;
+        }
+    }
+
+}

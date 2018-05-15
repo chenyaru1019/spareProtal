@@ -1,0 +1,43 @@
+﻿git config --global user.name "xuweiping"
+git config --global user.email "wpxu@juntech.net"
+
+步骤说明：git status命令检查当前的git状态，是常用命令
+
+1） Git init : 初始化项目库（新建项目时使用）；
+
+2） Git add 文件或目录：添加文件或目录；
+
+3） Git commit –am “此次提交的说明”：提交到本地；
+
+4） Git remote add orgin 项目的SSH地址 ： 远程添加到新项目中；
+
+5） Git push origin dev : 将本地新增文件上传到GitLab中；
+
+cd E:\workspaces\BesTV_XCMS4\BesTV_XCMS
+Git add .
+git commit -am "xxxx"
+git remote add origin git@git.bestv.cn:bestv-app-content/fdn_sync.git
+	(出错执行：git remote rm origin)
+git push  origin dev
+	(出错执行：git pull --rebase origin master)
+
+cd E:\workspaces\BesTVDataImportDemo
+Git add .
+git commit -am "xxxx"
+git remote add origin git@git.bestv.cn:bestv-app-content/fdn_import.git
+git push  origin dev
+
+iptv_xcms	
+git remote add origin git@git.bestv.cn:wpxu/iptv_xcms.git
+git add .
+git commit -am "XXXXcommit"
+git push -u origin master
+
+
+访问s3
+aws s3 ls s3://dev-test/fdndata/ --region cn-north-1
+https://s3.cn-north-1.amazonaws.com.cn/dev-test/fdndata/
+	
+maven 手动安装
+mvn install:install-file -Dfile=D:\service\Repositories3.2.5\javax\resource\connector\1.5\connector-api-1.5.jar -DgroupId=javax.resource -DartifactId=connector-api -Dversion=1.5 -Dpackaging=jar
+

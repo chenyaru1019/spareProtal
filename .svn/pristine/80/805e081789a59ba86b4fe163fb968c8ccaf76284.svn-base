@@ -1,0 +1,95 @@
+﻿<div>
+    合同号:<input type="text" value="" name="" id="ContractNO">
+    合同名称:<input type="text" value="" name="" id="Contract_anme">
+    签约日期:<input ui-jq="wdatePicker"  id="q_StartTime" wind="10%" >-<input ui-jq="wdatePicker" id="q_OverTime" wind="10%">
+    
+</div>
+<div>
+    项目负责人:<input type="text" value="" name="" id="Project_peo">
+    贸易方式:<select id="trade_way">
+                <option value="">请选择</option>
+        </select>
+    合同创建日期:<input ui-jq="wdatePicker" id="c_StartTime" wind="10%">-<input ui-jq="wdatePicker" id="c_OverTime" wind="10%">
+</div>
+<div>
+    最终用户:<input type="text" value="" name="" id="End_user">
+    合同性质:<select id="contract_nature">
+                    <option value="">请选择</option>
+              </select>
+    合同变更日期:<input ui-jq="wdatePicker" id="b_StartTime" wind="10%">-<input ui-jq="wdatePicker" id="b_OverTime" wind="10%">
+</div>
+<div>
+    合同卖方:<input type="text" value="" name="" id="Contract_seller">
+    合同类型:<select name="" id="Contract_type">
+            <option value=""></option>
+        </select>  
+    <input type="button" value="查找" id="sel_finds">
+</div>
+<div style='margin-top: 40px;'>
+
+    <table id="mycontract" class="display">
+        <thead>
+            
+            <tr>
+                <th>合同号</th>
+                <th>合同名称</th>
+                <th>创建日期</th>
+                <th>合同类型</th>
+                <th>合同性质</th>
+                <th>项目负责人</th>
+                <th>最终用户</th>
+                <th>合同卖方</th>
+                <th>合同金额</th>
+                <th>签约日期</th>
+                <th>合同变更日期</th>
+                <th>当前状态</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <input type="hidden" value="" name="versions" id="versions">
+</div>
+<script type="text/javascript">
+    var cottageDom = $('#mycontract');
+    //window.cottageApp.agreement_num = 1;
+    //window.cottageApp.entrust = 2;
+    //window.cottageApp.Agreement_name = 3;
+    
+    window.cottageApp.dataTableInit(cottageDom);
+    $("#sel_finds").click(
+        function () {
+            window.cottageApp.cottageObj.fnClearTable();
+            window.cottageApp.cottageObj.fnDestroy();
+            cottageDom.DataTable().destroy();
+            window.cottageApp.ContractNO = $('#ContractNO').val();
+            window.cottageApp.Contract_anme = $("#Contract_anme").val();
+            window.cottageApp.q_StartTime = $("#q_StartTime").val();
+            window.cottageApp.q_OverTime = $("#q_OverTime").val();
+
+            window.cottageApp.Project_peo = $("#Project_peo").val();
+            window.cottageApp.trade_way = $("#trade_way").val();
+            window.cottageApp.c_StartTime = $("#c_StartTime").val();
+            window.cottageApp.c_OverTime = $("#c_OverTime").val();
+
+            window.cottageApp.End_user = $("#End_user").val();
+            window.cottageApp.trade_way = $("#contract_nature").val();
+            window.cottageApp.b_StartTime = $("#b_StartTime").val();
+            window.cottageApp.b_OverTime = $("#b_OverTime").val();
+
+            window.cottageApp.Contract_seller = $("#Contract_seller").val();
+            window.cottageApp.Contract_type = $("#Contract_type").val();
+
+            window.cottageApp.dataTableInit(cottageDom);
+            cottageDom.DataTable().ajax.reload();
+
+        }
+    )
+    function execute(Agreement_num) {
+        //获取版本号 
+        var versions = $("#versions").val();
+        //window.location = "/Portal/Sheets/AgreeMent/AgreeMent_change/AgreeMent_change.aspx?Mode=Originate&WorkflowCode=Agreenment_change&WorkflowVersion=17";
+        window.location.href = "/Portal/Sheets/Agreement/Agreement_execute/Agreement_execute.aspx?Mode=Originate&WorkflowCode=Agreen_perform&WorkflowVersion=" + versions + "&AgreeMent_number=" + Agreement_num;
+    }
+
+</script>

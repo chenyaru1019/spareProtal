@@ -1,0 +1,45 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using OThinker.H3.Portal.Entity;
+
+/// <summary>
+/// Class1 的摘要说明
+/// </summary>
+namespace OThinker.H3.Portal.service
+{
+    public class Common
+    {
+       public static OThinker.Organization.User getUserById(string id)
+        {
+            System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+            " SELECT * " +
+            " FROM OT_User " +
+            " where ObjectID = '" + id + "'");
+            OThinker.Organization.User u = new OThinker.Organization.User();
+            if (dt.Rows.Count > 0)
+            {
+                u.Code = dt.Rows[0]["Code"].ToString();
+                u.Name = dt.Rows[0]["Name"].ToString();
+            }
+            return u;
+        }
+
+        public static ContractMain getContractByBizId(string id)
+        {
+            // 国内合同
+            ContractMain con = new ContractMain();
+            System.Data.DataTable dt = OThinker.H3.Controllers.AppUtility.Engine.EngineConfig.CommandFactory.CreateCommand().ExecuteDataTable(
+                " SELECT ContractNo FROM I_ContractMain con" +
+                " where con.ObjectID = '" + id + "'" );
+            if (dt.Rows.Count > 0)
+            {
+                con.ContractNo = dt.Rows[0]["ContractNo"].ToString();
+               
+            }
+
+            return con;
+        }
+    }
+}

@@ -1,0 +1,165 @@
+﻿//页面提交
+$.MvcSheet.SubmitAction.OnActionPreDo = function () {
+    if ($.MvcSheetUI.SheetInfo.ActivityCode == "tj_money") {
+        console.log($.MvcSheetUI.GetControlValue("view_shmoney"));
+        //var QKObjectIDs = "";
+        //var dtl_js = $.MvcSheetUI.GetElement("Charge_pro").SheetGridView();
+        //for (var i = 0; i < dtl_js.RowCount; i++) {
+            
+        //    QKObjectIDs += $.MvcSheetUI.GetControlValue("Charge_pro.ys_money", i + 1) + ":" +
+        //        $.MvcSheetUI.GetControlValue("Charge_pro.yi_money", i + 1) + ":" +
+        //        $.MvcSheetUI.GetControlValue("Charge_pro.this_receipt", i + 1) + ":" +
+        //        $.MvcSheetUI.GetControlValue("Charge_pro.Project_number", i + 1) + ":" +",";
+            
+        //}
+        //$.ajax({
+        //    type: "POST",    //页面请求的类型
+        //    url: "Receipt.ashx?Command=updateMoney",   //处理页的相对地址
+        //    data: {
+        //        QKObjectIDs: QKObjectIDs,
+        //    },
+        //    async: false,
+        //    success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+        //        console.log(ret);
+               
+        //    }
+        //});
+        
+    }
+}
+
+$.MvcSheet.Loaded = function () {
+    // 协议号码
+    var AgreeMent_number = "";
+    AgreeMent_number = $.MvcSheetUI.GetControlValue("Agency_number");
+    if (AgreeMent_number == "" || AgreeMent_number == null ) {
+        AgreeMent_number = getUrlParam("AgreeMent_number");
+    }
+    var project_num = "";
+    var view_shmoney = "";
+    view_shmoney = $.MvcSheetUI.GetControlValue("view_shmoney");
+    console.log(project_num);
+    console.log(getUrlParam("project_num"));
+    project_num = getUrlParam("project_num");
+    if (view_shmoney != "" || view_shmoney != null) {
+        project_num = view_shmoney;
+    }
+   
+    if ((view_shmoney == "" || view_shmoney == null) && (project_num != "" || project_num != null)) {
+        project_num = getUrlParam("project_num"); 
+        $.MvcSheetUI.SetControlValue("view_shmoney", project_num);
+    } 
+   
+   
+    $.ajax({
+        type: "POST",    //页面请求的类型
+        url: "Receipt.ashx?Command=getReceipt",   //处理页的相对地址
+        data: {
+            AgreeMent_number: AgreeMent_number,
+            project_num: project_num, 
+        },
+        async: false,
+        success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+            console.log(ret);
+            $.MvcSheetUI.SetControlValue("Agency_number", ret.Agreenment_number);
+            $.MvcSheetUI.SetControlValue("Agency_name", ret.Agreement_name);
+            $.MvcSheetUI.SetControlValue("Project_head", ret.Project_head);
+            $.MvcSheetUI.SetControlValue("Collection_money", 11);
+            $.MvcSheetUI.SetControlValue("Reduced_money", 11);
+            $.MvcSheetUI.SetControlValue("Collection_object", ret.Agreement_client);
+            
+        }
+    });
+
+    $("input[data-datafield='Agency_number']").attr("disabled", "disabled");
+    $("input[data-datafield='Agency_name']").attr("disabled", "disabled");
+    $("input[data-datafield='Project_head']").attr("disabled", "disabled");
+    $("input[data-datafield='Collection_money']").attr("disabled", "disabled");
+    $("input[data-datafield='Reduced_money']").attr("disabled", "disabled");
+
+    //收款关联条目的查询
+ 
+    console.log(project_num);
+    $.ajax({
+        type: "POST",    //页面请求的类型
+        url: "Receipt.ashx?Command=getProjecsk",   //处理页的相对地址
+        data: {
+            AgreeMent_number: AgreeMent_number,
+            project_num: project_num,
+        },
+        async: false,
+        success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+            var dtl = $.MvcSheetUI.GetElement("Charge_pro").SheetGridView();
+            dtl._Clear();
+            console.log(ret);
+            for (var i = 0; i < ret.length; i++) {
+                //console.log(ret[i].old_agency_money);
+                dtl._AddRow();
+                $.MvcSheetUI.SetControlValue("Charge_pro.Pro_type", ret[i].ContractType, i + 1);
+                $.MvcSheetUI.SetControlValue("Charge_pro.Project_number", ret[i].ContractNo, i + 1);
+                $.MvcSheetUI.SetControlValue("Charge_pro.Project_name", ret[i].ContractName, i + 1);
+                $.MvcSheetUI.SetControlValue("Charge_pro.receivable_agency_fee", ret[i].agency_rate + ret[i].EnumValue, i + 1);
+                $.MvcSheetUI.SetControlValue("Charge_pro.Receive_agency_fee", ret[i].yi_money + ret[i].EnumValue, i + 1);
+                $.MvcSheetUI.SetControlValue("Charge_pro.agency_balance", (ret[i].agency_rate - ret[i].yi_money) + ret[i].EnumValue, i + 1);
+                if ($.MvcSheetUI.SheetInfo.ActivityCode != "tj_money") {
+                    $.MvcSheetUI.SetControlValue("Charge_pro.this_receipt", ret[i].this_receipt + ret[i].EnumValue, i + 1);
+                } else {
+                    $.MvcSheetUI.SetControlValue("Charge_pro.this_receipt", "0", i + 1);
+                }
+                
+                $.MvcSheetUI.SetControlValue("Charge_pro.ys_money", ret[i].agency_rate, i + 1);
+                $.MvcSheetUI.SetControlValue("Charge_pro.yi_money", ret[i].ys_money, i + 1);
+                $.MvcSheetUI.SetControlValue("Charge_pro.dl_money", (ret[i].agency_rate - ret[i].yi_money), i + 1);
+            }
+
+        }
+    });
+    $("input[data-datafield='Charge_pro.Pro_type']").attr("readOnly", "true");
+    $("input[data-datafield='Charge_pro.Project_number']").attr("readOnly", "true");
+    $("input[data-datafield='Charge_pro.Project_name']").attr("readOnly", "true");
+    $("input[data-datafield='Charge_pro.receivable_agency_fee']").attr("readOnly", "true");
+    $("input[data-datafield='Charge_pro.Receive_agency_fee']").attr("readOnly", "true");
+    $("input[data-datafield='Charge_pro.agency_balance']").attr("readOnly", "true");
+    if ($.MvcSheetUI.SheetInfo.ActivityCode != "tj_money") {
+        $("input[data-datafield='Charge_pro.this_receipt']").attr("disabled", "disabled");
+    }
+   
+
+   //收款审批记录
+    var Agency_number = $.MvcSheetUI.GetControlValue("Agency_number");
+    console.log(Agency_number);
+    $.ajax({
+        type: "POST",    //页面请求的类型
+        url: "Receipt.ashx?Command=sk_spj",   //处理页的相对地址
+        data: {
+            AgreeMent_number: AgreeMent_number,
+        },
+        async: false,
+        success: function (ret) {    //这是处理后执行的函数，msg是处理页返回的数据
+            console.log(ret);
+            return false;
+            //var dtl = $.MvcSheetUI.GetElement("sp_record").SheetGridView();
+            //dtl._Clear();
+            //for (var i = 0; i < ret.length; i++) {
+            //    //console.log(ret[i].old_agency_money);
+            //    dtl._AddRow();
+            //    $.MvcSheetUI.SetControlValue("sp_record.dispose_name", ret[i].DisplayName, i + 1);
+            //    $.MvcSheetUI.SetControlValue("sp_record.dispose_peo", ret[i].UserName, i + 1);
+            //    $.MvcSheetUI.SetControlValue("sp_record.dispose_time", ret[i].CreatedTime, i + 1);
+            //    $.MvcSheetUI.SetControlValue("sp_record.dispose_result", ret[i].State, i + 1);
+            //    $.MvcSheetUI.SetControlValue("sp_record.remark", ret[i].btext, i + 1);
+            //}
+
+        }
+    });
+}
+function upmoney() {
+    //循环获取本次收款
+    var sum = 0;
+    $('table#Control18 input[data-datafield="Charge_pro.this_receipt"]').each(function (i, n) {
+       
+        sum += parseInt($(n).val());
+    });
+    $.MvcSheetUI.SetControlValue("Reduced_money", sum);//折算金额
+    $.MvcSheetUI.SetControlValue("Collection_money", sum);//收款
+}
